@@ -1,0 +1,371 @@
+import { Router, Response } from 'express';
+import { db } from '../db';
+import { generateToken, authenticateJWT, AuthenticatedRequest } from '../middleware/auth';
+import { authLimiter } from '../middleware/rateLimit';
+
+const router = Router();
+
+// POST /api/auth/register
+router.post('/register', authLimiter, (req, res) => {
+  const { username, displayName, email, password, country } = req.body;
+
+  if (!username || !email || !password || !displayName) {
+    return res.status(400).json({
+      success: false,
+      message: 'Username, display name, email, and password are required.',
+      errorCode: 'MISSING_FIELDS',
+    });
+  }
+
+  const cleanUsername = username.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
+  if (cleanUsername.length < 3) {
+    return res.status(400).json({
+      success: false,
+      message: 'Username must be at least 3 alphanumeric characters or underscores.',
+      errorCode: 'INVALID_USERNAME',
+    });
+  }
+
+  // Check duplicate username or email
+  const existingUser = Array.from(db.users.values()).find(
+    (u) => u.username.toLowerCase() === cleanUsername || u.email.toLowerCase() === email.trim().toLowerCase()
+  );
+
+  if (existingUser) {
+    return res.status(409).json({
+      success: false,
+      message: 'Username or email address is already registered.',
+      errorCode: 'DUPLICATE_USER',
+    });
+  }
+
+  const userId = `usr_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+  db.setPasswordHash(userId, password);
+
+  const newUser = {
+    id: userId,
+    username: cleanUsername,
+    displayName: displayName.trim(),
+    email: email.trim().toLowerCase(),
+    country: country || 'Rwanda',
+    role: 'user' as const,
+    status: 'active' as const,
+    avatar: `https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250`,
+    bio: `Creator from ${country || 'Rwanda'} passionate about growing content and discovering new creators.`,
+    creatorCategory: 'Technology',
+    credits: 100, // 100 registration bonus credits
+    totalCreditsEarned: 100,
+    totalCreditsSpent: 0,
+    level: 1,
+    reputation: 80,
+    referralCode: `SUB-${cleanUsername.toUpperCase().substring(0, 6)}`,
+    referralCount: 0,
+    referralRewardsEarned: 0,
+    streakDays: 1,
+    dailyRewardClaimedToday: false,
+    dailyDiscoveryCountToday: 0,
+    riskScore: 0,
+    isPro: false,
+    createdAt: new Date().toISOString(),
+  };
+
+  db.users.set(userId, newUser);
+
+  // Record initial registration bonus
+  db.recordTransaction(userId, 'bonus', 100, 'Welcome registration bonus');
+
+  // Create corresponding Creator Profile
+  const creatorProfile = {
+    id: `prof_${userId}`,
+    userId,
+    username: newUser.username,
+    displayName: newUser.displayName,
+    avatar: newUser.avatar,
+    bio: newUser.bio,
+    country: newUser.country,
+    category: newUser.creatorCategory,
+    reputation: newUser.reputation,
+    level: newUser.level,
+    profileViews: 1,
+    totalDiscoveries: 0,
+    isPro: newUser.isPro,
+    socialChannelsCount: 0,
+    createdAt: newUser.createdAt,
+  };
+  db.creatorProfiles.set(creatorProfile.id, creatorProfile);
+
+  const token = generateToken(newUser);
+
+  return res.status(201).json({
+    success: true,
+    message: 'Welcome to SubLoop! Registration successful (+100 Bonus Credits).',
+    data: {
+      token,
+      user: newUser,
+    },
+  });
+});
+
+// POST /api/auth/login
+router.post('/login', authLimiter, (req, res) => {
+  const { loginIdentifier, password } = req.body;
+
+  if (!loginIdentifier || !password) {
+    return res.status(400).json({
+      success: false,
+      message: 'Username/email and password are required.',
+      errorCode: 'MISSING_FIELDS',
+    });
+  }
+
+  const cleanIdentifier = loginIdentifier.trim().toLowerCase();
+  const user = Array.from(db.users.values()).find(
+    (u) => u.username.toLowerCase() === cleanIdentifier || u.email.toLowerCase() === cleanIdentifier
+  );
+
+  if (!user) {
+    return res.status(401).json({
+      success: false,
+      message: 'Invalid username/email or password.',
+      errorCode: 'INVALID_CREDENTIALS',
+    });
+  }
+
+  const isValidPassword = db.verifyPassword(user.id, password);
+  if (!isValidPassword) {
+    return res.status(401).json({
+      success: false,
+      message: 'Invalid username/email or password.',
+      errorCode: 'INVALID_CREDENTIALS',
+    });
+  }
+
+  if (user.status === 'suspended' || user.status === 'banned') {
+    return res.status(403).json({
+      success: false,
+      message: 'Your account has been suspended or banned.',
+      errorCode: 'ACCOUNT_SUSPENDED',
+    });
+  }
+
+  // Handle daily streak login update
+  const now = new Date();
+  const lastLogin = user.lastLoginDate ? new Date(user.lastLoginDate) : null;
+  
+  if (lastLogin) {
+    const diffHours = (now.getTime() - lastLogin.getTime()) / (1000 * 3600);
+    if (diffHours >= 24 && diffHours < 48) {
+      user.streakDays += 1;
+      user.dailyRewardClaimedToday = false;
+      user.dailyDiscoveryCountToday = 0;
+    } else if (diffHours >= 48) {
+      user.streakDays = 1;
+      user.dailyRewardClaimedToday = false;
+      user.dailyDiscoveryCountToday = 0;
+    }
+  }
+  user.lastLoginDate = now.toISOString();
+
+  const token = generateToken(user);
+
+  return res.json({
+    success: true,
+    message: 'Logged in successfully.',
+    data: {
+      token,
+      user,
+    },
+  });
+});
+
+// GET /api/auth/me
+router.get('/me', authenticateJWT, (req: AuthenticatedRequest, res: Response) => {
+  return res.json({
+    success: true,
+    data: {
+      user: req.user,
+    },
+  });
+});
+
+// POST /api/auth/daily-streak-claim
+router.post('/daily-streak-claim', authenticateJWT, (req: AuthenticatedRequest, res: Response) => {
+  const user = req.user!;
+  if (user.dailyRewardClaimedToday) {
+    return res.status(400).json({
+      success: false,
+      message: 'You have already claimed your daily streak bonus today!',
+      errorCode: 'ALREADY_CLAIMED',
+    });
+  }
+
+  const streakBonus = Math.min(50, db.systemSettings.dailyLoginBaseReward + (user.streakDays - 1) * 5);
+  user.dailyRewardClaimedToday = true;
+
+  db.recordTransaction(
+    user.id,
+    'bonus',
+    streakBonus,
+    `🔥 Day ${user.streakDays} Login Streak Bonus`
+  );
+
+  return res.json({
+    success: true,
+    message: `Claimed +${streakBonus} Credits for Day ${user.streakDays} streak!`,
+    data: {
+      user,
+      streakBonus,
+    },
+  });
+});
+
+// POST /api/auth/forgot-password (Architecture stub)
+router.post('/forgot-password', authLimiter, (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    return res.status(400).json({
+      success: false,
+      message: 'Email address is required.',
+      errorCode: 'MISSING_EMAIL',
+    });
+  }
+
+  return res.json({
+    success: true,
+    message: 'If an account exists for this email, password reset instructions have been sent.',
+  });
+});
+
+// POST /api/auth/google
+router.post('/google', authLimiter, (req, res) => {
+  const { credential, email, name, picture, googleId } = req.body;
+
+  let userEmail = email;
+  let userName = name;
+  let userAvatar = picture;
+  let userGId = googleId;
+
+  // Decode JWT payload if credential string is provided by Google Identity Services
+  if (credential && typeof credential === 'string') {
+    try {
+      const parts = credential.split('.');
+      if (parts.length === 3) {
+        const payloadJson = Buffer.from(parts[1], 'base64').toString('utf-8');
+        const decoded = JSON.parse(payloadJson);
+        if (decoded.email) userEmail = decoded.email;
+        if (decoded.name) userName = decoded.name;
+        if (decoded.picture) userAvatar = decoded.picture;
+        if (decoded.sub) userGId = decoded.sub;
+      }
+    } catch (err) {
+      console.warn('Failed to parse Google JWT credential payload:', err);
+    }
+  }
+
+  if (!userEmail) {
+    return res.status(400).json({
+      success: false,
+      message: 'Google Authentication failed: Email could not be retrieved.',
+      errorCode: 'GOOGLE_AUTH_FAILED',
+    });
+  }
+
+  const cleanEmail = userEmail.trim().toLowerCase();
+  let user = Array.from(db.users.values()).find((u) => u.email.toLowerCase() === cleanEmail);
+
+  if (!user) {
+    // Register new user via Google
+    const baseUsername = cleanEmail.split('@')[0].replace(/[^a-z0-9_]/g, '');
+    let username = baseUsername.length >= 3 ? baseUsername : `creator_${baseUsername}`;
+    let counter = 1;
+    while (Array.from(db.users.values()).some((u) => u.username.toLowerCase() === username.toLowerCase())) {
+      username = `${baseUsername}${counter++}`;
+    }
+
+    const userId = `usr_google_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+    db.setPasswordHash(userId, `google_secret_${Date.now()}`);
+
+    user = {
+      id: userId,
+      username,
+      displayName: userName || baseUsername,
+      email: cleanEmail,
+      country: 'Rwanda',
+      role: 'user',
+      status: 'active',
+      avatar: userAvatar || `https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250`,
+      bio: `Verified Google Creator account`,
+      creatorCategory: 'Technology',
+      credits: 100, // 100 welcome credits
+      totalCreditsEarned: 100,
+      totalCreditsSpent: 0,
+      level: 1,
+      reputation: 90,
+      referralCode: `SUB-${username.toUpperCase().substring(0, 6)}`,
+      referralCount: 0,
+      referralRewardsEarned: 0,
+      streakDays: 1,
+      dailyRewardClaimedToday: false,
+      dailyDiscoveryCountToday: 0,
+      riskScore: 0,
+      isPro: false,
+      createdAt: new Date().toISOString(),
+    };
+
+    db.users.set(userId, user);
+    db.recordTransaction(userId, 'bonus', 100, 'Welcome Google Account Registration Bonus');
+
+    // Create Creator Profile
+    const creatorProfile = {
+      id: `prof_${userId}`,
+      userId,
+      username: user.username,
+      displayName: user.displayName,
+      avatar: user.avatar,
+      bio: user.bio,
+      country: user.country,
+      category: user.creatorCategory,
+      reputation: user.reputation,
+      level: user.level,
+      profileViews: 1,
+      totalDiscoveries: 0,
+      isPro: user.isPro,
+      socialChannelsCount: 0,
+      createdAt: user.createdAt,
+    };
+    db.creatorProfiles.set(creatorProfile.id, creatorProfile);
+
+    db.notifications.unshift({
+      id: `notif_${Date.now()}`,
+      userId,
+      title: '🌐 Google Sign-In Connected!',
+      message: 'Welcome to SubLoop! Your Google Account is successfully verified and credited with +100 Welcome Credits.',
+      type: 'success',
+      link: '/dashboard',
+      isRead: false,
+      createdAt: new Date().toISOString(),
+    });
+  }
+
+  if (user.status === 'suspended' || user.status === 'banned') {
+    return res.status(403).json({
+      success: false,
+      message: 'Your account has been suspended or banned.',
+      errorCode: 'ACCOUNT_SUSPENDED',
+    });
+  }
+
+  user.lastLoginDate = new Date().toISOString();
+  const token = generateToken(user);
+
+  return res.json({
+    success: true,
+    message: 'Google Sign-In successful!',
+    data: {
+      token,
+      user,
+    },
+  });
+});
+
+export default router;

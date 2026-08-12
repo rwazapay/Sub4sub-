@@ -1,0 +1,6 @@
+{
+  "name": "SubLoop",
+  "description": "Creator-powered discovery and promotion network. Discover independent channels, earn credits organically, and gain authentic creator community visibility.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
