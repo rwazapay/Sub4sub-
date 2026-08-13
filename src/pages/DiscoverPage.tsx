@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { apiClient } from '../services/api';
 import { Promotion } from '../types';
 import { Sub4SubHub } from '../components/Sub4SubHub';
+import { YouTubeEmbedPlayer } from '../components/YouTubeEmbedPlayer';
 import {
   Compass,
   Search,
@@ -392,10 +393,28 @@ export const DiscoverPage: React.FC = () => {
               </span>
             </div>
 
-            {/* Step 1: Open Channel Link */}
+            {/* Creative Commons Video Embed if available */}
+            {activeDiscoveryPromo.videoEmbedUrl && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-bold text-amber-400 flex items-center gap-1">
+                    <Sparkles className="w-3.5 h-3.5" /> Watch Creative Commons (CC-BY) Video:
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-mono">
+                    {activeDiscoveryPromo.licenseType || 'CC BY 4.0'}
+                  </span>
+                </div>
+                <YouTubeEmbedPlayer
+                  videoUrlOrId={activeDiscoveryPromo.videoEmbedUrl}
+                  title={activeDiscoveryPromo.title}
+                />
+              </div>
+            )}
+
+            {/* Step 1: Open Channel Link or Detailed Campaign Page */}
             <div className="space-y-2">
               <div className="flex items-center justify-between text-xs">
-                <span className="font-bold text-slate-300">1. Open Creator Channel:</span>
+                <span className="font-bold text-slate-300">1. Open Creator Channel or Track Stay Timer:</span>
                 {hasVisitedChannel && (
                   <span className="text-emerald-400 font-bold flex items-center gap-1">
                     <CheckCircle2 className="w-3.5 h-3.5" /> Visited
@@ -403,13 +422,22 @@ export const DiscoverPage: React.FC = () => {
                 )}
               </div>
 
-              <button
-                onClick={handleVisitExternalChannel}
-                className="w-full py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-100 font-semibold border border-slate-700 text-xs flex items-center justify-center gap-2"
-              >
-                <span>Visit {activeDiscoveryPromo.creatorDisplayName} on {activeDiscoveryPromo.platform}</span>
-                <ExternalLink className="w-4 h-4 text-indigo-400" />
-              </button>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={handleVisitExternalChannel}
+                  className="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-100 font-semibold border border-slate-700 text-xs flex items-center justify-center gap-1.5"
+                >
+                  <span>Subscribe Channel</span>
+                  <ExternalLink className="w-3.5 h-3.5 text-indigo-400" />
+                </button>
+
+                <Link
+                  to={`/promotions/${activeDiscoveryPromo.id}`}
+                  className="py-2.5 px-3 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-extrabold border border-amber-500/30 text-xs flex items-center justify-center gap-1.5"
+                >
+                  <span>⏱️ Stay Timer & Analytics</span>
+                </Link>
+              </div>
             </div>
 
             {/* Feedback alert */}

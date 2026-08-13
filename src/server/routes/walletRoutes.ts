@@ -16,8 +16,148 @@ router.get('/', authenticateJWT, (req: AuthenticatedRequest, res: Response) => {
       credits: user.credits,
       totalEarned: user.totalCreditsEarned,
       totalSpent: user.totalCreditsSpent,
+      streakDays: user.streakDays,
+      dailyRewardClaimedToday: user.dailyRewardClaimedToday,
       packages: db.creditPackages,
       transactions: userTransactions,
+    },
+  });
+});
+
+// POST /api/wallet/daily-claim - Claim daily bonus coins
+router.post('/daily-claim', authenticateJWT, (req: AuthenticatedRequest, res: Response) => {
+  const user = req.user!;
+
+  if (user.dailyRewardClaimedToday) {
+    return res.status(400).json({
+      success: false,
+      message: 'You have already claimed your daily bonus today! Check back tomorrow.',
+      errorCode: 'ALREADY_CLAIMED',
+    });
+  }
+
+  // Calculate bonus based on streak (base 25 + 5 per streak day, max 100)
+  const streak = user.streakDays || 1;
+  const bonusCoins = Math.min(25 + streak * 5, 100);
+
+  user.credits += bonusCoins;
+  user.totalCreditsEarned += bonusCoins;
+  user.dailyRewardClaimedToday = true;
+
+  db.recordTransaction(
+    user.id,
+    'bonus',
+    bonusCoins,
+    `Daily Check-in Reward (Streak: Day ${streak})`
+  );
+
+  db.notifications.unshift({
+    id: `notif_${Date.now()}`,
+    userId: user.id,
+    title: '🎁 Daily Check-in Bonus Claimed!',
+    message: `Received +${bonusCoins} Coins for keeping a ${streak}-day check-in streak!`,
+    type: 'credit',
+    isRead: false,
+    createdAt: new Date().toISOString(),
+  });
+
+  return res.json({
+    success: true,
+    message: `Claimed +${bonusCoins} Daily Bonus Coins!`,
+    data: {
+      newBalance: user.credits,
+      bonusCoins,
+      streakDays: user.streakDays,
+      dailyRewardClaimedToday: true,
+    },
+  });
+});
+
+// POST /api/wallet/transfer - Transfer / Gift coins to another creator
+router.post('/transfer', authenticateJWT, (req: AuthenticatedRequest, res: Response) => {
+  const sender = req.user!;
+  const { recipientUsername, amount, note } = req.body;
+
+  const numAmount = parseInt(amount, 10);
+  if (!recipientUsername || isNaN(numAmount) || numAmount <= 0) {
+    return res.status(400).json({
+      success: false,
+      message: 'Please provide a valid recipient username and positive coin amount.',
+      errorCode: 'INVALID_INPUT',
+    });
+  }
+
+  if (sender.credits < numAmount) {
+    return res.status(400).json({
+      success: false,
+      message: `Insufficient coins. You have ${sender.credits} coins available.`,
+      errorCode: 'INSUFFICIENT_FUNDS',
+    });
+  }
+
+  const cleanRecipientName = recipientUsername.trim().toLowerCase().replace('@', '');
+
+  if (cleanRecipientName === sender.username.toLowerCase()) {
+    return res.status(400).json({
+      success: false,
+      message: 'You cannot transfer coins to yourself.',
+      errorCode: 'SELF_TRANSFER',
+    });
+  }
+
+  // Find recipient
+  const recipient = Array.from(db.users.values()).find(
+    (u) => u.username.toLowerCase() === cleanRecipientName
+  );
+
+  if (!recipient) {
+    return res.status(404).json({
+      success: false,
+      message: `Creator '@${cleanRecipientName}' was not found.`,
+      errorCode: 'USER_NOT_FOUND',
+    });
+  }
+
+  // Deduct from sender
+  sender.credits -= numAmount;
+  sender.totalCreditsSpent += numAmount;
+
+  db.recordTransaction(
+    sender.id,
+    'promotion_spend',
+    -numAmount,
+    `Gifted ${numAmount} Coins to @${recipient.username}${note ? `: "${note}"` : ''}`
+  );
+
+  // Add to recipient
+  recipient.credits += numAmount;
+  recipient.totalCreditsEarned += numAmount;
+
+  db.recordTransaction(
+    recipient.id,
+    'bonus',
+    numAmount,
+    `Received ${numAmount} Coins gift from @${sender.username}${note ? `: "${note}"` : ''}`
+  );
+
+  // Send notification to recipient
+  db.notifications.unshift({
+    id: `notif_${Date.now()}`,
+    userId: recipient.id,
+    title: '🎁 Received Coin Gift!',
+    message: `@${sender.username} sent you a gift of +${numAmount} Coins!`,
+    type: 'credit',
+    isRead: false,
+    createdAt: new Date().toISOString(),
+  });
+
+  return res.json({
+    success: true,
+    message: `Successfully transferred ${numAmount} coins to @${recipient.username}!`,
+    data: {
+      newBalance: sender.credits,
+      transferredAmount: numAmount,
+      recipientUsername: recipient.username,
     },
   });
 });

@@ -1,6 +1,24 @@
 export type UserRole = 'user' | 'moderator' | 'admin' | 'superadmin';
 export type AccountStatus = 'active' | 'restricted' | 'suspended' | 'banned';
 
+export interface AiVerificationData {
+  status: 'verified' | 'pending' | 'flagged';
+  authenticityScore: number;
+  growthQualityRating: string;
+  engagementVelocity: string;
+  retentionQuality: string;
+  riskRating: string;
+  aiAuditSummary: string;
+  verifiedAt: string;
+  verifiedByModel: string;
+  metricsAnalyzed?: {
+    subscribersCount: number;
+    totalViews: number;
+    avgRetentionSeconds: number;
+    engagementRatioPercent: number;
+  };
+}
+
 export interface User {
   id: string;
   username: string;
@@ -28,6 +46,8 @@ export interface User {
   riskScore: number;
   isPro: boolean;
   proExpiresAt?: string;
+  isAiVerified?: boolean;
+  aiVerificationData?: AiVerificationData;
   createdAt: string;
 }
 
@@ -46,6 +66,8 @@ export interface CreatorProfile {
   totalDiscoveries: number;
   isPro: boolean;
   socialChannelsCount: number;
+  isAiVerified?: boolean;
+  aiVerificationData?: AiVerificationData;
   createdAt: string;
 }
 
@@ -90,6 +112,10 @@ export interface Promotion {
   startDate?: string;
   endDate?: string;
   isSponsored: boolean;
+  videoEmbedUrl?: string;
+  requiredStaySeconds?: number;
+  isCreativeCommons?: boolean;
+  licenseType?: string;
   createdAt: string;
 }
 

@@ -33,10 +33,12 @@ import { AdminPage } from './pages/AdminPage';
 import {
   TermsPage,
   PrivacyPage,
+  RefundPage,
   CommunityGuidelinesPage,
   ContactPage,
   AccountDeletionPage,
 } from './pages/LegalPages';
+
 
 // Protected Route Guard
 const ProtectedRoute: React.FC = () => {
@@ -81,6 +83,8 @@ const PublicOnlyRoute: React.FC = () => {
 
   return <Outlet />;
 };
+
+import { OffersPage } from './pages/OffersPage';
 
 // Main Layout Wrapper
 const AppLayout: React.FC = () => {
@@ -135,9 +139,11 @@ export default function App() {
               <Route path="/pricing" element={<PricingPage />} />
               <Route path="/terms" element={<TermsPage />} />
               <Route path="/privacy" element={<PrivacyPage />} />
+              <Route path="/refund" element={<RefundPage />} />
               <Route path="/community-guidelines" element={<CommunityGuidelinesPage />} />
               <Route path="/contact" element={<ContactPage />} />
               <Route path="/account-deletion" element={<AccountDeletionPage />} />
+
 
               {/* Guest Only Routes */}
               <Route element={<PublicOnlyRoute />}>
@@ -152,6 +158,8 @@ export default function App() {
                 <Route path="/discover" element={<DiscoverPage />} />
                 <Route path="/earn" element={<EarnPage />} />
                 <Route path="/promote" element={<PromotePage />} />
+                <Route path="/campaigns" element={<PromotePage />} />
+                <Route path="/offers" element={<OffersPage />} />
                 <Route path="/promotions" element={<PromotionsListPage />} />
                 <Route path="/promotions/:id" element={<PromotionDetailPage />} />
                 <Route path="/creators" element={<CreatorsDirectoryPage />} />

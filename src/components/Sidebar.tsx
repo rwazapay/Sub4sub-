@@ -2,18 +2,14 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
-  LayoutDashboard,
+  LayoutGrid,
   Compass,
+  Rocket,
   Gift,
-  Megaphone,
-  Users,
-  Trophy,
   Wallet,
-  Bell,
   Settings,
   Shield,
   HelpCircle,
-  Repeat,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -27,14 +23,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   if (!user) return null;
 
   const navItems = [
-    { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-    { label: 'Sub4Sub Network 🔁', path: '/discover', icon: Repeat },
-    { label: 'Earn Credits', path: '/earn', icon: Gift },
-    { label: 'Promote Profile', path: '/promote', icon: Megaphone },
-    { label: 'My Promotions', path: '/promotions', icon: Users },
-    { label: 'Leaderboard', path: '/leaderboard', icon: Trophy },
-    { label: 'Wallet & Credits', path: '/wallet', icon: Wallet },
-    { label: 'Notifications', path: '/notifications', icon: Bell },
+    { label: 'Home', path: '/dashboard', icon: LayoutGrid },
+    { label: 'Earn Coins', path: '/earn', icon: Compass },
+    { label: 'Campaigns', path: '/campaigns', icon: Rocket },
+    { label: 'Offers', path: '/offers', icon: Gift },
+    { label: 'Wallet & Top-up', path: '/wallet', icon: Wallet },
     { label: 'Settings', path: '/settings', icon: Settings },
   ];
 
@@ -44,23 +37,22 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       {isOpen && (
         <div
           onClick={onClose}
-          className="fixed inset-0 z-30 bg-slate-950/80 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-30 bg-black/80 backdrop-blur-sm lg:hidden"
         />
       )}
 
       {/* Sidebar Container */}
       <aside
-        className={`fixed top-16 bottom-0 left-0 z-30 w-64 bg-white dark:bg-slate-950 border-r border-amber-200/80 dark:border-slate-800/80 p-4 transition-transform duration-300 lg:translate-x-0 ${
+        className={`fixed top-16 bottom-0 left-0 z-30 w-64 bg-[#0d0b09] border-r border-[#262018] p-4 transition-transform duration-300 lg:translate-x-0 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <div className="flex flex-col h-full justify-between">
           
           <div className="space-y-6">
-            {/* Navigation Section Header */}
             <div>
-              <p className="px-3 text-[10px] font-extrabold uppercase tracking-wider text-amber-800 dark:text-amber-400">
-                Main Menu
+              <p className="px-3 text-[10px] font-extrabold uppercase tracking-wider text-amber-500">
+                Menu
               </p>
               <nav className="mt-2 space-y-1">
                 {navItems.map((item) => (
@@ -71,17 +63,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                     className={({ isActive }) =>
                       `flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all ${
                         isActive
-                          ? 'bg-yellow-400 text-slate-950 shadow-md shadow-yellow-500/20'
-                          : 'text-slate-700 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-amber-100 dark:hover:bg-slate-900'
+                          ? 'bg-amber-500 text-stone-950 shadow-md shadow-amber-500/20'
+                          : 'text-stone-300 hover:text-white hover:bg-[#1a1612]'
                       }`
                     }
                   >
-                    <item.icon className="w-4 h-4 stroke-[2]" />
+                    <item.icon className="w-4 h-4" />
                     <span>{item.label}</span>
                   </NavLink>
                 ))}
 
-                {/* Admin Link if Admin */}
                 {user.role === 'admin' && (
                   <NavLink
                     to="/admin"
@@ -89,27 +80,26 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                     className={({ isActive }) =>
                       `flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all mt-4 ${
                         isActive
-                          ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
+                          ? 'bg-amber-500 text-stone-950'
                           : 'text-amber-400 hover:bg-amber-500/10'
                       }`
                     }
                   >
                     <Shield className="w-4 h-4" />
-                    <span>Admin Control Center</span>
+                    <span>Admin Panel</span>
                   </NavLink>
                 )}
               </nav>
             </div>
           </div>
 
-          {/* Bottom Card - Safe Community Rules */}
-          <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-2 text-xs">
-            <div className="flex items-center gap-1.5 font-bold text-indigo-400">
+          <div className="p-3.5 rounded-2xl bg-[#161310] border border-[#262018] space-y-2 text-xs">
+            <div className="flex items-center gap-1.5 font-bold text-amber-400">
               <HelpCircle className="w-4 h-4" />
-              <span>Safe Discovery Rules</span>
+              <span>Zero Anti-Cheat Tolerance</span>
             </div>
-            <p className="text-[11px] text-slate-400 leading-relaxed">
-              SubLoop provides organic creator exposure. Artificial bots or engagement trades are strictly forbidden.
+            <p className="text-[11px] text-stone-400 leading-relaxed">
+              Real YouTube accounts only. Accounts faking subscriptions or unsubscribing will be permanently banned.
             </p>
           </div>
 
@@ -118,3 +108,4 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     </>
   );
 };
+

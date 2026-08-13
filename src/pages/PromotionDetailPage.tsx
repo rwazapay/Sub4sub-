@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { apiClient } from '../services/api';
 import { Promotion } from '../types';
+import { ExchangeRetentionTimer } from '../components/ExchangeRetentionTimer';
 import {
   ResponsiveContainer,
   LineChart,
@@ -19,6 +20,9 @@ import {
   ArrowLeft,
   ExternalLink,
   Globe2,
+  Tv,
+  CheckCircle2,
+  Sparkles,
 } from 'lucide-react';
 
 export const PromotionDetailPage: React.FC = () => {
@@ -124,6 +128,17 @@ export const PromotionDetailPage: React.FC = () => {
         </div>
 
       </div>
+
+      {/* Required Active Stay Retention Countdown Timer & Video Player */}
+      <ExchangeRetentionTimer
+        requiredSeconds={promotion.requiredStaySeconds || 60}
+        promotionTitle={promotion.title}
+        channelUrl={promotion.channelUrl}
+        videoEmbedUrl={promotion.videoEmbedUrl || 'https://www.youtube.com/embed/aqz-KE-bpKQ'}
+        rewardCoins={promotion.rewardPerDiscovery || 10}
+        isCreativeCommons={promotion.isCreativeCommons ?? true}
+        licenseType={promotion.licenseType || 'CC BY 4.0 International'}
+      />
 
       {/* Recharts Analytics Daily Performance Line Chart */}
       {analytics?.dailyAnalytics && (

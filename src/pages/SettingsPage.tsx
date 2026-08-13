@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { apiClient } from '../services/api';
 import { SocialChannel, PlatformType } from '../types';
+import { AvatarCropperModal } from '../components/AvatarCropperModal';
 import {
   Settings,
   User,
@@ -12,6 +13,8 @@ import {
   ExternalLink,
   ShieldCheck,
   Globe2,
+  Crop,
+  Sparkles,
 } from 'lucide-react';
 
 export const SettingsPage: React.FC = () => {
@@ -23,6 +26,7 @@ export const SettingsPage: React.FC = () => {
   const [category, setCategory] = useState('Technology');
   const [country, setCountry] = useState('Rwanda');
   const [avatar, setAvatar] = useState('');
+  const [isCropperOpen, setIsCropperOpen] = useState(false);
 
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
   const [profileMessage, setProfileMessage] = useState<string | null>(null);
@@ -123,55 +127,157 @@ export const SettingsPage: React.FC = () => {
     }
   };
 
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        setProfileMessage('File size exceeds 5MB limit. Please choose a smaller image.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAvatar(reader.result as string);
+        setProfileMessage('Image uploaded! Click "Save Profile Changes" to apply.');
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const PRESET_AVATARS = [
+    'https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=150&auto=format&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=150&auto=format&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=150&auto=format&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80',
+  ];
+
   if (!user) return null;
 
   return (
-    <div className="space-y-8 animate-fade-in pb-12">
+    <div className="space-y-8 animate-fade-in pb-12 text-stone-900 dark:text-stone-100">
       
       {/* Header */}
-      <div className="bg-gradient-to-r from-amber-500/10 via-yellow-400/20 to-amber-500/10 border border-yellow-500/40 rounded-3xl p-6">
-        <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2">
-          <Settings className="w-6 h-6 text-yellow-600" />
-          Account & Sub4Sub Profile Settings
+      <div className="bg-amber-500/10 border border-amber-500/30 rounded-3xl p-6">
+        <h1 className="text-2xl font-black text-stone-900 dark:text-white flex items-center gap-2">
+          <Settings className="w-6 h-6 text-amber-500" />
+          Account & Profile Settings
         </h1>
-        <p className="text-xs text-slate-700 font-medium mt-1">Manage your creator profile and connected social channels for Sub4Sub & Follow4Follow</p>
+        <p className="text-xs text-stone-600 dark:text-stone-400 font-medium mt-1">
+          Update your creator profile, profile picture, display name, and connected social channels.
+        </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
         {/* Profile Info Form (7 cols) */}
-        <div className="lg:col-span-7 bg-white border border-amber-200 rounded-3xl p-6 space-y-5 shadow-sm">
-          <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-            <User className="w-5 h-5 text-yellow-600" />
-            Creator Details
+        <div className="lg:col-span-7 bg-white dark:bg-[#161310] border border-stone-200 dark:border-[#262018] rounded-3xl p-6 space-y-6 shadow-xs">
+          <h2 className="text-lg font-bold text-stone-900 dark:text-white flex items-center gap-2">
+            <User className="w-5 h-5 text-amber-500" />
+            Creator Details & Avatar
           </h2>
 
           {profileMessage && (
-            <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-800 text-xs font-bold">
+            <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-bold">
               {profileMessage}
             </div>
           )}
+
+          {/* Profile Picture Preview & Upload */}
+          <div className="p-4 bg-stone-50 dark:bg-[#0d0b09] rounded-2xl border border-stone-200 dark:border-[#262018] space-y-4">
+            <div className="flex items-center justify-between">
+              <label className="font-bold text-stone-900 dark:text-white text-xs block">
+                Profile Picture
+              </label>
+              <button
+                type="button"
+                onClick={() => setIsCropperOpen(true)}
+                className="py-1.5 px-3 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-600 dark:text-amber-400 font-bold text-xs flex items-center gap-1.5 transition-colors"
+              >
+                <Crop className="w-3.5 h-3.5 text-amber-500" />
+                <span>Crop & Studio Studio (MongoDB)</span>
+              </button>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <img
+                src={avatar || user.avatar || PRESET_AVATARS[0]}
+                alt="Avatar preview"
+                className="w-16 h-16 rounded-full object-cover ring-4 ring-amber-500/20 shrink-0"
+              />
+              <div className="space-y-2 flex-1">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileUpload}
+                    className="block w-full text-xs text-stone-500 dark:text-stone-400 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-amber-500 file:text-stone-950 hover:file:bg-amber-400 cursor-pointer"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setIsCropperOpen(true)}
+                    className="py-2 px-3 rounded-xl bg-amber-500 text-stone-950 font-bold text-xs shrink-0 flex items-center gap-1 hover:bg-amber-400 shadow-xs active:scale-95 transition-all"
+                  >
+                    <Crop className="w-3.5 h-3.5" />
+                    <span>Crop Avatar</span>
+                  </button>
+                </div>
+                <p className="text-[11px] text-stone-500 dark:text-stone-400">
+                  Upload an image file or click <strong>Crop Avatar</strong> to open the Interactive Cropper Studio & save directly to MongoDB.
+                </p>
+              </div>
+            </div>
+
+            {/* Quick Presets */}
+            <div className="pt-2 border-t border-stone-200/80 dark:border-[#262018]">
+              <p className="text-[11px] font-bold text-stone-500 dark:text-stone-400 mb-2">Or select a preset avatar:</p>
+              <div className="flex items-center gap-2">
+                {PRESET_AVATARS.map((preset, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setAvatar(preset)}
+                    className={`w-9 h-9 rounded-full overflow-hidden border-2 transition-transform hover:scale-110 ${
+                      avatar === preset ? 'border-amber-500 ring-2 ring-amber-500/50' : 'border-transparent'
+                    }`}
+                  >
+                    <img src={preset} alt={`Preset ${idx + 1}`} className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Avatar Cropper Modal Component */}
+          <AvatarCropperModal
+            isOpen={isCropperOpen}
+            onClose={() => setIsCropperOpen(false)}
+            currentAvatar={avatar || user.avatar}
+            onSuccess={(croppedUrl) => {
+              setAvatar(croppedUrl);
+              setProfileMessage('🎉 Profile avatar cropped and stored securely in MongoDB!');
+            }}
+          />
 
           <form onSubmit={handleUpdateProfile} className="space-y-4 text-xs sm:text-sm">
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <label className="font-bold text-slate-800 block">Display Name</label>
+                <label className="font-bold text-stone-900 dark:text-white block">Display Name</label>
                 <input
                   type="text"
                   required
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
-                  className="w-full bg-slate-50 border border-amber-200 rounded-xl px-3.5 py-2.5 text-slate-900"
+                  className="w-full bg-stone-50 dark:bg-[#0d0b09] border border-stone-200 dark:border-[#262018] rounded-2xl px-3.5 py-2.5 text-stone-900 dark:text-white"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="font-bold text-slate-800 block">Creator Category</label>
+                <label className="font-bold text-stone-900 dark:text-white block">Creator Category</label>
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  className="w-full bg-slate-50 border border-amber-200 rounded-xl px-3.5 py-2.5 text-slate-900"
+                  className="w-full bg-stone-50 dark:bg-[#0d0b09] border border-stone-200 dark:border-[#262018] rounded-2xl px-3.5 py-2.5 text-stone-900 dark:text-white"
                 >
                   <option value="Technology">Technology</option>
                   <option value="Gaming">Gaming</option>
@@ -185,11 +291,11 @@ export const SettingsPage: React.FC = () => {
             </div>
 
             <div className="space-y-1.5">
-              <label className="font-bold text-slate-800 block">Country / Region</label>
+              <label className="font-bold text-stone-900 dark:text-white block">Country / Region</label>
               <select
                 value={country}
                 onChange={(e) => setCountry(e.target.value)}
-                className="w-full bg-slate-50 border border-amber-200 rounded-xl px-3.5 py-2.5 text-slate-900"
+                className="w-full bg-stone-50 dark:bg-[#0d0b09] border border-stone-200 dark:border-[#262018] rounded-2xl px-3.5 py-2.5 text-stone-900 dark:text-white"
               >
                 <option value="Rwanda">Rwanda</option>
                 <option value="Kenya">Kenya</option>
@@ -202,31 +308,31 @@ export const SettingsPage: React.FC = () => {
             </div>
 
             <div className="space-y-1.5">
-              <label className="font-bold text-slate-800 block">Avatar Image URL</label>
+              <label className="font-bold text-stone-900 dark:text-white block">Avatar Image Direct URL (Optional)</label>
               <input
                 type="url"
                 value={avatar}
                 onChange={(e) => setAvatar(e.target.value)}
                 placeholder="https://images.unsplash.com/..."
-                className="w-full bg-slate-50 border border-amber-200 rounded-xl px-3.5 py-2.5 text-slate-900"
+                className="w-full bg-stone-50 dark:bg-[#0d0b09] border border-stone-200 dark:border-[#262018] rounded-2xl px-3.5 py-2.5 text-stone-900 dark:text-white"
               />
             </div>
 
             <div className="space-y-1.5">
-              <label className="font-bold text-slate-800 block">Creator Bio</label>
+              <label className="font-bold text-stone-900 dark:text-white block">Creator Bio</label>
               <textarea
                 rows={3}
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
                 placeholder="Write a brief intro about yourself and your channel content..."
-                className="w-full bg-slate-50 border border-amber-200 rounded-xl px-3.5 py-2.5 text-slate-900"
+                className="w-full bg-stone-50 dark:bg-[#0d0b09] border border-stone-200 dark:border-[#262018] rounded-2xl px-3.5 py-2.5 text-stone-900 dark:text-white"
               />
             </div>
 
             <button
               type="submit"
               disabled={isUpdatingProfile}
-              className="py-3 px-6 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-black text-xs transition-all shadow-md shadow-yellow-500/20 active:scale-95"
+              className="py-3.5 px-6 rounded-2xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-black text-xs transition-all shadow-md active:scale-95"
             >
               {isUpdatingProfile ? 'Saving...' : 'Save Profile Changes'}
             </button>
@@ -237,14 +343,14 @@ export const SettingsPage: React.FC = () => {
         {/* Social Channels Manager (5 cols) */}
         <div className="lg:col-span-5 space-y-6">
           
-          <div className="bg-white border border-amber-200 rounded-3xl p-6 space-y-5 shadow-sm">
-            <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-yellow-600" />
+          <div className="bg-white dark:bg-[#161310] border border-stone-200 dark:border-[#262018] rounded-3xl p-6 space-y-5 shadow-xs">
+            <h2 className="text-lg font-bold text-stone-900 dark:text-white flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-amber-500" />
               Connected Social Channels
             </h2>
 
             {channelMessage && (
-              <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-800 text-xs font-bold">
+              <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-bold">
                 {channelMessage}
               </div>
             )}
@@ -252,20 +358,20 @@ export const SettingsPage: React.FC = () => {
             {/* List Existing Channels */}
             <div className="space-y-3">
               {channels.map((ch) => (
-                <div key={ch.id} className="p-3.5 rounded-2xl bg-amber-50/50 border border-amber-200 flex items-center justify-between text-xs">
+                <div key={ch.id} className="p-3.5 rounded-2xl bg-stone-50 dark:bg-[#0d0b09] border border-stone-200 dark:border-[#262018] flex items-center justify-between text-xs">
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-yellow-400/30 text-yellow-900 uppercase">
+                      <span className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-amber-500/20 text-amber-600 dark:text-amber-400 uppercase">
                         {ch.platform}
                       </span>
-                      <p className="font-bold text-slate-900">{ch.channelName}</p>
+                      <p className="font-bold text-stone-900 dark:text-white">{ch.channelName}</p>
                     </div>
-                    <p className="text-[10px] text-slate-600 mt-0.5 truncate max-w-[180px]">{ch.url}</p>
+                    <p className="text-[10px] text-stone-500 dark:text-stone-400 mt-0.5 truncate max-w-[180px]">{ch.url}</p>
                   </div>
 
                   <button
                     onClick={() => handleDeleteChannel(ch.id)}
-                    className="p-2 rounded-lg text-red-600 hover:bg-red-500/10 transition-colors"
+                    className="p-2 rounded-xl text-red-500 hover:bg-red-500/10 transition-colors"
                     title="Remove Channel"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -275,14 +381,14 @@ export const SettingsPage: React.FC = () => {
             </div>
 
             {/* Form to Add New Social Channel */}
-            <form onSubmit={handleAddChannel} className="p-4 rounded-2xl bg-slate-50 border border-amber-200 space-y-3 text-xs">
-              <p className="font-bold text-slate-900">Connect New Social Handle</p>
+            <form onSubmit={handleAddChannel} className="p-4 rounded-2xl bg-stone-50 dark:bg-[#0d0b09] border border-stone-200 dark:border-[#262018] space-y-3 text-xs">
+              <p className="font-bold text-stone-900 dark:text-white">Connect New Social Handle</p>
 
               <div className="space-y-2">
                 <select
                   value={newPlatform}
                   onChange={(e) => setNewPlatform(e.target.value as PlatformType)}
-                  className="w-full bg-white border border-amber-200 rounded-xl px-3 py-2 text-slate-900 font-bold"
+                  className="w-full bg-white dark:bg-[#161310] border border-stone-200 dark:border-[#262018] rounded-xl px-3 py-2 text-stone-900 dark:text-white font-bold"
                 >
                   <option value="YouTube">YouTube</option>
                   <option value="TikTok">TikTok</option>
@@ -297,7 +403,7 @@ export const SettingsPage: React.FC = () => {
                   value={newChannelName}
                   onChange={(e) => setNewChannelName(e.target.value)}
                   placeholder="Channel / Handle Name"
-                  className="w-full bg-white border border-amber-200 rounded-xl px-3 py-2 text-slate-900"
+                  className="w-full bg-white dark:bg-[#161310] border border-stone-200 dark:border-[#262018] rounded-xl px-3 py-2 text-stone-900 dark:text-white"
                 />
 
                 <input
@@ -306,16 +412,16 @@ export const SettingsPage: React.FC = () => {
                   value={newChannelUrl}
                   onChange={(e) => setNewChannelUrl(e.target.value)}
                   placeholder="https://..."
-                  className="w-full bg-white border border-amber-200 rounded-xl px-3 py-2 text-slate-900"
+                  className="w-full bg-white dark:bg-[#161310] border border-stone-200 dark:border-[#262018] rounded-xl px-3 py-2 text-stone-900 dark:text-white"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={isAddingChannel}
-                className="w-full py-2.5 px-3 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-black text-xs flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition-all"
+                className="w-full py-2.5 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs active:scale-95 transition-all"
               >
-                <Plus className="w-4 h-4 text-slate-950 stroke-[2.5]" />
+                <Plus className="w-4 h-4 text-stone-950 stroke-[2.5]" />
                 <span>Connect Channel</span>
               </button>
             </form>

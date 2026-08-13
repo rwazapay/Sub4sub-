@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { apiClient } from '../services/api';
 import { GoogleAuthButton } from '../components/GoogleAuthButton';
-import { Zap, AlertCircle, Sparkles, ArrowRight } from 'lucide-react';
+import { Zap, AlertCircle, Sparkles, ArrowRight, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
 
 export const RegisterPage: React.FC = () => {
   const { login } = useAuth();
@@ -13,13 +13,28 @@ export const RegisterPage: React.FC = () => {
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [country, setCountry] = useState('Rwanda');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!username || !email || !password || !displayName) return;
+    if (!username || !email || !password || !displayName) {
+      setErrorMsg('Please fill in all required fields.');
+      return;
+    }
+
+    if (password.length < 6) {
+      setErrorMsg('Password must be at least 6 characters long.');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setErrorMsg('Passwords do not match. Please check your password inputs.');
+      return;
+    }
 
     setIsSubmitting(true);
     setErrorMsg(null);
@@ -45,43 +60,43 @@ export const RegisterPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 font-sans selection:bg-yellow-400 selection:text-slate-900">
+    <div className="min-h-screen bg-stone-50 dark:bg-[#0d0b09] text-stone-900 dark:text-stone-100 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 font-sans selection:bg-amber-500 selection:text-stone-950 transition-colors">
       <div className="sm:mx-auto sm:w-full sm:max-w-md space-y-6">
         
         {/* Header */}
         <div className="text-center space-y-2">
           <Link to="/" className="inline-flex items-center gap-2">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-yellow-500 via-amber-400 to-yellow-300 shadow-xl shadow-yellow-500/20">
-              <Zap className="h-6 w-6 text-slate-950 fill-slate-950" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-500 shadow-xl shadow-amber-500/20">
+              <Zap className="h-6 w-6 text-stone-950 fill-stone-950" />
             </div>
-            <span className="text-2xl font-black text-slate-900">
-              Sub<span className="text-yellow-600">Loop</span>
+            <span className="text-2xl font-black text-stone-900 dark:text-white">
+              Sub<span className="text-amber-500">Loop</span>
             </span>
           </Link>
-          <h2 className="text-2xl font-black text-slate-900 tracking-tight">Join Sub4Sub & Follow4Follow Network</h2>
-          <p className="text-xs text-slate-600">Register today and receive +100 Welcome Bonus Credits</p>
+          <h2 className="text-2xl font-black text-stone-900 dark:text-white tracking-tight">Create Creator Account</h2>
+          <p className="text-xs text-stone-600 dark:text-stone-400">Register today & instantly claim +100 Welcome Bonus Credits</p>
         </div>
 
         {/* Form Container */}
-        <div className="bg-white border border-amber-200/80 rounded-3xl p-6 sm:p-8 space-y-6 shadow-xl">
+        <div className="bg-white dark:bg-[#161310] border border-stone-200 dark:border-[#262018] rounded-3xl p-6 sm:p-8 space-y-6 shadow-xl">
           
           {/* Real Google Authentication Button */}
           <div className="space-y-3">
             <GoogleAuthButton
-              buttonText="Register with Google Account (+100 Bonus)"
+              buttonText="Register with Google (+100 Credits)"
               onError={(msg) => setErrorMsg(msg)}
             />
             
             <div className="relative flex items-center justify-center">
-              <div className="border-t border-slate-200 w-full" />
-              <span className="bg-white px-3 text-[10px] font-extrabold uppercase tracking-wider text-slate-400 absolute">
+              <div className="border-t border-stone-200 dark:border-[#262018] w-full" />
+              <span className="bg-white dark:bg-[#161310] px-3 text-[10px] font-extrabold uppercase tracking-wider text-stone-400 absolute">
                 Or Register with Email
               </span>
             </div>
           </div>
 
           {errorMsg && (
-            <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-700 text-xs font-semibold flex items-center gap-2">
+            <div className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-xs font-semibold flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{errorMsg}</span>
             </div>
@@ -91,60 +106,98 @@ export const RegisterPage: React.FC = () => {
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <label className="font-bold text-slate-800 block">Username</label>
+                <label className="font-bold text-stone-900 dark:text-stone-200 block">Username</label>
                 <input
                   type="text"
                   required
                   value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="e.g. tech_rwanda"
-                  className="w-full bg-slate-50 border border-amber-200 rounded-xl px-3.5 py-2.5 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                  onChange={(e) => {
+                    setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''));
+                    if (errorMsg) setErrorMsg(null);
+                  }}
+                  placeholder="tech_rwanda"
+                  className="w-full bg-stone-50 dark:bg-[#0d0b09] border border-stone-200 dark:border-[#262018] rounded-2xl px-3.5 py-2.5 text-stone-900 dark:text-white placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-500"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="font-bold text-slate-800 block">Display Name</label>
+                <label className="font-bold text-stone-900 dark:text-stone-200 block">Display Name</label>
                 <input
                   type="text"
                   required
                   value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
-                  placeholder="e.g. Tech Rwanda"
-                  className="w-full bg-slate-50 border border-amber-200 rounded-xl px-3.5 py-2.5 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                  onChange={(e) => {
+                    setDisplayName(e.target.value);
+                    if (errorMsg) setErrorMsg(null);
+                  }}
+                  placeholder="Tech Rwanda"
+                  className="w-full bg-stone-50 dark:bg-[#0d0b09] border border-stone-200 dark:border-[#262018] rounded-2xl px-3.5 py-2.5 text-stone-900 dark:text-white placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-500"
                 />
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <label className="font-bold text-slate-800 block">Email Address</label>
+              <label className="font-bold text-stone-900 dark:text-stone-200 block">Email Address</label>
               <input
                 type="email"
                 required
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (errorMsg) setErrorMsg(null);
+                }}
                 placeholder="creator@subloop.co"
-                className="w-full bg-slate-50 border border-amber-200 rounded-xl px-3.5 py-2.5 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                className="w-full bg-stone-50 dark:bg-[#0d0b09] border border-stone-200 dark:border-[#262018] rounded-2xl px-3.5 py-2.5 text-stone-900 dark:text-white placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-500"
               />
             </div>
 
-            <div className="space-y-1.5">
-              <label className="font-bold text-slate-800 block">Password</label>
-              <input
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="At least 6 characters"
-                className="w-full bg-slate-50 border border-amber-200 rounded-xl px-3.5 py-2.5 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-yellow-400"
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <label className="font-bold text-stone-900 dark:text-stone-200 block">Password</label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      if (errorMsg) setErrorMsg(null);
+                    }}
+                    placeholder="Min 6 chars"
+                    className="w-full bg-stone-50 dark:bg-[#0d0b09] border border-stone-200 dark:border-[#262018] rounded-2xl px-3.5 py-2.5 pr-10 text-stone-900 dark:text-white placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-200 p-0.5"
+                  >
+                    {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="font-bold text-stone-900 dark:text-stone-200 block">Confirm Password</label>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  value={confirmPassword}
+                  onChange={(e) => {
+                    setConfirmPassword(e.target.value);
+                    if (errorMsg) setErrorMsg(null);
+                  }}
+                  placeholder="Repeat password"
+                  className="w-full bg-stone-50 dark:bg-[#0d0b09] border border-stone-200 dark:border-[#262018] rounded-2xl px-3.5 py-2.5 text-stone-900 dark:text-white placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                />
+              </div>
             </div>
 
             <div className="space-y-1.5">
-              <label className="font-bold text-slate-800 block">Country / Region</label>
+              <label className="font-bold text-stone-900 dark:text-stone-200 block">Country / Region</label>
               <select
                 value={country}
                 onChange={(e) => setCountry(e.target.value)}
-                className="w-full bg-slate-50 border border-amber-200 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:ring-2 focus:ring-yellow-400 font-bold"
+                className="w-full bg-stone-50 dark:bg-[#0d0b09] border border-stone-200 dark:border-[#262018] rounded-2xl px-3.5 py-2.5 text-stone-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500 font-bold"
               >
                 <option value="Rwanda">Rwanda</option>
                 <option value="Kenya">Kenya</option>
@@ -162,19 +215,19 @@ export const RegisterPage: React.FC = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-3.5 px-4 rounded-xl bg-yellow-400 hover:bg-yellow-300 disabled:opacity-50 text-slate-950 font-black text-sm shadow-md shadow-yellow-500/20 transition-all flex items-center justify-center gap-2 active:scale-95"
+              className="w-full py-3.5 px-4 rounded-2xl bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-stone-950 font-black text-sm shadow-md transition-all flex items-center justify-center gap-2 active:scale-95"
             >
-              <Sparkles className="w-4 h-4 text-slate-950" />
-              <span>{isSubmitting ? 'Creating Account...' : 'Register & Claim +100 Credits'}</span>
+              <Sparkles className="w-4 h-4 text-stone-950" />
+              <span>{isSubmitting ? 'Creating Creator Account...' : 'Register & Claim +100 Credits'}</span>
             </button>
           </form>
 
         </div>
 
         {/* Footer Link */}
-        <p className="text-center text-xs text-slate-600 font-medium">
+        <p className="text-center text-xs text-stone-600 dark:text-stone-400 font-medium">
           Already registered?{' '}
-          <Link to="/login" className="font-bold text-amber-800 hover:underline">
+          <Link to="/login" className="font-bold text-amber-600 dark:text-amber-400 hover:underline">
             Log in to your account
           </Link>
         </p>

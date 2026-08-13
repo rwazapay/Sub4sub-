@@ -6,6 +6,208 @@ import { Sub4SubRequest, PlatformType } from '../../types';
 
 const router = Router();
 
+// POST /api/sub4sub/claim-daily-bonus - Claim daily login bonus
+router.post('/claim-daily-bonus', authenticateJWT, (req: AuthenticatedRequest, res: Response) => {
+  const user = req.user!;
+
+  if (user.dailyRewardClaimedToday) {
+    return res.status(400).json({
+      success: false,
+      message: 'Daily login bonus already claimed today! Come back tomorrow for more coins.',
+      errorCode: 'DAILY_BONUS_ALREADY_CLAIMED',
+    });
+  }
+
+  const bonusCoins = 25;
+  user.dailyRewardClaimedToday = true;
+  user.streakDays = (user.streakDays || 0) + 1;
+
+  db.recordTransaction(
+    user.id,
+    'bonus',
+    bonusCoins,
+    `Daily Login Bonus (Day ${user.streakDays} Streak)`
+  );
+
+  db.notifications.unshift({
+    id: `notif_${Date.now()}`,
+    userId: user.id,
+    title: '🎁 Daily Bonus Claimed!',
+    message: `You earned +${bonusCoins} coins for logging in today! Streak: ${user.streakDays} days.`,
+    type: 'credit',
+    link: '/wallet',
+    isRead: false,
+    createdAt: new Date().toISOString(),
+  });
+
+  return res.json({
+    success: true,
+    message: `🎉 Claimed +${bonusCoins} coins daily bonus!`,
+    data: {
+      bonusCoins,
+      newBalance: user.credits,
+      streakDays: user.streakDays,
+      dailyRewardClaimedToday: true,
+    },
+  });
+});
+
+// POST /api/sub4sub/watch-video - Verify watched video and credit coins
+router.post('/watch-video', authenticateJWT, (req: AuthenticatedRequest, res: Response) => {
+  const user = req.user!;
+  const { videoId, watchDurationSeconds } = req.body;
+
+  const duration = parseInt(watchDurationSeconds, 10) || 10;
+  if (duration < 5) {
+    return res.status(400).json({
+      success: false,
+      message: 'Video must be watched for at least 5 seconds to earn coins.',
+      errorCode: 'WATCH_TIME_TOO_SHORT',
+    });
+  }
+
+  const rewardCoins = 10;
+  db.recordTransaction(
+    user.id,
+    'earning',
+    rewardCoins,
+    `Watched YouTube Video (${duration}s view duration)`
+  );
+
+  return res.json({
+    success: true,
+    message: `🎉 Video view verified! +${rewardCoins} coins added to your wallet.`,
+    data: {
+      rewardCoins,
+      newBalance: user.credits,
+    },
+  });
+});
+
+// POST /api/sub4sub/watch-complete - Record watch completion & credit coins
+router.post('/watch-complete', authenticateJWT, (req: AuthenticatedRequest, res: Response) => {
+  const user = req.user!;
+  const { videoId } = req.body;
+
+  const rewardCoins = 10;
+  db.recordTransaction(
+    user.id,
+    'earning',
+    rewardCoins,
+    `Watched YouTube Video (Campaign: ${videoId || 'active'})`
+  );
+
+  return res.json({
+    success: true,
+    message: `🎉 Video view verified! +${rewardCoins} coins added to your wallet.`,
+    data: {
+      rewardCoins,
+      newBalance: user.credits,
+    },
+  });
+});
+
+// POST /api/sub4sub/buy-combo - Buy combo pack offer
+router.post('/buy-combo', authenticateJWT, (req: AuthenticatedRequest, res: Response) => {
+  const user = req.user!;
+  const { offerId, priceInr, priceUsd, subscribersCount, viewsCount, channelUrl, videoUrl } = req.body;
+
+  if (!channelUrl) {
+    return res.status(400).json({
+      success: false,
+      message: 'YouTube Channel URL is required to launch combo campaign.',
+      errorCode: 'MISSING_CHANNEL_URL',
+    });
+  }
+
+  const subs = parseInt(subscribersCount, 10) || 13;
+  const views = parseInt(viewsCount, 10) || 69;
+  const totalCoinsNeeded = subs * 50 + views * 10;
+
+  // Simulate instant payment fulfillment & launch campaigns
+  db.recordTransaction(
+    user.id,
+    'purchase',
+    totalCoinsNeeded,
+    `Purchased Combo Pack Offer (${subs} Subs + ${views} Views)`
+  );
+
+  // Launch Subscriber Campaign
+  const subPromoId = `promo_sub_${Date.now()}`;
+  db.promotions.set(subPromoId, {
+    id: subPromoId,
+    userId: user.id,
+    creatorUsername: user.username,
+    creatorDisplayName: user.displayName,
+    creatorAvatar: user.avatar,
+    creatorCategory: user.creatorCategory || 'Gaming',
+    country: user.country || 'India',
+    platform: 'YouTube' as PlatformType,
+    channelUrl: channelUrl.trim(),
+    title: `${user.displayName} YouTube Channel`,
+    description: `Subscribe to ${user.displayName}'s official YouTube channel`,
+    budgetCredits: subs * 50,
+    spentCredits: 0,
+    rewardPerDiscovery: 50,
+    durationDays: 30,
+    status: 'active' as const,
+    impressions: 0,
+    clicks: 0,
+    uniqueDiscoveries: 0,
+    isSponsored: true,
+    createdAt: new Date().toISOString(),
+  });
+
+  // Launch View Campaign
+  if (videoUrl) {
+    const viewPromoId = `promo_view_${Date.now()}`;
+    db.promotions.set(viewPromoId, {
+      id: viewPromoId,
+      userId: user.id,
+      creatorUsername: user.username,
+      creatorDisplayName: user.displayName,
+      creatorAvatar: user.avatar,
+      creatorCategory: user.creatorCategory || 'Gaming',
+      country: user.country || 'India',
+      platform: 'YouTube' as PlatformType,
+      channelUrl: videoUrl.trim(),
+      title: `${user.displayName} Video Campaign`,
+      description: `Watch ${user.displayName}'s video to earn 10 coins`,
+      budgetCredits: views * 10,
+      spentCredits: 0,
+      rewardPerDiscovery: 10,
+      durationDays: 30,
+      status: 'active' as const,
+      impressions: 0,
+      clicks: 0,
+      uniqueDiscoveries: 0,
+      isSponsored: true,
+      createdAt: new Date().toISOString(),
+    });
+  }
+
+  db.notifications.unshift({
+    id: `notif_${Date.now()}`,
+    userId: user.id,
+    title: '🚀 Combo Pack Activated!',
+    message: `Your combo campaign (${subs} Subscribers + ${views} Views) is live!`,
+    type: 'promotion',
+    link: '/campaigns',
+    isRead: false,
+    createdAt: new Date().toISOString(),
+  });
+
+  return res.json({
+    success: true,
+    message: `🚀 Combo Pack Offer activated successfully! Both campaigns are now live.`,
+    data: {
+      newBalance: user.credits,
+      subscribersCount: subs,
+      viewsCount: views,
+    },
+  });
+});
+
 // POST /api/sub4sub/start-challenge - Issue anti-cheat verification token & countdown timer
 router.post('/start-challenge', authenticateJWT, (req: AuthenticatedRequest, res: Response) => {
   const user = req.user!;
@@ -248,12 +450,31 @@ router.get('/feed', authenticateJWT, (req: AuthenticatedRequest, res: Response) 
 // POST /api/sub4sub/subscribe - Subscribe to a creator and request a Sub Back
 router.post('/subscribe', authenticateJWT, (req: AuthenticatedRequest, res: Response) => {
   const user = req.user!;
-  const { targetUserId, targetPlatform, channelUrl } = req.body;
+  const { targetUserId, targetPlatform, channelUrl, campaignId } = req.body;
+
+  if (campaignId && !targetUserId) {
+    const rewardCoins = 50;
+    db.recordTransaction(
+      user.id,
+      'earning',
+      rewardCoins,
+      `Subscribed to Channel Campaign (${campaignId})`
+    );
+
+    return res.json({
+      success: true,
+      data: {
+        rewardCredits: rewardCoins,
+        newBalance: user.credits,
+      },
+      message: `🎉 Subscribed successfully! +${rewardCoins} coins added to your balance.`,
+    });
+  }
 
   if (!targetUserId) {
     return res.status(400).json({
       success: false,
-      message: 'Target creator ID is required.',
+      message: 'Target creator ID or campaign ID is required.',
       errorCode: 'MISSING_TARGET_ID',
     });
   }

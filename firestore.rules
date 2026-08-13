@@ -1,0 +1,46 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Default-deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    match /users/{userId} {
+      allow read, write: if true;
+    }
+
+    match /creatorProfiles/{profileId} {
+      allow read, write: if true;
+    }
+
+    match /socialChannels/{channelId} {
+      allow read, write: if true;
+    }
+
+    match /promotions/{promotionId} {
+      allow read, write: if true;
+    }
+
+    match /transactions/{transactionId} {
+      allow read, write: if true;
+    }
+
+    match /discoveries/{discoveryId} {
+      allow read, write: if true;
+    }
+
+    match /sub4subRequests/{requestId} {
+      allow read, write: if true;
+    }
+
+    match /notifications/{notificationId} {
+      allow read, write: if true;
+    }
+
+    match /reports/{reportId} {
+      allow read, write: if true;
+    }
+  }
+}

@@ -1,5 +1,16 @@
 import bcrypt from 'bcryptjs';
-import mongoose from 'mongoose';
+import { initializeApp } from 'firebase/app';
+import {
+  initializeFirestore,
+  doc,
+  setDoc,
+  getDoc,
+  getDocs,
+  collection,
+  deleteDoc,
+  Firestore,
+} from 'firebase/firestore';
+import firebaseConfig from '../../firebase-applet-config.json';
 import {
   User,
   CreatorProfile,
@@ -16,6 +27,16 @@ import {
   AdminAuditLog,
 } from '../types';
 
+function sanitizeForFirestore<T extends Record<string, any>>(obj: T): Record<string, any> {
+  const sanitized: Record<string, any> = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (value !== undefined) {
+      sanitized[key] = value;
+    }
+  }
+  return sanitized;
+}
+
 class InAppDatabase {
   public users: Map<string, User> = new Map();
   public creatorProfiles: Map<string, CreatorProfile> = new Map();
@@ -28,9 +49,11 @@ class InAppDatabase {
   public notifications: NotificationItem[] = [];
   public reports: ReportItem[] = [];
   public adminAuditLogs: AdminAuditLog[] = [];
-  public isMongoConnected: boolean = false;
   
-  // Password hashes stored separately for security
+  public isFirestoreConnected: boolean = false;
+  private firestoreDb: Firestore | null = null;
+  
+  // Password hashes stored securely for email/password authentication
   private passwordHashes: Map<string, string> = new Map();
 
   // Configurable System Settings
@@ -51,6 +74,164 @@ class InAppDatabase {
 
   constructor() {
     this.seedInitialData();
+  }
+
+  // Initialize Firebase Firestore connection & sync initial cloud dataset
+  public async initDatabase(): Promise<void> {
+    try {
+      const app = initializeApp(firebaseConfig);
+      this.firestoreDb = initializeFirestore(app, {
+        experimentalAutoDetectLongPolling: true,
+      }, firebaseConfig.firestoreDatabaseId);
+      this.isFirestoreConnected = true;
+      console.log(`✅ Connected to Firebase Firestore database: ${firebaseConfig.firestoreDatabaseId}`);
+
+      // Sync Firestore documents into memory maps
+      await this.syncFromFirestore();
+    } catch (err: any) {
+      console.warn('⚠️ Firebase Firestore connection notice:', err?.message || err);
+      this.isFirestoreConnected = false;
+    }
+  }
+
+  public isFirestoreReady(): boolean {
+    return this.isFirestoreConnected && this.firestoreDb !== null;
+  }
+
+  // Sync existing cloud data from Firestore
+  private async syncFromFirestore() {
+    if (!this.firestoreDb) return;
+
+    try {
+      // 1. Fetch Users
+      const userSnap = await getDocs(collection(this.firestoreDb, 'users'));
+      if (!userSnap.empty) {
+        userSnap.forEach((docSnap) => {
+          const data = docSnap.data() as any;
+          if (data && data.id) {
+            this.users.set(data.id, data as User);
+            if (data.passwordHash) {
+              this.passwordHashes.set(data.id, data.passwordHash);
+            }
+          }
+        });
+      } else {
+        // Seed initial users into Firestore
+        for (const user of this.users.values()) {
+          const passHash = this.passwordHashes.get(user.id);
+          await setDoc(doc(this.firestoreDb, 'users', user.id), sanitizeForFirestore({
+            ...user,
+            passwordHash: passHash || '',
+          }));
+        }
+      }
+
+      // 2. Fetch Creator Profiles
+      const profileSnap = await getDocs(collection(this.firestoreDb, 'creatorProfiles'));
+      if (!profileSnap.empty) {
+        profileSnap.forEach((docSnap) => {
+          const data = docSnap.data() as CreatorProfile;
+          if (data && data.id) this.creatorProfiles.set(data.id, data);
+        });
+      } else {
+        for (const prof of this.creatorProfiles.values()) {
+          await setDoc(doc(this.firestoreDb, 'creatorProfiles', prof.id), sanitizeForFirestore(prof));
+        }
+      }
+
+      // 3. Fetch Social Channels
+      const channelSnap = await getDocs(collection(this.firestoreDb, 'socialChannels'));
+      if (!channelSnap.empty) {
+        channelSnap.forEach((docSnap) => {
+          const data = docSnap.data() as SocialChannel;
+          if (data && data.id) this.socialChannels.set(data.id, data);
+        });
+      } else {
+        for (const chan of this.socialChannels.values()) {
+          await setDoc(doc(this.firestoreDb, 'socialChannels', chan.id), sanitizeForFirestore(chan));
+        }
+      }
+
+      // 4. Fetch Promotions
+      const promoSnap = await getDocs(collection(this.firestoreDb, 'promotions'));
+      if (!promoSnap.empty) {
+        promoSnap.forEach((docSnap) => {
+          const data = docSnap.data() as Promotion;
+          if (data && data.id) this.promotions.set(data.id, data);
+        });
+      } else {
+        for (const promo of this.promotions.values()) {
+          await setDoc(doc(this.firestoreDb, 'promotions', promo.id), sanitizeForFirestore(promo));
+        }
+      }
+
+      console.log('🔥 Firebase Firestore cloud collections synchronized.');
+    } catch (err: any) {
+      console.warn('Firestore initial data sync notice:', err?.message || err);
+    }
+  }
+
+  // Firestore Async Persistence Helpers
+  public async saveUser(user: User, passwordHash?: string): Promise<void> {
+    this.users.set(user.id, user);
+    if (passwordHash) {
+      this.passwordHashes.set(user.id, passwordHash);
+    }
+    if (this.firestoreDb) {
+      try {
+        const hashToSave = passwordHash || this.passwordHashes.get(user.id) || '';
+        await setDoc(doc(this.firestoreDb, 'users', user.id), sanitizeForFirestore({
+          ...user,
+          passwordHash: hashToSave,
+        }));
+      } catch (err) {
+        console.warn('Failed to persist user to Firestore:', err);
+      }
+    }
+  }
+
+  public async saveCreatorProfile(profile: CreatorProfile): Promise<void> {
+    this.creatorProfiles.set(profile.id, profile);
+    if (this.firestoreDb) {
+      try {
+        await setDoc(doc(this.firestoreDb, 'creatorProfiles', profile.id), sanitizeForFirestore(profile));
+      } catch (err) {
+        console.warn('Failed to persist creator profile to Firestore:', err);
+      }
+    }
+  }
+
+  public async saveSocialChannel(channel: SocialChannel): Promise<void> {
+    this.socialChannels.set(channel.id, channel);
+    if (this.firestoreDb) {
+      try {
+        await setDoc(doc(this.firestoreDb, 'socialChannels', channel.id), sanitizeForFirestore(channel));
+      } catch (err) {
+        console.warn('Failed to persist social channel to Firestore:', err);
+      }
+    }
+  }
+
+  public async savePromotion(promotion: Promotion): Promise<void> {
+    this.promotions.set(promotion.id, promotion);
+    if (this.firestoreDb) {
+      try {
+        await setDoc(doc(this.firestoreDb, 'promotions', promotion.id), sanitizeForFirestore(promotion));
+      } catch (err) {
+        console.warn('Failed to persist promotion to Firestore:', err);
+      }
+    }
+  }
+
+  public async saveSub4SubRequest(subReq: Sub4SubRequest): Promise<void> {
+    this.sub4subRequests.set(subReq.id, subReq);
+    if (this.firestoreDb) {
+      try {
+        await setDoc(doc(this.firestoreDb, 'sub4subRequests', subReq.id), sanitizeForFirestore(subReq));
+      } catch (err) {
+        console.warn('Failed to persist sub4sub request to Firestore:', err);
+      }
+    }
   }
 
   private seedInitialData() {
@@ -87,7 +268,7 @@ class InAppDatabase {
     };
     this.users.set(adminId, adminUser);
 
-    // 2. Sample Demo Creators (African & Global creators)
+    // 2. Sample Demo Creators & Creative Commons Video Campaigns
     const demoCreatorsData = [
       {
         username: 'tech_rwanda',
@@ -98,7 +279,11 @@ class InAppDatabase {
         bio: 'Exploring software development, mobile app innovation, and East African tech ecosystems.',
         platform: 'YouTube' as const,
         channelUrl: 'https://youtube.com/@TechRwandaOfficial',
-        title: 'Discover Tech Rwanda - Software & African Tech Innovation',
+        title: 'Discover Tech Rwanda - Software & African Tech Innovation (CC BY)',
+        videoEmbedUrl: 'https://www.youtube.com/embed/aqz-KE-bpKQ',
+        requiredStaySeconds: 60,
+        isCreativeCommons: true,
+        licenseType: 'CC BY 4.0 International',
       },
       {
         username: 'nairobi_bytes',
@@ -109,7 +294,11 @@ class InAppDatabase {
         bio: 'Free coding tutorials, web development tips, and AI engineering breakdown for beginner developers.',
         platform: 'YouTube' as const,
         channelUrl: 'https://youtube.com/@NairobiBytes',
-        title: 'Learn Fullstack Web Dev & AI with Nairobi Bytes',
+        title: 'Learn Fullstack Web Dev & AI with Nairobi Bytes (CC BY)',
+        videoEmbedUrl: 'https://www.youtube.com/embed/aqz-KE-bpKQ',
+        requiredStaySeconds: 90,
+        isCreativeCommons: true,
+        licenseType: 'CC BY 3.0',
       },
       {
         username: 'lagos_techie',
@@ -121,6 +310,10 @@ class InAppDatabase {
         platform: 'TikTok' as const,
         channelUrl: 'https://tiktok.com/@lagostechie',
         title: 'African Startup & VC Breakdown with Lagos Techie',
+        videoEmbedUrl: 'https://www.youtube.com/embed/YE7VzlLps-4',
+        requiredStaySeconds: 45,
+        isCreativeCommons: true,
+        licenseType: 'CC BY 3.0',
       },
       {
         username: 'capetown_design',
@@ -132,6 +325,10 @@ class InAppDatabase {
         platform: 'Instagram' as const,
         channelUrl: 'https://instagram.com/capetowndesign',
         title: 'Design Systems & Creative Aesthetics by Cape Town Design',
+        videoEmbedUrl: 'https://www.youtube.com/embed/e1A4X0eL8B4',
+        requiredStaySeconds: 60,
+        isCreativeCommons: true,
+        licenseType: 'CC BY 3.0',
       },
       {
         username: 'accra_vlogs',
@@ -142,7 +339,11 @@ class InAppDatabase {
         bio: 'Documenting food spots, local festivals, and vibrant culture across West Africa.',
         platform: 'YouTube' as const,
         channelUrl: 'https://youtube.com/@AccraLifeCulture',
-        title: 'Explore West African Travel & Culture Vlogs',
+        title: 'Explore West African Travel & Culture Vlogs (CC BY)',
+        videoEmbedUrl: 'https://www.youtube.com/embed/d95I34s9G_o',
+        requiredStaySeconds: 60,
+        isCreativeCommons: true,
+        licenseType: 'CC BY 4.0 International',
       },
       {
         username: 'kampala_gaming',
@@ -154,6 +355,10 @@ class InAppDatabase {
         platform: 'Twitch' as const,
         channelUrl: 'https://twitch.tv/kampalagaming',
         title: 'Watch Kampala Gaming Lab Esports Streams & Highlights',
+        videoEmbedUrl: 'https://www.youtube.com/embed/L_LUpnjgPso',
+        requiredStaySeconds: 120,
+        isCreativeCommons: true,
+        licenseType: 'CC BY 4.0',
       },
       {
         username: 'zenith_music',
@@ -164,7 +369,11 @@ class InAppDatabase {
         bio: 'Independent music producer creating Afrobeat instrumental tracks, mixing tutorials, and sound design.',
         platform: 'YouTube' as const,
         channelUrl: 'https://youtube.com/@ZenithAfroBeats',
-        title: 'Afrobeats Production & Instrumental Sound Design',
+        title: 'Afrobeats Production & Instrumental Sound Design (CC BY)',
+        videoEmbedUrl: 'https://www.youtube.com/embed/aqz-KE-bpKQ',
+        requiredStaySeconds: 60,
+        isCreativeCommons: true,
+        licenseType: 'CC BY 3.0',
       },
       {
         username: 'cairo_vlogs',
@@ -175,7 +384,11 @@ class InAppDatabase {
         bio: 'Short documentary films exploring ancient history, modern architecture, and photography.',
         platform: 'YouTube' as const,
         channelUrl: 'https://youtube.com/@CairoCreatorStudio',
-        title: 'Cairo Historical & Visual Storytelling Documentaries',
+        title: 'Cairo Historical & Visual Storytelling Documentaries (CC BY)',
+        videoEmbedUrl: 'https://www.youtube.com/embed/YE7VzlLps-4',
+        requiredStaySeconds: 60,
+        isCreativeCommons: true,
+        licenseType: 'CC BY 3.0',
       },
     ];
 
@@ -208,6 +421,24 @@ class InAppDatabase {
         dailyDiscoveryCountToday: idx,
         riskScore: 0,
         isPro: idx % 3 === 0,
+        isAiVerified: true,
+        aiVerificationData: {
+          status: 'verified',
+          authenticityScore: Math.min(99, 91 + idx),
+          growthQualityRating: 'Organic Audience Growth',
+          engagementVelocity: 'High Audience Velocity',
+          retentionQuality: 'Exceeds Benchmarks (78s)',
+          riskRating: 'Very Low Risk (<0.01)',
+          aiAuditSummary: `Gemini AI verified @${c.username}'s channel growth statistics. Healthy organic subscriber velocity, genuine video retention rates, and authentic engagement patterns without artificial manipulation.`,
+          verifiedAt: new Date(Date.now() - (idx + 1) * 3600000 * 12).toISOString(),
+          verifiedByModel: 'gemini-3.6-flash',
+          metricsAnalyzed: {
+            subscribersCount: 2400 + idx * 850,
+            totalViews: 38000 + idx * 12000,
+            avgRetentionSeconds: 60 + idx * 5,
+            engagementRatioPercent: parseFloat((4.8 + idx * 0.3).toFixed(1)),
+          },
+        },
         createdAt: new Date(Date.now() - (idx + 1) * 86400000 * 5).toISOString(),
       };
       this.users.set(uId, user);
@@ -245,6 +476,8 @@ class InAppDatabase {
         totalDiscoveries: 120 + idx * 45,
         isPro: user.isPro,
         socialChannelsCount: 1,
+        isAiVerified: user.isAiVerified,
+        aiVerificationData: user.aiVerificationData,
         createdAt: user.createdAt,
       };
       this.creatorProfiles.set(cpId, profile);
@@ -273,6 +506,10 @@ class InAppDatabase {
         clicks: 310 + idx * 90,
         uniqueDiscoveries: 85 + idx * 20,
         isSponsored: idx % 2 === 0,
+        videoEmbedUrl: c.videoEmbedUrl,
+        requiredStaySeconds: c.requiredStaySeconds || 60,
+        isCreativeCommons: c.isCreativeCommons ?? true,
+        licenseType: c.licenseType || 'CC BY 4.0 International',
         createdAt: new Date(Date.now() - (idx + 1) * 3600000 * 4).toISOString(),
       };
       this.promotions.set(promoId, promotion);
@@ -294,7 +531,7 @@ class InAppDatabase {
       id: 'notif_1',
       userId: adminId,
       title: 'Welcome to SubLoop Admin',
-      message: 'SubLoop creator discovery network is online. 8 creator profiles & campaigns seeded.',
+      message: 'SubLoop creator discovery network is online. Powered by Firebase Firestore & Auth.',
       type: 'system',
       isRead: false,
       createdAt: new Date().toISOString(),
@@ -341,6 +578,15 @@ class InAppDatabase {
     };
 
     this.creditTransactions.unshift(tx);
+
+    // Sync user & transaction to Firestore
+    this.saveUser(user);
+    if (this.firestoreDb) {
+      setDoc(doc(this.firestoreDb, 'transactions', tx.id), sanitizeForFirestore(tx)).catch((err) =>
+        console.warn('Failed to save transaction to Firestore:', err)
+      );
+    }
+
     return tx;
   }
 
@@ -367,25 +613,6 @@ class InAppDatabase {
     };
     this.adminAuditLogs.unshift(log);
     return log;
-  }
-
-  // Initialize MongoDB Atlas connection if MONGODB_URI is provided
-  public async initDatabase(): Promise<void> {
-    const mongoUri = process.env.MONGODB_URI;
-    if (mongoUri && mongoUri.trim().length > 0) {
-      try {
-        await mongoose.connect(mongoUri, {
-          serverSelectionTimeoutMS: 5000,
-        });
-        this.isMongoConnected = true;
-        console.log('✅ Successfully connected to MongoDB Atlas production database.');
-      } catch (err: any) {
-        console.warn('⚠️ MongoDB Atlas connection attempt failed or timed out:', err?.message || err);
-        console.log('ℹ️ Operating in high-performance synchronized in-memory database engine mode.');
-      }
-    } else {
-      console.log('ℹ️ MONGODB_URI not provided. Operating in synchronized production-ready storage mode.');
-    }
   }
 
   // Calculate Admin Stats

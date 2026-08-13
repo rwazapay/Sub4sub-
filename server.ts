@@ -25,7 +25,7 @@ async function startServer() {
   const app = express();
   const PORT = 3000;
 
-  // Initialize Database Connection (MongoDB Atlas or synchronized memory)
+  // Initialize Database Connection (Firebase Firestore & Auth)
   await db.initDatabase();
 
   // Trust proxy for reverse proxies (Cloud Run / Nginx)
@@ -78,7 +78,7 @@ async function startServer() {
     res.json({
       success: true,
       status: 'healthy',
-      database: db.isMongoConnected ? 'mongodb_atlas' : 'synchronized_in_memory',
+      database: db.isFirestoreReady() ? 'firebase_firestore' : 'synchronized_in_memory',
       timestamp: new Date().toISOString(),
     });
   });

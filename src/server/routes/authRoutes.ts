@@ -5,8 +5,11 @@ import { authLimiter } from '../middleware/rateLimit';
 
 const router = Router();
 
+// Helper email regex
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 // POST /api/auth/register
-router.post('/register', authLimiter, (req, res) => {
+router.post('/register', authLimiter, async (req, res) => {
   const { username, displayName, email, password, country } = req.body;
 
   if (!username || !email || !password || !displayName) {
@@ -14,6 +17,23 @@ router.post('/register', authLimiter, (req, res) => {
       success: false,
       message: 'Username, display name, email, and password are required.',
       errorCode: 'MISSING_FIELDS',
+    });
+  }
+
+  const cleanEmail = email.trim().toLowerCase();
+  if (!EMAIL_REGEX.test(cleanEmail)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Please provide a valid email address.',
+      errorCode: 'INVALID_EMAIL',
+    });
+  }
+
+  if (password.length < 6) {
+    return res.status(400).json({
+      success: false,
+      message: 'Password must be at least 6 characters long.',
+      errorCode: 'PASSWORD_TOO_SHORT',
     });
   }
 
@@ -26,9 +46,9 @@ router.post('/register', authLimiter, (req, res) => {
     });
   }
 
-  // Check duplicate username or email
-  const existingUser = Array.from(db.users.values()).find(
-    (u) => u.username.toLowerCase() === cleanUsername || u.email.toLowerCase() === email.trim().toLowerCase()
+  // Check duplicate username or email in database
+  let existingUser = Array.from(db.users.values()).find(
+    (u) => u.username.toLowerCase() === cleanUsername || u.email.toLowerCase() === cleanEmail
   );
 
   if (existingUser) {
@@ -46,7 +66,7 @@ router.post('/register', authLimiter, (req, res) => {
     id: userId,
     username: cleanUsername,
     displayName: displayName.trim(),
-    email: email.trim().toLowerCase(),
+    email: cleanEmail,
     country: country || 'Rwanda',
     role: 'user' as const,
     status: 'active' as const,
@@ -69,11 +89,6 @@ router.post('/register', authLimiter, (req, res) => {
     createdAt: new Date().toISOString(),
   };
 
-  db.users.set(userId, newUser);
-
-  // Record initial registration bonus
-  db.recordTransaction(userId, 'bonus', 100, 'Welcome registration bonus');
-
   // Create corresponding Creator Profile
   const creatorProfile = {
     id: `prof_${userId}`,
@@ -92,7 +107,13 @@ router.post('/register', authLimiter, (req, res) => {
     socialChannelsCount: 0,
     createdAt: newUser.createdAt,
   };
-  db.creatorProfiles.set(creatorProfile.id, creatorProfile);
+
+  // Save user & creator profile to Firestore
+  await db.saveUser(newUser, password);
+  await db.saveCreatorProfile(creatorProfile);
+
+  // Record initial registration bonus
+  db.recordTransaction(userId, 'bonus', 100, 'Welcome registration bonus');
 
   const token = generateToken(newUser);
 
@@ -107,7 +128,7 @@ router.post('/register', authLimiter, (req, res) => {
 });
 
 // POST /api/auth/login
-router.post('/login', authLimiter, (req, res) => {
+router.post('/login', authLimiter, async (req, res) => {
   const { loginIdentifier, password } = req.body;
 
   if (!loginIdentifier || !password) {
@@ -119,7 +140,7 @@ router.post('/login', authLimiter, (req, res) => {
   }
 
   const cleanIdentifier = loginIdentifier.trim().toLowerCase();
-  const user = Array.from(db.users.values()).find(
+  let user = Array.from(db.users.values()).find(
     (u) => u.username.toLowerCase() === cleanIdentifier || u.email.toLowerCase() === cleanIdentifier
   );
 
@@ -165,6 +186,9 @@ router.post('/login', authLimiter, (req, res) => {
     }
   }
   user.lastLoginDate = now.toISOString();
+
+  // Save updated user to Firestore
+  await db.saveUser(user);
 
   const token = generateToken(user);
 
@@ -237,7 +261,7 @@ router.post('/forgot-password', authLimiter, (req, res) => {
 });
 
 // POST /api/auth/google
-router.post('/google', authLimiter, (req, res) => {
+router.post('/google', authLimiter, async (req, res) => {
   const { credential, email, name, picture, googleId } = req.body;
 
   let userEmail = email;
@@ -312,10 +336,6 @@ router.post('/google', authLimiter, (req, res) => {
       createdAt: new Date().toISOString(),
     };
 
-    db.users.set(userId, user);
-    db.recordTransaction(userId, 'bonus', 100, 'Welcome Google Account Registration Bonus');
-
-    // Create Creator Profile
     const creatorProfile = {
       id: `prof_${userId}`,
       userId,
@@ -333,7 +353,10 @@ router.post('/google', authLimiter, (req, res) => {
       socialChannelsCount: 0,
       createdAt: user.createdAt,
     };
-    db.creatorProfiles.set(creatorProfile.id, creatorProfile);
+
+    await db.saveUser(user);
+    await db.saveCreatorProfile(creatorProfile);
+    db.recordTransaction(userId, 'bonus', 100, 'Welcome Google Account Registration Bonus');
 
     db.notifications.unshift({
       id: `notif_${Date.now()}`,
@@ -356,6 +379,7 @@ router.post('/google', authLimiter, (req, res) => {
   }
 
   user.lastLoginDate = new Date().toISOString();
+  await db.saveUser(user);
   const token = generateToken(user);
 
   return res.json({

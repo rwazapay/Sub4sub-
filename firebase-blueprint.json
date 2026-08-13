@@ -1,0 +1,238 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile, balance and account settings",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "username": { "type": "string", "minLength": 2, "maxLength": 50 },
+        "displayName": { "type": "string", "maxLength": 100 },
+        "email": { "type": "string" },
+        "country": { "type": "string" },
+        "role": { "type": "string", "enum": ["user", "moderator", "admin", "superadmin"] },
+        "status": { "type": "string", "enum": ["active", "restricted", "suspended", "banned"] },
+        "avatar": { "type": "string" },
+        "bio": { "type": "string", "maxLength": 500 },
+        "creatorCategory": { "type": "string" },
+        "credits": { "type": "number" },
+        "totalCreditsEarned": { "type": "number" },
+        "totalCreditsSpent": { "type": "number" },
+        "level": { "type": "number" },
+        "reputation": { "type": "number" },
+        "referralCode": { "type": "string" },
+        "referredBy": { "type": "string" },
+        "referralCount": { "type": "number" },
+        "referralRewardsEarned": { "type": "number" },
+        "streakDays": { "type": "number" },
+        "lastLoginDate": { "type": "string" },
+        "dailyRewardClaimedToday": { "type": "boolean" },
+        "dailyDiscoveryCountToday": { "type": "number" },
+        "riskScore": { "type": "number" },
+        "isPro": { "type": "boolean" },
+        "proExpiresAt": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "username", "email", "role", "status", "credits", "createdAt"]
+    },
+    "CreatorProfile": {
+      "title": "Creator Profile",
+      "description": "Public creator discovery page profile",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "username": { "type": "string" },
+        "displayName": { "type": "string" },
+        "avatar": { "type": "string" },
+        "bio": { "type": "string" },
+        "country": { "type": "string" },
+        "category": { "type": "string" },
+        "reputation": { "type": "number" },
+        "level": { "type": "number" },
+        "profileViews": { "type": "number" },
+        "totalDiscoveries": { "type": "number" },
+        "isPro": { "type": "boolean" },
+        "socialChannelsCount": { "type": "number" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "userId", "username", "createdAt"]
+    },
+    "SocialChannel": {
+      "title": "Social Channel",
+      "description": "Linked creator social channel",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "platform": { "type": "string", "enum": ["YouTube", "TikTok", "Instagram", "Facebook", "X"] },
+        "channelName": { "type": "string" },
+        "url": { "type": "string" },
+        "category": { "type": "string" },
+        "description": { "type": "string" },
+        "thumbnail": { "type": "string" },
+        "isVerified": { "type": "boolean" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "userId", "platform", "channelName", "url"]
+    },
+    "Promotion": {
+      "title": "Promotion",
+      "description": "Channel promotion campaign",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "creatorUsername": { "type": "string" },
+        "creatorDisplayName": { "type": "string" },
+        "creatorAvatar": { "type": "string" },
+        "creatorCategory": { "type": "string" },
+        "country": { "type": "string" },
+        "channelId": { "type": "string" },
+        "platform": { "type": "string" },
+        "channelUrl": { "type": "string" },
+        "title": { "type": "string", "maxLength": 150 },
+        "description": { "type": "string", "maxLength": 1000 },
+        "budgetCredits": { "type": "number" },
+        "spentCredits": { "type": "number" },
+        "rewardPerDiscovery": { "type": "number" },
+        "durationDays": { "type": "number" },
+        "status": { "type": "string", "enum": ["draft", "pending", "active", "paused", "completed", "rejected", "cancelled"] },
+        "impressions": { "type": "number" },
+        "clicks": { "type": "number" },
+        "uniqueDiscoveries": { "type": "number" },
+        "startDate": { "type": "string" },
+        "endDate": { "type": "string" },
+        "isSponsored": { "type": "boolean" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "userId", "platform", "channelUrl", "title", "budgetCredits", "status", "createdAt"]
+    },
+    "CreditTransaction": {
+      "title": "Credit Transaction",
+      "description": "Wallet transaction ledger entry",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "type": { "type": "string", "enum": ["earning", "promotion_spend", "purchase", "bonus", "refund", "admin_adjustment", "referral"] },
+        "amount": { "type": "number" },
+        "balanceAfter": { "type": "number" },
+        "description": { "type": "string" },
+        "referenceId": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "userId", "type", "amount", "balanceAfter", "createdAt"]
+    },
+    "DiscoveryActivity": {
+      "title": "Discovery Activity",
+      "description": "Creator engagement activity log",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "creatorId": { "type": "string" },
+        "promotionId": { "type": "string" },
+        "activityType": { "type": "string" },
+        "rewardCredits": { "type": "number" },
+        "completedAt": { "type": "string" }
+      },
+      "required": ["id", "userId", "creatorId", "activityType", "rewardCredits", "completedAt"]
+    },
+    "Sub4SubRequest": {
+      "title": "Sub4Sub Request",
+      "description": "Mutual connection request",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "followerUserId": { "type": "string" },
+        "followerUsername": { "type": "string" },
+        "followerDisplayName": { "type": "string" },
+        "followerAvatar": { "type": "string" },
+        "followerPlatform": { "type": "string" },
+        "followerChannelUrl": { "type": "string" },
+        "targetUserId": { "type": "string" },
+        "targetUsername": { "type": "string" },
+        "targetDisplayName": { "type": "string" },
+        "targetAvatar": { "type": "string" },
+        "targetPlatform": { "type": "string" },
+        "targetChannelUrl": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "mutual", "unsubscribed"] },
+        "rewardCredits": { "type": "number" },
+        "createdAt": { "type": "string" },
+        "completedAt": { "type": "string" }
+      },
+      "required": ["id", "followerUserId", "targetUserId", "status", "createdAt"]
+    },
+    "NotificationItem": {
+      "title": "Notification Item",
+      "description": "User notification item",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "type": { "type": "string" },
+        "isRead": { "type": "boolean" },
+        "link": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "userId", "title", "message", "isRead", "createdAt"]
+    },
+    "ReportItem": {
+      "title": "Report Item",
+      "description": "Moderation report item",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "reporterUserId": { "type": "string" },
+        "reporterUsername": { "type": "string" },
+        "targetType": { "type": "string" },
+        "targetId": { "type": "string" },
+        "reason": { "type": "string" },
+        "status": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "reporterUserId", "targetType", "targetId", "reason", "status", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "User account documents"
+    },
+    "/creatorProfiles/{profileId}": {
+      "schema": { "$ref": "#/entities/CreatorProfile" },
+      "description": "Creator public discovery profiles"
+    },
+    "/socialChannels/{channelId}": {
+      "schema": { "$ref": "#/entities/SocialChannel" },
+      "description": "Linked social channels"
+    },
+    "/promotions/{promotionId}": {
+      "schema": { "$ref": "#/entities/Promotion" },
+      "description": "Creator channel promotion campaigns"
+    },
+    "/transactions/{transactionId}": {
+      "schema": { "$ref": "#/entities/CreditTransaction" },
+      "description": "Credit and coin transactions"
+    },
+    "/discoveries/{discoveryId}": {
+      "schema": { "$ref": "#/entities/DiscoveryActivity" },
+      "description": "Discovery activities"
+    },
+    "/sub4subRequests/{requestId}": {
+      "schema": { "$ref": "#/entities/Sub4SubRequest" },
+      "description": "Mutual connection requests"
+    },
+    "/notifications/{notificationId}": {
+      "schema": { "$ref": "#/entities/NotificationItem" },
+      "description": "User notifications"
+    },
+    "/reports/{reportId}": {
+      "schema": { "$ref": "#/entities/ReportItem" },
+      "description": "Moderation report tickets"
+    }
+  }
+}

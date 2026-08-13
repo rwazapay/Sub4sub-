@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User } from '../types';
 import { apiClient } from '../services/api';
+import { auth } from '../lib/firebase';
+import { onAuthStateChanged, signOut as firebaseSignOut } from 'firebase/auth';
 
 interface AuthContextType {
   user: User | null;
@@ -35,7 +37,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         logout();
       }
     } catch {
-      // Unauthenticated or invalid token session reset
       logout();
     } finally {
       setIsLoading(false);
@@ -44,6 +45,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     refetchUser();
+
+    // Listen to Firebase Auth state changes
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser && firebaseUser.email && !localStorage.getItem('subloop_token')) {
+        try {
+          const res = await apiClient.post('/auth/google', {
+            email: firebaseUser.email,
+            name: firebaseUser.displayName || firebaseUser.email.split('@')[0],
+            picture: firebaseUser.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(firebaseUser.email)}`,
+            googleId: firebaseUser.uid,
+          });
+          if (res.data.success) {
+            login(res.data.data.token, res.data.data.user);
+          }
+        } catch (err) {
+          console.warn('Firebase Auth state sync notice:', err);
+        }
+      }
+    });
+
+    return () => unsubscribe();
   }, []);
 
   const login = (newToken: string, userData: User) => {
@@ -56,6 +78,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('subloop_token');
     setToken(null);
     setUser(null);
+    firebaseSignOut(auth).catch(() => {});
   };
 
   const updateUser = (updatedUser: User) => {

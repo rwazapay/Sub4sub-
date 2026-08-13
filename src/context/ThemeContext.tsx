@@ -1,29 +1,43 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-type Theme = 'dark' | 'light' | 'system';
+type Theme = 'dark' | 'light';
 
 interface ThemeContextType {
   theme: Theme;
   setTheme: (theme: Theme) => void;
+  toggleTheme: () => void;
   isDark: boolean;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [theme] = useState<Theme>('light');
-  const isDark = false;
+  const [theme, setThemeState] = useState<Theme>(() => {
+    return (localStorage.getItem('sub4subpro_theme') as Theme) || 'dark';
+  });
+
+  const isDark = theme === 'dark';
 
   useEffect(() => {
     const root = document.documentElement;
-    root.classList.remove('dark');
-    localStorage.setItem('subloop_theme', 'light');
-  }, []);
+    if (isDark) {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+    localStorage.setItem('sub4subpro_theme', theme);
+  }, [theme, isDark]);
 
-  const setTheme = () => {};
+  const setTheme = (newTheme: Theme) => {
+    setThemeState(newTheme);
+  };
+
+  const toggleTheme = () => {
+    setThemeState((prev) => (prev === 'dark' ? 'light' : 'dark'));
+  };
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, isDark }}>
+    <ThemeContext.Provider value={{ theme, setTheme, toggleTheme, isDark }}>
       {children}
     </ThemeContext.Provider>
   );
@@ -36,3 +50,4 @@ export const useTheme = () => {
   }
   return context;
 };
+
