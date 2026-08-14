@@ -401,30 +401,29 @@ export const SettingsPage: React.FC = () => {
 
                 <input
                   type="text"
-                  required
                   value={newChannelName}
                   onChange={(e) => setNewChannelName(e.target.value)}
-                  placeholder="Channel / Handle Name"
+                  placeholder="Channel / Handle Name (e.g. Tech With Alex)"
                   className="w-full bg-white dark:bg-[#161310] border border-stone-200 dark:border-[#262018] rounded-xl px-3 py-2 text-stone-900 dark:text-white"
                 />
 
                 <input
-                  type="url"
+                  type="text"
                   required
                   value={newChannelUrl}
                   onChange={(e) => setNewChannelUrl(e.target.value)}
-                  placeholder="https://..."
+                  placeholder="https://youtube.com/@channel or @handle"
                   className="w-full bg-white dark:bg-[#161310] border border-stone-200 dark:border-[#262018] rounded-xl px-3 py-2 text-stone-900 dark:text-white"
                 />
               </div>
 
               <button
                 type="submit"
-                disabled={isAddingChannel}
-                className="w-full py-2.5 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs active:scale-95 transition-all"
+                disabled={isAddingChannel || !newChannelUrl.trim()}
+                className="w-full py-2.5 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-stone-950 font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs active:scale-95 transition-all"
               >
                 <Plus className="w-4 h-4 text-stone-950 stroke-[2.5]" />
-                <span>Connect Channel</span>
+                <span>{isAddingChannel ? 'Connecting Channel...' : 'Connect Channel'}</span>
               </button>
             </form>
 

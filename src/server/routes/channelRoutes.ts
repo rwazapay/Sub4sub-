@@ -75,74 +75,144 @@ router.get('/', authenticateJWT, (req: AuthenticatedRequest, res: Response) => {
 
 // POST /api/channels - Add a social profile channel
 router.post('/', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
-  const user = req.user!;
-  const { platform, channelName, url, category, description, thumbnail } = req.body;
+  try {
+    const user = req.user!;
+    let { platform, channelName, url, category, description, thumbnail } = req.body;
 
-  if (!platform || !channelName || !url) {
-    return res.status(400).json({
-      success: false,
-      message: 'Platform, channel name, and URL are required.',
-      errorCode: 'MISSING_FIELDS',
-    });
-  }
-
-  const validPlatforms: PlatformType[] = ['YouTube', 'TikTok', 'Instagram', 'Facebook', 'X'];
-  if (!validPlatforms.includes(platform)) {
-    return res.status(400).json({
-      success: false,
-      message: 'Supported platforms are YouTube, TikTok, Instagram, Facebook, and X.',
-      errorCode: 'INVALID_PLATFORM',
-    });
-  }
-
-  // Attempt real resolution for accurate thumbnail and channel details
-  let resolvedThumbnail = thumbnail || user.avatar;
-  let resolvedTitle = channelName.trim();
-
-  if (platform === 'YouTube' || url.includes('youtube.com') || url.includes('youtu.be')) {
-    try {
-      const realMeta = await resolveTargetMetadata(url);
-      if (realMeta.thumbnailUrl) {
-        resolvedThumbnail = realMeta.thumbnailUrl;
-      }
-      if (realMeta.channelName && (!channelName || channelName === 'YouTube Channel')) {
-        resolvedTitle = realMeta.channelName;
-      }
-    } catch {
-      // Fallback to provided info
+    if (!url || typeof url !== 'string' || !url.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Channel URL or handle is required.',
+        errorCode: 'MISSING_URL',
+      });
     }
+
+    url = url.trim();
+
+    // Default platform if missing
+    if (!platform) {
+      if (url.includes('tiktok.com')) platform = 'TikTok';
+      else if (url.includes('instagram.com')) platform = 'Instagram';
+      else if (url.includes('facebook.com')) platform = 'Facebook';
+      else if (url.includes('x.com') || url.includes('twitter.com')) platform = 'X';
+      else platform = 'YouTube';
+    }
+
+    const validPlatforms: PlatformType[] = ['YouTube', 'TikTok', 'Instagram', 'Facebook', 'X'];
+    if (!validPlatforms.includes(platform)) {
+      platform = 'YouTube';
+    }
+
+    // URL formatting & normalization
+    let normalizedUrl = url;
+    if (normalizedUrl.startsWith('@')) {
+      const cleanHandle = normalizedUrl.substring(1);
+      switch (platform) {
+        case 'TikTok':
+          normalizedUrl = `https://www.tiktok.com/@${cleanHandle}`;
+          break;
+        case 'Instagram':
+          normalizedUrl = `https://www.instagram.com/${cleanHandle}`;
+          break;
+        case 'Facebook':
+          normalizedUrl = `https://www.facebook.com/${cleanHandle}`;
+          break;
+        case 'X':
+          normalizedUrl = `https://x.com/${cleanHandle}`;
+          break;
+        case 'YouTube':
+        default:
+          normalizedUrl = `https://www.youtube.com/@${cleanHandle}`;
+          break;
+      }
+    } else if (!/^https?:\/\//i.test(normalizedUrl)) {
+      normalizedUrl = `https://${normalizedUrl}`;
+    }
+
+    // Default title from channelName or handle
+    let resolvedTitle = (channelName && typeof channelName === 'string' && channelName.trim()) 
+      ? channelName.trim() 
+      : '';
+
+    let resolvedThumbnail = thumbnail || user.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80';
+
+    // Attempt real metadata resolution if YouTube
+    if (platform === 'YouTube' || normalizedUrl.includes('youtube.com') || normalizedUrl.includes('youtu.be')) {
+      try {
+        const realMeta = await resolveTargetMetadata(normalizedUrl);
+        if (realMeta.thumbnailUrl) {
+          resolvedThumbnail = realMeta.thumbnailUrl;
+        }
+        if (!resolvedTitle && realMeta.channelName) {
+          resolvedTitle = realMeta.channelName;
+        }
+      } catch {
+        // Safe fallback
+      }
+    }
+
+    if (!resolvedTitle) {
+      // Extract from URL
+      try {
+        const urlObj = new URL(normalizedUrl);
+        const pathSegments = urlObj.pathname.split('/').filter(Boolean);
+        const lastSeg = pathSegments[pathSegments.length - 1];
+        resolvedTitle = lastSeg ? lastSeg.replace('@', '') : `${user.displayName}'s ${platform}`;
+      } catch {
+        resolvedTitle = `${user.displayName}'s ${platform}`;
+      }
+    }
+
+    const channelId = `chan_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+    const newChannel = {
+      id: channelId,
+      userId: user.id,
+      platform,
+      channelName: resolvedTitle,
+      url: normalizedUrl,
+      category: category || user.creatorCategory || 'Technology',
+      description: description ? description.trim() : (user.bio || `Follow and connect on ${platform}`),
+      thumbnail: resolvedThumbnail,
+      isVerified: true,
+      createdAt: new Date().toISOString(),
+    };
+
+    await db.saveSocialChannel(newChannel);
+
+    // Update channel count on Creator Profile
+    const profile = Array.from(db.creatorProfiles.values()).find((p) => p.userId === user.id);
+    if (profile) {
+      profile.socialChannelsCount = (profile.socialChannelsCount || 0) + 1;
+      await db.saveCreatorProfile(profile);
+    }
+
+    // Send positive notification
+    db.notifications.unshift({
+      id: `notif_${Date.now()}`,
+      userId: user.id,
+      title: `🔗 ${platform} Channel Connected!`,
+      message: `Your channel "${resolvedTitle}" is now connected to your profile and ready for campaign promotions.`,
+      type: 'success',
+      link: '/settings',
+      isRead: false,
+      createdAt: new Date().toISOString(),
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: `${platform} profile connected successfully!`,
+      data: {
+        channel: newChannel,
+      },
+    });
+  } catch (err: any) {
+    console.error('Error adding social channel:', err);
+    return res.status(500).json({
+      success: false,
+      message: err?.message || 'An unexpected error occurred while saving the channel. Please try again.',
+      errorCode: 'CHANNEL_SAVE_FAILED',
+    });
   }
-
-  const channelId = `chan_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
-  const newChannel = {
-    id: channelId,
-    userId: user.id,
-    platform,
-    channelName: resolvedTitle,
-    url: url.trim(),
-    category: category || user.creatorCategory || 'Technology',
-    description: description ? description.trim() : user.bio,
-    thumbnail: resolvedThumbnail,
-    isVerified: true,
-    createdAt: new Date().toISOString(),
-  };
-
-  await db.saveSocialChannel(newChannel);
-
-  // Update channel count on Creator Profile
-  const profile = Array.from(db.creatorProfiles.values()).find((p) => p.userId === user.id);
-  if (profile) {
-    profile.socialChannelsCount += 1;
-    await db.saveCreatorProfile(profile);
-  }
-
-  return res.status(201).json({
-    success: true,
-    message: `${platform} profile connected successfully!`,
-    data: {
-      channel: newChannel,
-    },
-  });
 });
 
 // DELETE /api/channels/:id - Delete social channel

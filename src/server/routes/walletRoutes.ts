@@ -25,7 +25,7 @@ router.get('/', authenticateJWT, (req: AuthenticatedRequest, res: Response) => {
 });
 
 // POST /api/wallet/daily-claim - Claim daily bonus coins
-router.post('/daily-claim', authenticateJWT, (req: AuthenticatedRequest, res: Response) => {
+router.post('/daily-claim', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
   const user = req.user!;
 
   if (user.dailyRewardClaimedToday) {
@@ -40,8 +40,6 @@ router.post('/daily-claim', authenticateJWT, (req: AuthenticatedRequest, res: Re
   const streak = user.streakDays || 1;
   const bonusCoins = Math.min(25 + streak * 5, 100);
 
-  user.credits += bonusCoins;
-  user.totalCreditsEarned += bonusCoins;
   user.dailyRewardClaimedToday = true;
 
   db.recordTransaction(
@@ -50,6 +48,8 @@ router.post('/daily-claim', authenticateJWT, (req: AuthenticatedRequest, res: Re
     bonusCoins,
     `Daily Check-in Reward (Streak: Day ${streak})`
   );
+
+  await db.saveUser(user);
 
   db.notifications.unshift({
     id: `notif_${Date.now()}`,
@@ -65,6 +65,7 @@ router.post('/daily-claim', authenticateJWT, (req: AuthenticatedRequest, res: Re
     success: true,
     message: `Claimed +${bonusCoins} Daily Bonus Coins!`,
     data: {
+      user,
       newBalance: user.credits,
       bonusCoins,
       streakDays: user.streakDays,

@@ -213,7 +213,7 @@ router.get('/me', authenticateJWT, (req: AuthenticatedRequest, res: Response) =>
 });
 
 // POST /api/auth/daily-streak-claim
-router.post('/daily-streak-claim', authenticateJWT, (req: AuthenticatedRequest, res: Response) => {
+router.post('/daily-streak-claim', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
   const user = req.user!;
   if (user.dailyRewardClaimedToday) {
     return res.status(400).json({
@@ -223,19 +223,22 @@ router.post('/daily-streak-claim', authenticateJWT, (req: AuthenticatedRequest, 
     });
   }
 
-  const streakBonus = Math.min(50, db.systemSettings.dailyLoginBaseReward + (user.streakDays - 1) * 5);
+  const streak = user.streakDays || 1;
+  const streakBonus = Math.min(50, (db.systemSettings?.dailyLoginBaseReward || 25) + (streak - 1) * 5);
   user.dailyRewardClaimedToday = true;
 
   db.recordTransaction(
     user.id,
     'bonus',
     streakBonus,
-    `🔥 Day ${user.streakDays} Login Streak Bonus`
+    `🔥 Day ${streak} Login Streak Bonus`
   );
+
+  await db.saveUser(user);
 
   return res.json({
     success: true,
-    message: `Claimed +${streakBonus} Credits for Day ${user.streakDays} streak!`,
+    message: `Claimed +${streakBonus} Coins for Day ${streak} streak!`,
     data: {
       user,
       streakBonus,
