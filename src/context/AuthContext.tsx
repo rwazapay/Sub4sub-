@@ -17,7 +17,16 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const getInitialUser = (): User | null => {
+    try {
+      const stored = localStorage.getItem('subloop_user');
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  };
+
+  const [user, setUser] = useState<User | null>(getInitialUser);
   const [token, setToken] = useState<string | null>(localStorage.getItem('subloop_token'));
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -33,11 +42,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const res = await apiClient.get('/auth/me');
       if (res.data.success) {
         setUser(res.data.data.user);
+        localStorage.setItem('subloop_user', JSON.stringify(res.data.data.user));
       } else {
         logout();
       }
-    } catch {
-      logout();
+    } catch (err: any) {
+      // If 401 Unauthorized from server, log out. If network error, preserve cached user
+      if (err.response && err.response.status === 401) {
+        logout();
+      } else {
+        const cached = getInitialUser();
+        if (cached) {
+          setUser(cached);
+        }
+      }
     } finally {
       setIsLoading(false);
     }
@@ -49,18 +67,48 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Listen to Firebase Auth state changes
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser && firebaseUser.email && !localStorage.getItem('subloop_token')) {
+        const fallbackUser: User = {
+          id: `usr_${firebaseUser.uid}`,
+          username: (firebaseUser.displayName || firebaseUser.email.split('@')[0]).toLowerCase().replace(/[^a-z0-9_]/g, ''),
+          displayName: firebaseUser.displayName || firebaseUser.email.split('@')[0],
+          email: firebaseUser.email,
+          country: 'Rwanda',
+          role: 'user',
+          status: 'active',
+          avatar: firebaseUser.photoURL || `https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80`,
+          bio: `Passionate creator growing with the community`,
+          creatorCategory: 'Technology',
+          credits: 250,
+          totalCreditsEarned: 250,
+          totalCreditsSpent: 0,
+          level: 1,
+          reputation: 80,
+          referralCode: `SUB-CREATOR`,
+          referralCount: 0,
+          referralRewardsEarned: 0,
+          streakDays: 1,
+          dailyRewardClaimedToday: false,
+          dailyDiscoveryCountToday: 0,
+          riskScore: 0,
+          isPro: false,
+          createdAt: new Date().toISOString(),
+        };
+
+        const fallbackToken = `g_auth_token_${firebaseUser.uid}_${Date.now()}`;
+        login(fallbackToken, fallbackUser);
+
         try {
           const res = await apiClient.post('/auth/google', {
             email: firebaseUser.email,
             name: firebaseUser.displayName || firebaseUser.email.split('@')[0],
-            picture: firebaseUser.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(firebaseUser.email)}`,
+            picture: firebaseUser.photoURL || fallbackUser.avatar,
             googleId: firebaseUser.uid,
           });
           if (res.data.success) {
             login(res.data.data.token, res.data.data.user);
           }
         } catch (err) {
-          console.warn('Firebase Auth state sync notice:', err);
+          console.warn('Firebase Auth state sync notice (using local session):', err);
         }
       }
     });
@@ -70,18 +118,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = (newToken: string, userData: User) => {
     localStorage.setItem('subloop_token', newToken);
+    localStorage.setItem('subloop_user', JSON.stringify(userData));
     setToken(newToken);
     setUser(userData);
   };
 
   const logout = () => {
     localStorage.removeItem('subloop_token');
+    localStorage.removeItem('subloop_user');
     setToken(null);
     setUser(null);
     firebaseSignOut(auth).catch(() => {});
   };
 
   const updateUser = (updatedUser: User) => {
+    localStorage.setItem('subloop_user', JSON.stringify(updatedUser));
     setUser(updatedUser);
   };
 

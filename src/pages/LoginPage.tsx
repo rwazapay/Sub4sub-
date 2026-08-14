@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { apiClient } from '../services/api';
+import { User } from '../types';
 import { GoogleAuthButton } from '../components/GoogleAuthButton';
 import { Zap, AlertCircle, ArrowRight, Eye, EyeOff, ShieldCheck, Sparkles } from 'lucide-react';
 
@@ -62,18 +63,29 @@ export const LoginPage: React.FC = () => {
       }
     } catch (err) {
       // Fallback direct authentication for client-only / Vercel preview demos
-      const fallbackUser = demoIdentifier === 'admin' ? {
+      const fallbackUser: User = demoIdentifier === 'admin' ? {
         id: 'usr_admin_default',
         username: 'admin',
         displayName: 'Platform Admin',
         email: 'admin@subloop.co',
         avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
         credits: 5000,
-        subscribersExchanged: 120,
-        role: 'admin' as const,
-        isVerified: true,
+        totalCreditsEarned: 5000,
+        totalCreditsSpent: 0,
+        level: 10,
+        reputation: 100,
+        referralCode: 'SUB-ADMIN',
+        referralCount: 50,
+        referralRewardsEarned: 2500,
+        streakDays: 30,
+        dailyRewardClaimedToday: true,
+        dailyDiscoveryCountToday: 0,
+        role: 'admin',
+        status: 'active',
         riskScore: 0,
+        isPro: true,
         country: 'United States',
+        bio: 'Official SubLoop Platform Administrator',
         creatorCategory: 'Technology',
         createdAt: '2026-01-01T00:00:00Z',
       } : {
@@ -83,11 +95,22 @@ export const LoginPage: React.FC = () => {
         email: 'creator@subloop.co',
         avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
         credits: 350,
-        subscribersExchanged: 42,
-        role: 'creator' as const,
-        isVerified: true,
-        riskScore: 5,
+        totalCreditsEarned: 450,
+        totalCreditsSpent: 100,
+        level: 3,
+        reputation: 92,
+        referralCode: 'SUB-RWANDA',
+        referralCount: 4,
+        referralRewardsEarned: 200,
+        streakDays: 5,
+        dailyRewardClaimedToday: false,
+        dailyDiscoveryCountToday: 2,
+        role: 'user',
+        status: 'active',
+        riskScore: 0,
+        isPro: false,
         country: 'Rwanda',
+        bio: 'Tech YouTuber from Kigali creating coding tutorials and reviews',
         creatorCategory: 'Technology',
         createdAt: '2026-01-15T00:00:00Z',
       };
