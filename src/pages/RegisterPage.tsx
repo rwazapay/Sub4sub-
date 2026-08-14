@@ -97,17 +97,17 @@ export const RegisterPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-stone-50 dark:bg-[#0d0b09] text-stone-900 dark:text-stone-100 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 font-sans selection:bg-amber-500 selection:text-stone-950 transition-colors">
+    <div className="min-h-screen bg-stone-50 dark:bg-[#0d0b09] text-stone-900 dark:text-stone-100 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 font-sans selection:bg-red-600 selection:text-white transition-colors">
       <div className="sm:mx-auto sm:w-full sm:max-w-md space-y-6">
         
         {/* Header */}
         <div className="text-center space-y-2">
           <Link to="/" className="inline-flex items-center gap-2">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-500 shadow-xl shadow-amber-500/20">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-600 shadow-xl shadow-red-600/25">
               <Zap className="h-6 w-6 text-stone-950 fill-stone-950" />
             </div>
             <span className="text-2xl font-black text-stone-900 dark:text-white">
-              Sub<span className="text-amber-500">Loop</span>
+              Sub<span className="text-red-500">Loop</span>
             </span>
           </Link>
           <h2 className="text-2xl font-black text-stone-900 dark:text-white tracking-tight">Create Creator Account</h2>
@@ -153,7 +153,7 @@ export const RegisterPage: React.FC = () => {
                     if (errorMsg) setErrorMsg(null);
                   }}
                   placeholder="tech_rwanda"
-                  className="w-full bg-stone-50 dark:bg-[#0d0b09] border border-stone-200 dark:border-[#262018] rounded-2xl px-3.5 py-2.5 text-stone-900 dark:text-white placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  className="w-full bg-stone-50 dark:bg-[#0d0b09] border border-stone-200 dark:border-[#262018] rounded-2xl px-3.5 py-2.5 text-stone-900 dark:text-white placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-red-500"
                 />
               </div>
 
@@ -168,7 +168,7 @@ export const RegisterPage: React.FC = () => {
                     if (errorMsg) setErrorMsg(null);
                   }}
                   placeholder="Tech Rwanda"
-                  className="w-full bg-stone-50 dark:bg-[#0d0b09] border border-stone-200 dark:border-[#262018] rounded-2xl px-3.5 py-2.5 text-stone-900 dark:text-white placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  className="w-full bg-stone-50 dark:bg-[#0d0b09] border border-stone-200 dark:border-[#262018] rounded-2xl px-3.5 py-2.5 text-stone-900 dark:text-white placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-red-500"
                 />
               </div>
             </div>
@@ -184,7 +184,7 @@ export const RegisterPage: React.FC = () => {
                   if (errorMsg) setErrorMsg(null);
                 }}
                 placeholder="creator@subloop.co"
-                className="w-full bg-stone-50 dark:bg-[#0d0b09] border border-stone-200 dark:border-[#262018] rounded-2xl px-3.5 py-2.5 text-stone-900 dark:text-white placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                className="w-full bg-stone-50 dark:bg-[#0d0b09] border border-stone-200 dark:border-[#262018] rounded-2xl px-3.5 py-2.5 text-stone-900 dark:text-white placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-red-500"
               />
             </div>
 
@@ -201,7 +201,7 @@ export const RegisterPage: React.FC = () => {
                       if (errorMsg) setErrorMsg(null);
                     }}
                     placeholder="Min 6 chars"
-                    className="w-full bg-stone-50 dark:bg-[#0d0b09] border border-stone-200 dark:border-[#262018] rounded-2xl px-3.5 py-2.5 pr-10 text-stone-900 dark:text-white placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    className="w-full bg-stone-50 dark:bg-[#0d0b09] border border-stone-200 dark:border-[#262018] rounded-2xl px-3.5 py-2.5 pr-10 text-stone-900 dark:text-white placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-red-500"
                   />
                   <button
                     type="button"
@@ -224,7 +224,7 @@ export const RegisterPage: React.FC = () => {
                     if (errorMsg) setErrorMsg(null);
                   }}
                   placeholder="Repeat password"
-                  className="w-full bg-stone-50 dark:bg-[#0d0b09] border border-stone-200 dark:border-[#262018] rounded-2xl px-3.5 py-2.5 text-stone-900 dark:text-white placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  className="w-full bg-stone-50 dark:bg-[#0d0b09] border border-stone-200 dark:border-[#262018] rounded-2xl px-3.5 py-2.5 text-stone-900 dark:text-white placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-red-500"
                 />
               </div>
             </div>
@@ -234,7 +234,7 @@ export const RegisterPage: React.FC = () => {
               <select
                 value={country}
                 onChange={(e) => setCountry(e.target.value)}
-                className="w-full bg-stone-50 dark:bg-[#0d0b09] border border-stone-200 dark:border-[#262018] rounded-2xl px-3.5 py-2.5 text-stone-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500 font-bold"
+                className="w-full bg-stone-50 dark:bg-[#0d0b09] border border-stone-200 dark:border-[#262018] rounded-2xl px-3.5 py-2.5 text-stone-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500 font-bold"
               >
                 <option value="Rwanda">Rwanda</option>
                 <option value="Kenya">Kenya</option>
@@ -252,7 +252,7 @@ export const RegisterPage: React.FC = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-3.5 px-4 rounded-2xl bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-stone-950 font-black text-sm shadow-md transition-all flex items-center justify-center gap-2 active:scale-95"
+              className="w-full py-3.5 px-4 rounded-2xl bg-red-600 hover:bg-red-500 disabled:opacity-50 text-stone-950 font-black text-sm shadow-md transition-all flex items-center justify-center gap-2 active:scale-95"
             >
               <Sparkles className="w-4 h-4 text-stone-950" />
               <span>{isSubmitting ? 'Creating Creator Account...' : 'Register & Claim +100 Credits'}</span>
@@ -264,7 +264,7 @@ export const RegisterPage: React.FC = () => {
         {/* Footer Link */}
         <p className="text-center text-xs text-stone-600 dark:text-stone-400 font-medium">
           Already registered?{' '}
-          <Link to="/login" className="font-bold text-amber-600 dark:text-amber-400 hover:underline">
+          <Link to="/login" className="font-bold text-red-600 dark:text-red-400 hover:underline">
             Log in to your account
           </Link>
         </p>

@@ -30,7 +30,7 @@ router.get('/', authenticateJWT, (req: AuthenticatedRequest, res: Response) => {
 router.post('/daily-claim', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
   const user = req.user!;
   try {
-    const claimResult = await db.claimDailyRewardAtomic(user.id);
+    const claimResult = await db.claimDailyRewardAtomic(user);
     return res.json({
       success: true,
       message: claimResult.message,
@@ -45,6 +45,7 @@ router.post('/daily-claim', authenticateJWT, async (req: AuthenticatedRequest, r
       },
     });
   } catch (err: any) {
+    console.error('Wallet daily claim error:', err);
     return res.status(500).json({
       success: false,
       message: err.message || 'Failed to claim daily check-in bonus.',

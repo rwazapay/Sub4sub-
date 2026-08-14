@@ -17,7 +17,7 @@ const router = Router();
 router.post('/claim-daily-bonus', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
   const user = req.user!;
   try {
-    const claimResult = await db.claimDailyRewardAtomic(user.id);
+    const claimResult = await db.claimDailyRewardAtomic(user);
     return res.json({
       success: true,
       message: claimResult.message,
@@ -31,6 +31,7 @@ router.post('/claim-daily-bonus', authenticateJWT, async (req: AuthenticatedRequ
       },
     });
   } catch (err: any) {
+    console.error('Sub4Sub daily claim error:', err);
     return res.status(500).json({
       success: false,
       message: err.message || 'Failed to claim daily bonus.',

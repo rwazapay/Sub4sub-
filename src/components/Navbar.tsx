@@ -50,11 +50,11 @@ export const Navbar: React.FC<NavbarProps> = () => {
           {/* Left: Sub4Sub Pro Brand Logo */}
           <div className="flex items-center gap-2 sm:gap-3">
             <Link to={user ? "/dashboard" : "/"} className="flex items-center gap-2 group">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500 text-stone-950 font-black shadow-md shadow-amber-500/20 group-hover:scale-105 transition-transform">
-                <Coins className="h-5 w-5 text-stone-950 fill-stone-950" />
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-red-600 text-white font-black shadow-md shadow-red-600/25 group-hover:scale-105 transition-transform">
+                <Coins className="h-5 w-5 text-white fill-white" />
               </div>
               <span className="text-lg sm:text-xl font-extrabold tracking-tight text-stone-900 dark:text-white font-sans">
-                Sub4Sub <span className="text-amber-500">Pro</span>
+                Sub4Sub <span className="text-red-600 dark:text-red-500">Pro</span>
               </span>
             </Link>
           </div>
@@ -67,7 +67,7 @@ export const Navbar: React.FC<NavbarProps> = () => {
                 <Link
                   id="tour-create-btn"
                   to="/campaigns"
-                  className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-500/20 border border-amber-500/50 text-amber-600 dark:text-amber-400 hover:bg-amber-500 hover:text-stone-950 transition-all font-black text-sm"
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-red-500/15 border border-red-500/40 text-red-600 dark:text-red-400 hover:bg-red-600 hover:text-white transition-all font-black text-sm"
                   title="Create Campaign"
                 >
                   <Plus className="w-4 h-4" />
@@ -76,7 +76,7 @@ export const Navbar: React.FC<NavbarProps> = () => {
                 {/* Settings Button */}
                 <Link
                   to="/settings"
-                  className="hidden sm:flex h-8 w-8 items-center justify-center rounded-full bg-stone-100 dark:bg-[#1c1813] border border-stone-200 dark:border-[#332b21] text-stone-700 dark:text-stone-300 hover:text-amber-500 hover:border-amber-500/60 transition-all"
+                  className="hidden sm:flex h-8 w-8 items-center justify-center rounded-full bg-stone-100 dark:bg-[#1c1813] border border-stone-200 dark:border-[#332b21] text-stone-700 dark:text-stone-300 hover:text-red-500 hover:border-red-500/60 transition-all"
                   title="Settings & Profile"
                 >
                   <Settings className="w-4 h-4" />
@@ -86,17 +86,17 @@ export const Navbar: React.FC<NavbarProps> = () => {
                 <Link
                   id="tour-wallet-pill"
                   to="/wallet"
-                  className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full bg-stone-100 dark:bg-[#1c1813] border border-stone-200 dark:border-[#332b21] text-amber-600 dark:text-amber-400 font-extrabold text-xs hover:border-amber-500/60 transition-all"
+                  className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full bg-stone-100 dark:bg-[#1c1813] border border-stone-200 dark:border-[#332b21] text-red-600 dark:text-red-400 font-extrabold text-xs hover:border-red-500/60 transition-all"
                   title="Coins & Wallet"
                 >
-                  <Coins className="w-4 h-4 text-amber-500 fill-amber-500/30" />
+                  <Coins className="w-4 h-4 text-red-500 fill-red-500/30" />
                   <span>{user.credits.toLocaleString()}</span>
                 </Link>
 
                 {/* Hamburger / Menu Icon Button representing Drawer Menu on Mobile & Desktop */}
                 <button
                   onClick={() => setIsDrawerOpen(true)}
-                  className="flex items-center justify-center p-2 rounded-xl bg-stone-100 dark:bg-[#161310] border border-stone-200 dark:border-[#262018] text-stone-800 dark:text-stone-200 hover:text-amber-500 hover:border-amber-500/50 transition-colors shadow-xs"
+                  className="flex items-center justify-center p-2 rounded-xl bg-stone-100 dark:bg-[#161310] border border-stone-200 dark:border-[#262018] text-stone-800 dark:text-stone-200 hover:text-red-500 hover:border-red-500/50 transition-colors shadow-xs"
                   aria-label="Open Navigation Menu"
                   title="Navigation Menu"
                 >
@@ -107,7 +107,7 @@ export const Navbar: React.FC<NavbarProps> = () => {
               <div className="flex items-center gap-2">
                 <Link
                   to="/login"
-                  className="px-3 py-1.5 rounded-full bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs transition-all shadow-md shadow-amber-500/20"
+                  className="px-3 py-1.5 rounded-full bg-red-600 hover:bg-red-500 text-white font-bold text-xs transition-all shadow-md shadow-red-600/25"
                 >
                   Get started
                 </Link>
@@ -142,12 +142,12 @@ export const Navbar: React.FC<NavbarProps> = () => {
                   <img
                     src={user.avatar}
                     alt={user.displayName}
-                    className="w-12 h-12 rounded-full object-cover ring-2 ring-amber-500 group-hover:scale-105 transition-transform"
+                    className="w-12 h-12 rounded-full object-cover ring-2 ring-red-500 group-hover:scale-105 transition-transform"
                   />
                   <div>
-                    <h3 className="font-bold text-stone-900 dark:text-white text-sm group-hover:text-amber-500 transition-colors flex items-center gap-1">
+                    <h3 className="font-bold text-stone-900 dark:text-white text-sm group-hover:text-red-500 transition-colors flex items-center gap-1">
                       <span>{user.displayName}</span>
-                      <Settings className="w-3.5 h-3.5 text-amber-500 opacity-70" />
+                      <Settings className="w-3.5 h-3.5 text-red-500 opacity-70" />
                     </h3>
                     <p className="text-xs text-stone-500 dark:text-stone-400 truncate max-w-[170px]">{user.email}</p>
                   </div>
@@ -169,7 +169,7 @@ export const Navbar: React.FC<NavbarProps> = () => {
                   onClick={() => setIsDrawerOpen(false)}
                   className="flex items-center gap-3.5 px-3 py-3 rounded-xl text-stone-800 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-[#161310] transition-colors"
                 >
-                  <Settings className="w-4 h-4 text-amber-500" />
+                  <Settings className="w-4 h-4 text-red-500" />
                   <span>Settings & Profile</span>
                 </Link>
 
@@ -178,7 +178,7 @@ export const Navbar: React.FC<NavbarProps> = () => {
                   onClick={() => setIsDrawerOpen(false)}
                   className="flex items-center gap-3.5 px-3 py-3 rounded-xl text-stone-800 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-[#161310] transition-colors"
                 >
-                  <Plus className="w-4 h-4 text-amber-500" />
+                  <Plus className="w-4 h-4 text-red-500" />
                   <span>Buy coins</span>
                 </Link>
 
@@ -235,7 +235,7 @@ export const Navbar: React.FC<NavbarProps> = () => {
                   <Link
                     to="/admin"
                     onClick={() => setIsDrawerOpen(false)}
-                    className="flex items-center gap-3.5 px-3 py-3 rounded-xl text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-500/10 font-bold"
+                    className="flex items-center gap-3.5 px-3 py-3 rounded-xl text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 font-bold"
                   >
                     <Shield className="w-4 h-4" />
                     <span>Admin Control Panel</span>
@@ -256,7 +256,7 @@ export const Navbar: React.FC<NavbarProps> = () => {
               >
                 {isDark ? (
                   <>
-                    <Sun className="w-4 h-4 text-amber-500" />
+                    <Sun className="w-4 h-4 text-red-500" />
                     <span>Switch to light mode</span>
                   </>
                 ) : (
@@ -303,12 +303,12 @@ export const Navbar: React.FC<NavbarProps> = () => {
             </div>
 
             <div className="p-3 bg-stone-50 dark:bg-[#0d0b09] rounded-2xl border border-stone-200 dark:border-[#262018] flex items-center justify-between gap-2 text-xs">
-              <span className="truncate font-mono text-amber-600 dark:text-amber-400 font-bold">
+              <span className="truncate font-mono text-red-600 dark:text-red-400 font-bold">
                 {window.location.origin}/register?ref={user.referralCode}
               </span>
               <button
                 onClick={copyInvite}
-                className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs flex items-center gap-1 shrink-0"
+                className="px-3 py-1.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs flex items-center gap-1 shrink-0 shadow-sm"
               >
                 {copiedCode ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                 <span>{copiedCode ? 'Copied' : 'Copy'}</span>
@@ -338,7 +338,7 @@ export const Navbar: React.FC<NavbarProps> = () => {
 
             <div className="p-4 bg-stone-50 dark:bg-[#0d0b09] rounded-2xl border border-stone-200 dark:border-[#262018] space-y-2 text-xs">
               <p className="font-bold text-stone-900 dark:text-white">Email Support:</p>
-              <p className="text-amber-600 dark:text-amber-400 font-mono">support@sub4subpro.com</p>
+              <p className="text-red-600 dark:text-red-400 font-mono">support@sub4subpro.com</p>
               <p className="text-stone-500 dark:text-stone-400 text-[11px] pt-1">
                 Average response time: 15–30 minutes (24/7 Creator Care)
               </p>

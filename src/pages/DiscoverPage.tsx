@@ -140,8 +140,8 @@ export const DiscoverPage: React.FC = () => {
       <div className="bg-gradient-to-r from-amber-500/10 via-yellow-400/20 to-amber-500/10 border border-yellow-500/40 rounded-3xl p-6 sm:p-8 space-y-4 shadow-xl">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
-            <div className="flex items-center gap-2 text-yellow-800 dark:text-yellow-300 font-bold text-xs uppercase tracking-wider">
-              <Compass className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
+            <div className="flex items-center gap-2 text-yellow-800 dark:text-red-300 font-bold text-xs uppercase tracking-wider">
+              <Compass className="w-4 h-4 text-yellow-600 dark:text-red-400" />
               <span>Sub4Sub & Discovery Hub</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
@@ -158,7 +158,7 @@ export const DiscoverPage: React.FC = () => {
               onClick={() => setViewMode('sub4sub')}
               className={`px-4 py-2 rounded-xl text-xs font-black transition-all ${
                 viewMode === 'sub4sub'
-                  ? 'bg-yellow-400 text-slate-950 shadow-md shadow-yellow-500/20'
+                  ? 'bg-red-600 text-slate-950 shadow-md shadow-red-600/25'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
@@ -168,7 +168,7 @@ export const DiscoverPage: React.FC = () => {
               onClick={() => setViewMode('promotions')}
               className={`px-4 py-2 rounded-xl text-xs font-black transition-all ${
                 viewMode === 'promotions'
-                  ? 'bg-yellow-400 text-slate-950 shadow-md shadow-yellow-500/20'
+                  ? 'bg-red-600 text-slate-950 shadow-md shadow-red-600/25'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
@@ -297,7 +297,7 @@ export const DiscoverPage: React.FC = () => {
                   </div>
 
                   {promo.isSponsored ? (
-                    <span className="px-2 py-0.5 rounded text-[10px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                    <span className="px-2 py-0.5 rounded text-[10px] font-black bg-red-600/15 text-red-300 border border-red-500/30">
                       SPONSORED
                     </span>
                   ) : (
@@ -340,7 +340,7 @@ export const DiscoverPage: React.FC = () => {
                   onClick={() => handleOpenDiscoveryModal(promo)}
                   className="flex-1 py-2.5 px-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-extrabold text-xs shadow-md shadow-indigo-600/20 transition-all active:scale-95 flex items-center justify-center gap-1.5"
                 >
-                  <Coins className="w-3.5 h-3.5 text-amber-300 fill-amber-300/30" />
+                  <Coins className="w-3.5 h-3.5 text-red-300 fill-amber-300/30" />
                   <span>Discover (+{promo.rewardPerDiscovery} Credits)</span>
                 </button>
               </div>
@@ -387,8 +387,8 @@ export const DiscoverPage: React.FC = () => {
                 </div>
               </div>
 
-              <span className="font-extrabold text-amber-300 text-sm flex items-center gap-1">
-                <Coins className="w-4 h-4 text-amber-400" />
+              <span className="font-extrabold text-red-300 text-sm flex items-center gap-1">
+                <Coins className="w-4 h-4 text-red-400" />
                 +{activeDiscoveryPromo.rewardPerDiscovery} PTS
               </span>
             </div>
@@ -397,7 +397,7 @@ export const DiscoverPage: React.FC = () => {
             {activeDiscoveryPromo.videoEmbedUrl && (
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold text-amber-400 flex items-center gap-1">
+                  <span className="font-bold text-red-400 flex items-center gap-1">
                     <Sparkles className="w-3.5 h-3.5" /> Watch Creative Commons (CC-BY) Video:
                   </span>
                   <span className="text-[10px] text-slate-400 font-mono">
@@ -433,7 +433,7 @@ export const DiscoverPage: React.FC = () => {
 
                 <Link
                   to={`/promotions/${activeDiscoveryPromo.id}`}
-                  className="py-2.5 px-3 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-extrabold border border-amber-500/30 text-xs flex items-center justify-center gap-1.5"
+                  className="py-2.5 px-3 rounded-xl bg-red-600/15 hover:bg-red-600/30 text-red-300 font-extrabold border border-red-500/30 text-xs flex items-center justify-center gap-1.5"
                 >
                   <span>⏱️ Stay Timer & Analytics</span>
                 </Link>
@@ -457,7 +457,7 @@ export const DiscoverPage: React.FC = () => {
               disabled={isCompleting}
               className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 disabled:opacity-50 text-white font-extrabold text-xs shadow-lg shadow-emerald-600/30 transition-all flex items-center justify-center gap-2"
             >
-              <Sparkles className="w-4 h-4 text-amber-300" />
+              <Sparkles className="w-4 h-4 text-red-300" />
               <span>{isCompleting ? 'Claiming Reward...' : `Confirm & Earn +${activeDiscoveryPromo.rewardPerDiscovery} Credits`}</span>
             </button>
 

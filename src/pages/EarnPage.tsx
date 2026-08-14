@@ -436,7 +436,7 @@ export const EarnPage: React.FC = () => {
     <div className="max-w-xl mx-auto space-y-6 pb-12 text-stone-900 dark:text-stone-100">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-amber-500 text-stone-950 font-bold px-4 py-2.5 rounded-full shadow-2xl flex items-center gap-2 text-xs animate-in fade-in slide-in-from-top-4">
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-red-600 text-stone-950 font-bold px-4 py-2.5 rounded-full shadow-2xl flex items-center gap-2 text-xs animate-in fade-in slide-in-from-top-4">
           <Sparkles className="w-4 h-4 fill-stone-950" />
           <span>{toastMessage}</span>
         </div>
@@ -454,8 +454,8 @@ export const EarnPage: React.FC = () => {
                 Subscribe, watch videos, or look up any promoted campaign & channel in one place.
               </p>
             </div>
-            <div className="px-3 py-1.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center gap-1.5 text-amber-600 dark:text-amber-400 text-xs font-bold shrink-0">
-              <Coins className="w-4 h-4 fill-amber-500/20" />
+            <div className="px-3 py-1.5 rounded-2xl bg-red-600/10 border border-red-500/30 flex items-center gap-1.5 text-red-600 dark:text-red-400 text-xs font-bold shrink-0">
+              <Coins className="w-4 h-4 fill-red-500/20" />
               <span>{user.credits} Coins</span>
             </div>
           </div>
@@ -469,11 +469,11 @@ export const EarnPage: React.FC = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Look up any campaign, channel URL, or video ID to earn..."
-                className="w-full bg-white dark:bg-[#161310] border border-stone-200 dark:border-[#262018] rounded-2xl pl-10 pr-24 py-3 text-xs sm:text-sm text-stone-900 dark:text-white placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-500 shadow-xs"
+                className="w-full bg-white dark:bg-[#161310] border border-stone-200 dark:border-[#262018] rounded-2xl pl-10 pr-24 py-3 text-xs sm:text-sm text-stone-900 dark:text-white placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-red-500 shadow-xs"
               />
               <button
                 type="submit"
-                className="absolute right-2 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs shadow-xs transition-colors flex items-center gap-1"
+                className="absolute right-2 px-3 py-1.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs shadow-xs transition-colors flex items-center gap-1"
               >
                 <span>Look Up</span>
               </button>
@@ -512,7 +512,7 @@ export const EarnPage: React.FC = () => {
             }}
             className={`flex-1 py-2.5 px-3 rounded-xl transition-all text-center flex items-center justify-center gap-1 ${
               activeTab === 'lookup'
-                ? 'bg-white dark:bg-[#262018] text-stone-900 dark:text-white shadow-sm text-amber-500 font-extrabold'
+                ? 'bg-white dark:bg-[#262018] text-stone-900 dark:text-white shadow-sm text-red-500 font-extrabold'
                 : 'text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
             }`}
           >
@@ -545,14 +545,14 @@ export const EarnPage: React.FC = () => {
                       <img
                         src={channel.avatar}
                         alt={channel.channelName}
-                        className="w-12 h-12 rounded-full object-cover ring-2 ring-amber-500/20 shrink-0"
+                        className="w-12 h-12 rounded-full object-cover ring-2 ring-red-500/20 shrink-0"
                       />
                       <div className="space-y-0.5 flex-1 min-w-0">
                         <div className="flex items-center justify-between">
                           <h3 className="font-bold text-stone-900 dark:text-white text-base truncate">
                             {channel.channelName}
                           </h3>
-                          <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                          <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-red-600/10 text-red-600 dark:text-red-400 border border-red-500/20">
                             Channel
                           </span>
                         </div>
@@ -567,7 +567,7 @@ export const EarnPage: React.FC = () => {
                     <div className="space-y-1.5 pt-1">
                       <div className="w-full bg-stone-100 dark:bg-[#0d0b09] h-2 rounded-full overflow-hidden border border-stone-200/50 dark:border-[#262018]">
                         <div
-                          className="bg-amber-500 h-full rounded-full transition-all duration-300"
+                          className="bg-red-600 h-full rounded-full transition-all duration-300"
                           style={{ width: `${progressPct}%` }}
                         />
                       </div>
@@ -583,7 +583,7 @@ export const EarnPage: React.FC = () => {
                       className={`w-full py-3.5 px-4 rounded-2xl font-bold text-sm transition-all shadow-md flex items-center justify-center gap-2 ${
                         isSubbed
                           ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 cursor-default'
-                          : 'bg-amber-500 hover:bg-amber-400 text-stone-950 shadow-amber-500/20 active:scale-[0.99]'
+                          : 'bg-red-600 hover:bg-red-500 text-white shadow-red-600/25 active:scale-[0.99]'
                       }`}
                     >
                       {isSubbed ? (
@@ -608,7 +608,7 @@ export const EarnPage: React.FC = () => {
                 <div
                   key={video.id}
                   onClick={() => startWatchingVideo(video)}
-                  className="bg-white dark:bg-[#161310] border border-stone-200 dark:border-[#262018] rounded-3xl p-4 shadow-xs hover:border-amber-500/50 transition-all cursor-pointer space-y-3 group"
+                  className="bg-white dark:bg-[#161310] border border-stone-200 dark:border-[#262018] rounded-3xl p-4 shadow-xs hover:border-red-500/50 transition-all cursor-pointer space-y-3 group"
                 >
                   {/* Thumbnail with Overlay Play Icon */}
                   <div className="relative aspect-video w-full bg-stone-900 rounded-2xl overflow-hidden">
@@ -618,12 +618,12 @@ export const EarnPage: React.FC = () => {
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                     <div className="absolute inset-0 bg-black/30 flex items-center justify-center group-hover:bg-black/20 transition-colors">
-                      <div className="w-12 h-12 rounded-full bg-amber-500/90 text-stone-950 flex items-center justify-center shadow-lg shadow-amber-500/30 group-hover:scale-110 transition-transform">
+                      <div className="w-12 h-12 rounded-full bg-red-600/90 text-stone-950 flex items-center justify-center shadow-lg shadow-red-600/30 group-hover:scale-110 transition-transform">
                         <Play className="w-6 h-6 fill-stone-950 ml-0.5" />
                       </div>
                     </div>
                     <div className="absolute top-2 right-2 px-2 py-0.5 rounded-md bg-black/70 backdrop-blur-xs text-[10px] font-bold text-white flex items-center gap-1">
-                      <Clock className="w-3 h-3 text-amber-400" />
+                      <Clock className="w-3 h-3 text-red-400" />
                       <span>{video.watchTimeSeconds || 30}s</span>
                     </div>
                   </div>
@@ -631,10 +631,10 @@ export const EarnPage: React.FC = () => {
                   {/* Title & Channel */}
                   <div className="space-y-1">
                     <div className="flex items-center justify-between gap-2">
-                      <h3 className="font-bold text-stone-900 dark:text-white text-sm line-clamp-2 group-hover:text-amber-500 transition-colors leading-snug">
+                      <h3 className="font-bold text-stone-900 dark:text-white text-sm line-clamp-2 group-hover:text-red-500 transition-colors leading-snug">
                         {video.videoTitle}
                       </h3>
-                      <span className="shrink-0 px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 text-[11px] font-extrabold">
+                      <span className="shrink-0 px-2 py-0.5 rounded-full bg-red-600/10 text-red-600 dark:text-red-400 text-[11px] font-extrabold">
                         +{video.rewardCoins} coins
                       </span>
                     </div>
@@ -654,7 +654,7 @@ export const EarnPage: React.FC = () => {
                   onClick={() => setLookupFilterType('all')}
                   className={`px-3 py-1.5 rounded-xl transition-colors shrink-0 ${
                     lookupFilterType === 'all'
-                      ? 'bg-amber-500 text-stone-950'
+                      ? 'bg-red-600 text-stone-950'
                       : 'bg-stone-100 dark:bg-[#161310] border border-stone-200 dark:border-[#262018] text-stone-600 dark:text-stone-400 hover:text-stone-900'
                   }`}
                 >
@@ -664,7 +664,7 @@ export const EarnPage: React.FC = () => {
                   onClick={() => setLookupFilterType('channel')}
                   className={`px-3 py-1.5 rounded-xl transition-colors shrink-0 ${
                     lookupFilterType === 'channel'
-                      ? 'bg-amber-500 text-stone-950'
+                      ? 'bg-red-600 text-stone-950'
                       : 'bg-stone-100 dark:bg-[#161310] border border-stone-200 dark:border-[#262018] text-stone-600 dark:text-stone-400 hover:text-stone-900'
                   }`}
                 >
@@ -674,7 +674,7 @@ export const EarnPage: React.FC = () => {
                   onClick={() => setLookupFilterType('video')}
                   className={`px-3 py-1.5 rounded-xl transition-colors shrink-0 ${
                     lookupFilterType === 'video'
-                      ? 'bg-amber-500 text-stone-950'
+                      ? 'bg-red-600 text-stone-950'
                       : 'bg-stone-100 dark:bg-[#161310] border border-stone-200 dark:border-[#262018] text-stone-600 dark:text-stone-400 hover:text-stone-900'
                   }`}
                 >
@@ -684,7 +684,7 @@ export const EarnPage: React.FC = () => {
                   onClick={() => setLookupFilterType('campaign')}
                   className={`px-3 py-1.5 rounded-xl transition-colors shrink-0 ${
                     lookupFilterType === 'campaign'
-                      ? 'bg-amber-500 text-stone-950'
+                      ? 'bg-red-600 text-stone-950'
                       : 'bg-stone-100 dark:bg-[#161310] border border-stone-200 dark:border-[#262018] text-stone-600 dark:text-stone-400 hover:text-stone-900'
                   }`}
                 >
@@ -693,9 +693,9 @@ export const EarnPage: React.FC = () => {
               </div>
 
               {/* Lookup Stats Banner */}
-              <div className="p-3.5 rounded-2xl bg-amber-500/5 border border-amber-500/20 flex items-center justify-between text-xs">
+              <div className="p-3.5 rounded-2xl bg-red-600/5 border border-red-500/20 flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2">
-                  <Flame className="w-4 h-4 text-amber-500 fill-amber-500" />
+                  <Flame className="w-4 h-4 text-red-500 fill-red-500" />
                   <span className="font-bold text-stone-800 dark:text-stone-200">
                     {searchQuery ? `Lookup results for "${searchQuery}"` : 'All Active Promoted Campaigns & Channels'}
                   </span>
@@ -730,7 +730,7 @@ export const EarnPage: React.FC = () => {
                   return (
                     <div
                       key={item.id}
-                      className="bg-white dark:bg-[#161310] border border-stone-200 dark:border-[#262018] rounded-3xl p-5 shadow-xs space-y-4 hover:border-amber-500/40 transition-colors"
+                      className="bg-white dark:bg-[#161310] border border-stone-200 dark:border-[#262018] rounded-3xl p-5 shadow-xs space-y-4 hover:border-red-500/40 transition-colors"
                     >
                       {/* Top Bar: Type Pill & Reward */}
                       <div className="flex items-center justify-between">
@@ -740,7 +740,7 @@ export const EarnPage: React.FC = () => {
                               isVideo
                                 ? 'bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20'
                                 : item.lookupType === 'channel'
-                                ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
+                                ? 'bg-red-600/10 text-red-600 dark:text-red-400 border border-red-500/20'
                                 : 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20'
                             }`}
                           >
@@ -752,7 +752,7 @@ export const EarnPage: React.FC = () => {
                             </span>
                           )}
                         </div>
-                        <span className="px-2.5 py-1 rounded-xl bg-amber-500 text-stone-950 font-black text-xs shadow-xs">
+                        <span className="px-2.5 py-1 rounded-xl bg-red-600 text-stone-950 font-black text-xs shadow-xs">
                           +{item.rewardCoins} coins
                         </span>
                       </div>
@@ -783,7 +783,7 @@ export const EarnPage: React.FC = () => {
                         <div className="space-y-1 pt-1">
                           <div className="w-full bg-stone-100 dark:bg-[#0d0b09] h-1.5 rounded-full overflow-hidden border border-stone-200/40 dark:border-[#262018]">
                             <div
-                              className="bg-amber-500 h-full rounded-full transition-all"
+                              className="bg-red-600 h-full rounded-full transition-all"
                               style={{
                                 width: `${Math.min(
                                   100,
@@ -808,7 +808,7 @@ export const EarnPage: React.FC = () => {
                         {isVideo ? (
                           <button
                             onClick={() => startWatchingVideo(item)}
-                            className="flex-1 py-3 px-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs shadow-md shadow-amber-500/20 active:scale-[0.99] transition-all flex items-center justify-center gap-2"
+                            className="flex-1 py-3 px-4 rounded-2xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs shadow-md shadow-red-600/25 active:scale-[0.99] transition-all flex items-center justify-center gap-2"
                           >
                             <Play className="w-4 h-4 fill-stone-950" />
                             <span>Watch & Earn {item.rewardCoins} Coins (30s)</span>
@@ -820,7 +820,7 @@ export const EarnPage: React.FC = () => {
                             className={`flex-1 py-3 px-4 rounded-2xl font-bold text-xs transition-all shadow-md flex items-center justify-center gap-2 ${
                               isSubbed
                                 ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 cursor-default'
-                                : 'bg-amber-500 hover:bg-amber-400 text-stone-950 shadow-amber-500/20 active:scale-[0.99]'
+                                : 'bg-red-600 hover:bg-red-500 text-white shadow-red-600/25 active:scale-[0.99]'
                             }`}
                           >
                             {isSubbed ? (
@@ -839,7 +839,7 @@ export const EarnPage: React.FC = () => {
                             href={item.targetUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="p-3 rounded-2xl bg-stone-100 dark:bg-[#0d0b09] border border-stone-200 dark:border-[#262018] text-stone-600 dark:text-stone-400 hover:text-amber-500 transition-colors"
+                            className="p-3 rounded-2xl bg-stone-100 dark:bg-[#0d0b09] border border-stone-200 dark:border-[#262018] text-stone-600 dark:text-stone-400 hover:text-red-500 transition-colors"
                             title="Open direct URL in new tab"
                           >
                             <ExternalLink className="w-4 h-4" />
@@ -888,8 +888,8 @@ export const EarnPage: React.FC = () => {
           {/* Stats Grid: Coins / view & Remaining */}
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-stone-50 dark:bg-[#0d0b09] border border-stone-200/80 dark:border-[#262018] rounded-2xl p-4 text-center space-y-1">
-              <div className="flex justify-center text-amber-500">
-                <Coins className="w-5 h-5 fill-amber-500/20" />
+              <div className="flex justify-center text-red-500">
+                <Coins className="w-5 h-5 fill-red-500/20" />
               </div>
               <p className="text-xl font-extrabold text-stone-900 dark:text-white">
                 {activeVideo.rewardCoins}
@@ -912,7 +912,7 @@ export const EarnPage: React.FC = () => {
           <div className="space-y-1.5">
             <div className="w-full bg-stone-100 dark:bg-[#0d0b09] h-2 rounded-full overflow-hidden border border-stone-200/50 dark:border-[#262018]">
               <div
-                className="bg-amber-500 h-full rounded-full transition-all duration-300"
+                className="bg-red-600 h-full rounded-full transition-all duration-300"
                 style={{
                   width: `${Math.min(
                     100,
@@ -938,7 +938,7 @@ export const EarnPage: React.FC = () => {
             <button
               onClick={handleClaimWatchReward}
               disabled={claiming}
-              className="w-full py-4 px-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-black text-sm shadow-xl shadow-amber-500/20 transition-all flex items-center justify-center gap-2"
+              className="w-full py-4 px-4 rounded-2xl bg-red-600 hover:bg-red-500 text-white font-black text-sm shadow-xl shadow-red-600/25 transition-all flex items-center justify-center gap-2"
             >
               <Sparkles className="w-4 h-4 fill-stone-950" />
               <span>{claiming ? 'Claiming Reward...' : `Claim ${activeVideo.rewardCoins} coins`}</span>

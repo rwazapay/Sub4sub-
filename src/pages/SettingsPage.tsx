@@ -170,9 +170,9 @@ export const SettingsPage: React.FC = () => {
     <div className="space-y-8 animate-fade-in pb-12 text-stone-900 dark:text-stone-100">
       
       {/* Header */}
-      <div className="bg-amber-500/10 border border-amber-500/30 rounded-3xl p-6">
+      <div className="bg-red-600/10 border border-red-500/30 rounded-3xl p-6">
         <h1 className="text-2xl font-black text-stone-900 dark:text-white flex items-center gap-2">
-          <Settings className="w-6 h-6 text-amber-500" />
+          <Settings className="w-6 h-6 text-red-500" />
           Account & Profile Settings
         </h1>
         <p className="text-xs text-stone-600 dark:text-stone-400 font-medium mt-1">
@@ -185,7 +185,7 @@ export const SettingsPage: React.FC = () => {
         {/* Profile Info Form (7 cols) */}
         <div className="lg:col-span-7 bg-white dark:bg-[#161310] border border-stone-200 dark:border-[#262018] rounded-3xl p-6 space-y-6 shadow-xs">
           <h2 className="text-lg font-bold text-stone-900 dark:text-white flex items-center gap-2">
-            <User className="w-5 h-5 text-amber-500" />
+            <User className="w-5 h-5 text-red-500" />
             Creator Details & Avatar
           </h2>
 
@@ -204,9 +204,9 @@ export const SettingsPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsCropperOpen(true)}
-                className="py-1.5 px-3 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-600 dark:text-amber-400 font-bold text-xs flex items-center gap-1.5 transition-colors"
+                className="py-1.5 px-3 rounded-xl bg-red-600/10 hover:bg-red-600/15 border border-red-500/30 text-red-600 dark:text-red-400 font-bold text-xs flex items-center gap-1.5 transition-colors"
               >
-                <Crop className="w-3.5 h-3.5 text-amber-500" />
+                <Crop className="w-3.5 h-3.5 text-red-500" />
                 <span>Crop & Studio Studio (MongoDB)</span>
               </button>
             </div>
@@ -215,7 +215,7 @@ export const SettingsPage: React.FC = () => {
               <img
                 src={avatar || user.avatar || PRESET_AVATARS[0]}
                 alt="Avatar preview"
-                className="w-16 h-16 rounded-full object-cover ring-4 ring-amber-500/20 shrink-0"
+                className="w-16 h-16 rounded-full object-cover ring-4 ring-red-500/20 shrink-0"
               />
               <div className="space-y-2 flex-1">
                 <div className="flex items-center gap-2">
@@ -223,12 +223,12 @@ export const SettingsPage: React.FC = () => {
                     type="file"
                     accept="image/*"
                     onChange={handleFileUpload}
-                    className="block w-full text-xs text-stone-500 dark:text-stone-400 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-amber-500 file:text-stone-950 hover:file:bg-amber-400 cursor-pointer"
+                    className="block w-full text-xs text-stone-500 dark:text-stone-400 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-red-600 file:text-stone-950 hover:file:bg-red-500 cursor-pointer"
                   />
                   <button
                     type="button"
                     onClick={() => setIsCropperOpen(true)}
-                    className="py-2 px-3 rounded-xl bg-amber-500 text-stone-950 font-bold text-xs shrink-0 flex items-center gap-1 hover:bg-amber-400 shadow-xs active:scale-95 transition-all"
+                    className="py-2 px-3 rounded-xl bg-red-600 text-stone-950 font-bold text-xs shrink-0 flex items-center gap-1 hover:bg-red-500 shadow-xs active:scale-95 transition-all"
                   >
                     <Crop className="w-3.5 h-3.5" />
                     <span>Crop Avatar</span>
@@ -250,7 +250,7 @@ export const SettingsPage: React.FC = () => {
                     type="button"
                     onClick={() => setAvatar(preset)}
                     className={`w-9 h-9 rounded-full overflow-hidden border-2 transition-transform hover:scale-110 ${
-                      avatar === preset ? 'border-amber-500 ring-2 ring-amber-500/50' : 'border-transparent'
+                      avatar === preset ? 'border-red-500 ring-2 ring-red-500/50' : 'border-transparent'
                     }`}
                   >
                     <img src={preset} alt={`Preset ${idx + 1}`} className="w-full h-full object-cover" />
@@ -345,7 +345,7 @@ export const SettingsPage: React.FC = () => {
             <button
               type="submit"
               disabled={isUpdatingProfile}
-              className="py-3.5 px-6 rounded-2xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-black text-xs transition-all shadow-md active:scale-95"
+              className="py-3.5 px-6 rounded-2xl bg-red-600 hover:bg-red-500 text-white font-black text-xs transition-all shadow-md active:scale-95"
             >
               {isUpdatingProfile ? 'Saving...' : 'Save Profile Changes'}
             </button>
@@ -358,7 +358,7 @@ export const SettingsPage: React.FC = () => {
           
           <div className="bg-white dark:bg-[#161310] border border-stone-200 dark:border-[#262018] rounded-3xl p-6 space-y-5 shadow-xs">
             <h2 className="text-lg font-bold text-stone-900 dark:text-white flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-amber-500" />
+              <ShieldCheck className="w-5 h-5 text-red-500" />
               Connected Social Channels
             </h2>
 
@@ -374,7 +374,7 @@ export const SettingsPage: React.FC = () => {
                 <div key={ch.id} className="p-3.5 rounded-2xl bg-stone-50 dark:bg-[#0d0b09] border border-stone-200 dark:border-[#262018] flex items-center justify-between text-xs">
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-amber-500/20 text-amber-600 dark:text-amber-400 uppercase">
+                      <span className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-red-600/15 text-red-600 dark:text-red-400 uppercase">
                         {ch.platform}
                       </span>
                       <p className="font-bold text-stone-900 dark:text-white">{ch.channelName}</p>
@@ -431,7 +431,7 @@ export const SettingsPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={isAddingChannel || !newChannelUrl.trim()}
-                className="w-full py-2.5 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-stone-950 font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs active:scale-95 transition-all"
+                className="w-full py-2.5 px-3 rounded-xl bg-red-600 hover:bg-red-500 disabled:opacity-50 text-stone-950 font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs active:scale-95 transition-all"
               >
                 <Plus className="w-4 h-4 text-stone-950 stroke-[2.5]" />
                 <span>{isAddingChannel ? 'Connecting Channel...' : 'Connect Channel'}</span>
@@ -443,7 +443,7 @@ export const SettingsPage: React.FC = () => {
           {/* Interactive Walkthrough Card */}
           <div className="bg-white dark:bg-[#161310] border border-stone-200 dark:border-[#262018] rounded-3xl p-6 space-y-4 shadow-sm">
             <div className="flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-amber-500" />
+              <Sparkles className="w-5 h-5 text-red-500" />
               <h2 className="text-base font-bold text-stone-900 dark:text-white">Interactive Guided Tour</h2>
             </div>
             <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed">

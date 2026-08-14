@@ -133,7 +133,7 @@ export const PromotionsListPage: React.FC = () => {
 
                   <span className={`px-3 py-1 rounded-full text-xs font-extrabold uppercase shrink-0 ${
                     promo.status === 'active' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
-                    promo.status === 'paused' ? 'bg-amber-500/10 text-amber-300 border border-amber-500/20' :
+                    promo.status === 'paused' ? 'bg-red-600/10 text-red-300 border border-red-500/20' :
                     'bg-slate-800 text-slate-400'
                   }`}>
                     {promo.status}
@@ -165,7 +165,7 @@ export const PromotionsListPage: React.FC = () => {
                     {promo.status === 'active' && (
                       <button
                         onClick={() => handleAction(promo.id, 'pause')}
-                        className="px-2.5 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 font-semibold border border-amber-500/20 flex items-center gap-1"
+                        className="px-2.5 py-1 rounded-lg bg-red-600/10 hover:bg-red-600/15 text-red-300 font-semibold border border-red-500/20 flex items-center gap-1"
                       >
                         <Pause className="w-3.5 h-3.5" />
                         <span>Pause</span>

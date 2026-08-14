@@ -193,7 +193,7 @@ export const CreatorProfilePage: React.FC = () => {
             </p>
 
             <div className="flex flex-wrap items-center gap-3 pt-1 text-xs font-bold">
-              <span className="px-2.5 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 text-yellow-800 dark:text-yellow-300 flex items-center gap-1">
+              <span className="px-2.5 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 text-yellow-800 dark:text-red-300 flex items-center gap-1">
                 <Globe2 className="w-3.5 h-3.5" />
                 {creatorUser.country}
               </span>
@@ -217,7 +217,7 @@ export const CreatorProfilePage: React.FC = () => {
                 <button
                   onClick={handleSub4SubAction}
                   disabled={subProcessing}
-                  className="py-3 px-5 rounded-2xl bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-black text-xs shadow-lg shadow-yellow-500/20 active:scale-95 transition-all flex items-center gap-2"
+                  className="py-3 px-5 rounded-2xl bg-red-600 hover:bg-red-500 text-white font-black text-xs shadow-lg shadow-red-600/25 active:scale-95 transition-all flex items-center gap-2"
                 >
                   <Repeat className="w-4 h-4 stroke-[2.5]" />
                   <span>
@@ -364,7 +364,7 @@ export const CreatorProfilePage: React.FC = () => {
                   <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-500/20 text-indigo-300">
                     {p.platform}
                   </span>
-                  <span className="text-amber-300 font-bold text-xs flex items-center gap-1">
+                  <span className="text-red-300 font-bold text-xs flex items-center gap-1">
                     <Coins className="w-3.5 h-3.5" /> +10 Credits
                   </span>
                 </div>

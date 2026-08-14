@@ -103,15 +103,21 @@ export const WalletPage: React.FC = () => {
     setDailyClaimMsg(null);
 
     try {
-      const res = await apiClient.post('/wallet/daily-claim');
-      if (res.data.success) {
+      let res;
+      try {
+        res = await apiClient.post('/wallet/daily-claim');
+      } catch {
+        res = await apiClient.post('/auth/daily-streak-claim');
+      }
+
+      if (res.data?.success) {
         setDailyClaimMsg(`🎉 ${res.data.message}`);
         if (res.data.data?.user) {
           updateUser(res.data.data.user);
         } else if (user) {
           updateUser({
             ...user,
-            credits: res.data.data.newBalance,
+            credits: res.data.data?.newBalance ?? user.credits + (res.data.data?.bonusCoins || 25),
             dailyRewardClaimedToday: true,
           });
         }
@@ -176,13 +182,13 @@ export const WalletPage: React.FC = () => {
     <div className="space-y-6 sm:space-y-8 animate-fade-in pb-16">
       
       {/* Header Banner */}
-      <div className="bg-gradient-to-r from-stone-900 via-amber-950/50 to-stone-900 border border-amber-500/30 rounded-3xl p-6 sm:p-8 space-y-3 shadow-xl">
+      <div className="bg-gradient-to-r from-stone-900 via-amber-950/50 to-stone-900 border border-red-500/30 rounded-3xl p-6 sm:p-8 space-y-3 shadow-xl">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2 text-amber-400 font-bold text-xs uppercase tracking-wider">
+          <div className="flex items-center gap-2 text-red-400 font-bold text-xs uppercase tracking-wider">
             <Coins className="w-4 h-4" />
             <span>Advanced Coin Management & Wallet</span>
           </div>
-          <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase bg-amber-500/20 text-amber-300 border border-amber-500/30">
+          <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase bg-red-600/15 text-red-300 border border-red-500/30">
             Real-Time Balance
           </span>
         </div>
@@ -198,7 +204,7 @@ export const WalletPage: React.FC = () => {
         <div className="pt-2 flex flex-wrap items-center gap-3">
           <button
             onClick={() => setShowTransferModal(true)}
-            className="py-2.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-black text-xs transition-all flex items-center gap-2 shadow-md active:scale-95"
+            className="py-2.5 px-4 rounded-xl bg-red-600 hover:bg-red-500 text-white font-black text-xs transition-all flex items-center gap-2 shadow-md active:scale-95"
           >
             <Send className="w-4 h-4" />
             <span>Gift / Transfer Coins</span>
@@ -208,7 +214,7 @@ export const WalletPage: React.FC = () => {
             href="#coin-store"
             className="py-2.5 px-4 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-100 font-bold text-xs transition-all flex items-center gap-2 border border-stone-700 active:scale-95"
           >
-            <CreditCard className="w-4 h-4 text-amber-400" />
+            <CreditCard className="w-4 h-4 text-red-400" />
             <span>Buy Coin Packages</span>
           </a>
         </div>
@@ -225,10 +231,10 @@ export const WalletPage: React.FC = () => {
         {/* Balance Metrics */}
         <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="p-6 rounded-3xl bg-white dark:bg-[#161310] border border-stone-200 dark:border-[#262018] space-y-2 shadow-sm">
-            <span className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider block">
+            <span className="text-xs font-bold text-red-600 dark:text-red-400 uppercase tracking-wider block">
               Available Coins
             </span>
-            <p className="text-3xl sm:text-4xl font-black text-stone-900 dark:text-amber-300">
+            <p className="text-3xl sm:text-4xl font-black text-stone-900 dark:text-red-300">
               {user.credits.toLocaleString()}{' '}
               <span className="text-xs font-semibold text-stone-500 dark:text-stone-400">Coins</span>
             </p>
@@ -265,14 +271,14 @@ export const WalletPage: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
             <h2 className="text-xl font-extrabold text-stone-900 dark:text-white flex items-center gap-2">
-              <CreditCard className="w-5 h-5 text-amber-500" />
+              <CreditCard className="w-5 h-5 text-red-500" />
               Coin Top-Up Packages
             </h2>
             <p className="text-xs text-stone-500 dark:text-stone-400">
               Boost your channel campaigns instantly with promotional coin bundles
             </p>
           </div>
-          <span className="text-[11px] font-extrabold px-3 py-1 rounded-full bg-stone-100 dark:bg-[#201b15] text-amber-600 dark:text-amber-400 border border-stone-200 dark:border-[#332b21] shrink-0">
+          <span className="text-[11px] font-extrabold px-3 py-1 rounded-full bg-stone-100 dark:bg-[#201b15] text-red-600 dark:text-red-400 border border-stone-200 dark:border-[#332b21] shrink-0">
             Instant Credit Fulfillment
           </span>
         </div>
@@ -283,20 +289,20 @@ export const WalletPage: React.FC = () => {
               key={pkg.id}
               className={`p-6 rounded-3xl border flex flex-col justify-between space-y-6 transition-all ${
                 pkg.isPopular
-                  ? 'bg-gradient-to-b from-amber-500/10 via-stone-900 to-stone-900 border-amber-500/50 shadow-xl text-white'
-                  : 'bg-stone-50 dark:bg-[#0d0b09] border-stone-200 dark:border-[#262018] hover:border-amber-500 dark:hover:border-amber-500/50'
+                  ? 'bg-gradient-to-b from-amber-500/10 via-stone-900 to-stone-900 border-red-500/50 shadow-xl text-white'
+                  : 'bg-stone-50 dark:bg-[#0d0b09] border-stone-200 dark:border-[#262018] hover:border-red-500 dark:hover:border-red-500/50'
               }`}
             >
               <div className="space-y-4">
                 {pkg.isPopular && (
-                  <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase bg-amber-500 text-stone-950 inline-block">
+                  <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase bg-red-600 text-stone-950 inline-block">
                     MOST POPULAR
                   </span>
                 )}
 
                 <div>
                   <h3 className="font-extrabold text-stone-900 dark:text-white text-lg">{pkg.name}</h3>
-                  <p className="text-3xl font-black text-amber-500 dark:text-amber-300 mt-2">
+                  <p className="text-3xl font-black text-red-500 dark:text-red-300 mt-2">
                     {pkg.credits.toLocaleString()} <span className="text-xs font-normal text-stone-500 dark:text-stone-400">Coins</span>
                   </p>
                   <p className="text-xs font-bold text-stone-700 dark:text-stone-300 mt-1">${pkg.priceUsd} USD</p>
@@ -307,7 +313,7 @@ export const WalletPage: React.FC = () => {
 
               <button
                 onClick={() => setSelectedPackage(pkg)}
-                className="w-full py-3 px-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-extrabold text-xs shadow-md transition-all active:scale-95 flex items-center justify-center gap-1.5"
+                className="w-full py-3 px-4 rounded-2xl bg-red-600 hover:bg-red-500 text-white font-extrabold text-xs shadow-md transition-all active:scale-95 flex items-center justify-center gap-1.5"
               >
                 <Coins className="w-4 h-4 text-stone-950" />
                 <span>Get {pkg.credits} Coins</span>
@@ -333,7 +339,7 @@ export const WalletPage: React.FC = () => {
                 onClick={() => setTxFilter(filter)}
                 className={`px-3 py-1.5 rounded-xl text-xs font-extrabold capitalize transition-all ${
                   txFilter === filter
-                    ? 'bg-amber-500 text-stone-950 shadow-sm'
+                    ? 'bg-red-600 text-stone-950 shadow-sm'
                     : 'text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
                 }`}
               >
@@ -396,7 +402,7 @@ export const WalletPage: React.FC = () => {
             </button>
 
             <div className="space-y-1">
-              <div className="flex items-center gap-2 text-amber-500 font-bold text-xs uppercase tracking-wider">
+              <div className="flex items-center gap-2 text-red-500 font-bold text-xs uppercase tracking-wider">
                 <Gift className="w-4 h-4" />
                 <span>Peer Coin Transfer</span>
               </div>
@@ -430,7 +436,7 @@ export const WalletPage: React.FC = () => {
                   value={transferRecipient}
                   onChange={(e) => setTransferRecipient(e.target.value)}
                   placeholder="e.g. tech_rwanda or alex"
-                  className="w-full bg-stone-50 dark:bg-[#0d0b09] border border-stone-200 dark:border-[#262018] rounded-2xl px-4 py-3 text-stone-900 dark:text-white placeholder-stone-400 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  className="w-full bg-stone-50 dark:bg-[#0d0b09] border border-stone-200 dark:border-[#262018] rounded-2xl px-4 py-3 text-stone-900 dark:text-white placeholder-stone-400 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                 />
               </div>
 
@@ -445,7 +451,7 @@ export const WalletPage: React.FC = () => {
                   required
                   value={transferAmount}
                   onChange={(e) => setTransferAmount(e.target.value)}
-                  className="w-full bg-stone-50 dark:bg-[#0d0b09] border border-stone-200 dark:border-[#262018] rounded-2xl px-4 py-3 text-stone-900 dark:text-white placeholder-stone-400 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  className="w-full bg-stone-50 dark:bg-[#0d0b09] border border-stone-200 dark:border-[#262018] rounded-2xl px-4 py-3 text-stone-900 dark:text-white placeholder-stone-400 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                 />
               </div>
 
@@ -458,14 +464,14 @@ export const WalletPage: React.FC = () => {
                   value={transferNote}
                   onChange={(e) => setTransferNote(e.target.value)}
                   placeholder="e.g. Keep up the great YouTube videos!"
-                  className="w-full bg-stone-50 dark:bg-[#0d0b09] border border-stone-200 dark:border-[#262018] rounded-2xl px-4 py-2.5 text-stone-900 dark:text-white placeholder-stone-400 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  className="w-full bg-stone-50 dark:bg-[#0d0b09] border border-stone-200 dark:border-[#262018] rounded-2xl px-4 py-2.5 text-stone-900 dark:text-white placeholder-stone-400 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={isTransferring || user.credits < parseInt(transferAmount || '0', 10)}
-                className="w-full py-3.5 px-4 rounded-2xl bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-stone-950 font-black text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2 active:scale-95"
+                className="w-full py-3.5 px-4 rounded-2xl bg-red-600 hover:bg-red-500 disabled:opacity-50 text-stone-950 font-black text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2 active:scale-95"
               >
                 <Send className="w-4 h-4" />
                 <span>{isTransferring ? 'Transferring Coins...' : `Confirm Transfer (${transferAmount} Coins)`}</span>
@@ -489,7 +495,7 @@ export const WalletPage: React.FC = () => {
             </button>
 
             <div className="space-y-1">
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-red-600/15 text-red-600 dark:text-red-400 border border-red-500/30">
                 Checkout Test Mode
               </span>
               <h2 className="text-xl font-black text-stone-900 dark:text-white">
@@ -502,7 +508,7 @@ export const WalletPage: React.FC = () => {
 
             <div className="p-4 rounded-2xl bg-stone-50 dark:bg-[#0d0b09] border border-stone-200 dark:border-[#262018] flex items-center justify-between font-bold">
               <span>{selectedPackage.credits.toLocaleString()} Coins</span>
-              <span className="text-amber-600 dark:text-amber-300 text-lg">${selectedPackage.priceUsd} USD</span>
+              <span className="text-red-600 dark:text-red-300 text-lg">${selectedPackage.priceUsd} USD</span>
             </div>
 
             {purchaseSuccessMsg && (
@@ -515,7 +521,7 @@ export const WalletPage: React.FC = () => {
               <button
                 onClick={handlePurchase}
                 disabled={isPurchasing}
-                className="w-full py-3.5 px-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-black text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2 active:scale-95"
+                className="w-full py-3.5 px-4 rounded-2xl bg-red-600 hover:bg-red-500 text-white font-black text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2 active:scale-95"
               >
                 <Lock className="w-4 h-4" />
                 <span>{isPurchasing ? 'Processing...' : `Confirm Payment ($${selectedPackage.priceUsd})`}</span>

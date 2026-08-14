@@ -193,13 +193,13 @@ export const AvatarCropperModal: React.FC<AvatarCropperModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between border-b border-[#262018] pb-4">
           <div className="flex items-center gap-2">
-            <div className="p-2 rounded-xl bg-amber-500/20 text-amber-500">
+            <div className="p-2 rounded-xl bg-red-500/20 text-red-500">
               <Crop className="w-5 h-5" />
             </div>
             <div>
               <h3 className="font-bold text-base text-stone-100 flex items-center gap-1.5">
                 Avatar Cropper & Studio
-                <Sparkles className="w-4 h-4 text-amber-400 fill-amber-400" />
+                <Sparkles className="w-4 h-4 text-red-400 fill-red-400" />
               </h3>
               <p className="text-[11px] text-stone-400">Position, zoom and crop your creator photo</p>
             </div>
@@ -222,7 +222,7 @@ export const AvatarCropperModal: React.FC<AvatarCropperModalProps> = ({
         <div className="flex flex-col items-center space-y-4">
           <div className="relative group">
             {/* Round Crop Overlay Guide */}
-            <div className="relative w-[260px] h-[260px] rounded-full overflow-hidden border-4 border-amber-500 shadow-xl shadow-amber-500/10 cursor-grab active:cursor-grabbing">
+            <div className="relative w-[260px] h-[260px] rounded-full overflow-hidden border-4 border-red-500 shadow-xl shadow-red-500/10 cursor-grab active:cursor-grabbing">
               <canvas
                 ref={canvasRef}
                 onMouseDown={handleMouseDown}
@@ -231,10 +231,10 @@ export const AvatarCropperModal: React.FC<AvatarCropperModalProps> = ({
                 onMouseLeave={handleMouseUp}
                 className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 pointer-events-none rounded-full border border-amber-400/40" />
+              <div className="absolute inset-0 pointer-events-none rounded-full border border-red-400/40" />
             </div>
 
-            <div className="absolute bottom-2 right-2 bg-stone-900/90 text-amber-400 px-2.5 py-1 rounded-full text-[10px] font-bold flex items-center gap-1 border border-amber-500/30">
+            <div className="absolute bottom-2 right-2 bg-stone-900/90 text-red-400 px-2.5 py-1 rounded-full text-[10px] font-bold flex items-center gap-1 border border-red-500/30">
               <Move className="w-3 h-3" />
               <span>Drag to Pan</span>
             </div>
@@ -247,9 +247,9 @@ export const AvatarCropperModal: React.FC<AvatarCropperModalProps> = ({
             <div className="space-y-1.5">
               <div className="flex items-center justify-between text-xs text-stone-300 font-bold">
                 <span className="flex items-center gap-1">
-                  <ZoomIn className="w-3.5 h-3.5 text-amber-500" /> Zoom Level
+                  <ZoomIn className="w-3.5 h-3.5 text-red-500" /> Zoom Level
                 </span>
-                <span className="text-amber-400">{Math.round(zoom * 100)}%</span>
+                <span className="text-red-400">{Math.round(zoom * 100)}%</span>
               </div>
               <div className="flex items-center gap-2">
                 <button
@@ -266,7 +266,7 @@ export const AvatarCropperModal: React.FC<AvatarCropperModalProps> = ({
                   step="0.05"
                   value={zoom}
                   onChange={(e) => setZoom(parseFloat(e.target.value))}
-                  className="w-full accent-amber-500 bg-stone-800 h-1.5 rounded-lg cursor-pointer"
+                  className="w-full accent-red-500 bg-stone-800 h-1.5 rounded-lg cursor-pointer"
                 />
                 <button
                   type="button"
@@ -285,14 +285,14 @@ export const AvatarCropperModal: React.FC<AvatarCropperModalProps> = ({
                 onClick={() => setRotation((r) => (r + 90) % 360)}
                 className="py-1.5 px-3 rounded-xl bg-[#161310] border border-[#262018] text-xs font-bold text-stone-300 hover:text-white flex items-center gap-1.5 hover:bg-stone-800 transition-colors"
               >
-                <RotateCw className="w-3.5 h-3.5 text-amber-500" />
+                <RotateCw className="w-3.5 h-3.5 text-red-500" />
                 <span>Rotate ({rotation}°)</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="py-1.5 px-3 rounded-xl bg-[#161310] border border-[#262018] text-xs font-bold text-amber-400 hover:text-amber-300 flex items-center gap-1.5 hover:bg-stone-800 transition-colors"
+                className="py-1.5 px-3 rounded-xl bg-[#161310] border border-[#262018] text-xs font-bold text-red-400 hover:text-red-300 flex items-center gap-1.5 hover:bg-stone-800 transition-colors"
               >
                 <Upload className="w-3.5 h-3.5" />
                 <span>Upload New Image</span>
@@ -322,7 +322,7 @@ export const AvatarCropperModal: React.FC<AvatarCropperModalProps> = ({
             type="button"
             disabled={isSaving || !imageSrc}
             onClick={handleSaveCroppedAvatar}
-            className="py-2.5 px-5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-black text-xs flex items-center gap-2 shadow-lg shadow-amber-500/20 active:scale-95 transition-all disabled:opacity-50"
+            className="py-2.5 px-5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-black text-xs flex items-center gap-2 shadow-lg shadow-red-600/25 active:scale-95 transition-all disabled:opacity-50"
           >
             {isSaving ? (
               <span>Saving to MongoDB...</span>

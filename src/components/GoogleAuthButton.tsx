@@ -137,7 +137,7 @@ export const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
       type="button"
       onClick={handleGoogleSignInClick}
       disabled={isAuthenticating}
-      className="w-full py-3.5 px-4 rounded-2xl bg-white dark:bg-[#1c1813] hover:bg-stone-50 dark:hover:bg-[#262018] text-stone-800 dark:text-stone-100 font-bold text-xs sm:text-sm border-2 border-stone-200 dark:border-[#332b21] hover:border-amber-500 shadow-sm transition-all flex items-center justify-center gap-3 active:scale-98 relative group cursor-pointer"
+      className="w-full py-3.5 px-4 rounded-2xl bg-white dark:bg-[#1c1813] hover:bg-stone-50 dark:hover:bg-[#262018] text-stone-800 dark:text-stone-100 font-bold text-xs sm:text-sm border-2 border-stone-200 dark:border-[#332b21] hover:border-red-500 shadow-sm transition-all flex items-center justify-center gap-3 active:scale-98 relative group cursor-pointer"
     >
       {/* Official Google Vector Logo */}
       <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
@@ -161,7 +161,7 @@ export const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
 
       <span>{isAuthenticating ? 'Connecting to Google Accounts...' : buttonText}</span>
 
-      <span className="ml-auto px-2 py-0.5 rounded text-[10px] font-black bg-amber-500/20 text-amber-700 dark:text-amber-400 uppercase tracking-wide">
+      <span className="ml-auto px-2 py-0.5 rounded text-[10px] font-black bg-red-500/15 text-red-600 dark:text-red-400 uppercase tracking-wide">
         Google Auth
       </span>
     </button>

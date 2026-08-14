@@ -122,7 +122,7 @@ export const PromotionDetailPage: React.FC = () => {
         <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-1">
           <div className="flex items-center justify-between text-slate-400 text-xs">
             <span>Remaining Budget</span>
-            <Coins className="w-4 h-4 text-amber-400" />
+            <Coins className="w-4 h-4 text-red-400" />
           </div>
           <p className="text-2xl font-black text-white">{analytics?.remainingCredits || 0} Credits</p>
         </div>

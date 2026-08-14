@@ -55,15 +55,30 @@ export const DailyRewardCard: React.FC<DailyRewardCardProps> = ({
     setClaimFeedback(null);
 
     try {
-      const res = await apiClient.post('/wallet/daily-claim');
+      let res;
+      try {
+        res = await apiClient.post('/wallet/daily-claim');
+      } catch (firstErr) {
+        // Fallback to auth endpoint
+        res = await apiClient.post('/auth/daily-streak-claim');
+      }
+
       if (res.data?.success) {
-        const bonusCoins = res.data.data?.bonusCoins || potentialReward;
-        const updatedUser = res.data.data?.user || {
+        const bonusCoins =
+          res.data.data?.bonusCoins ?? res.data.data?.streakBonus ?? potentialReward;
+        const streakDays =
+          res.data.data?.streakDays ?? res.data.data?.user?.streakDays ?? streak;
+        const nextAt =
+          res.data.data?.nextClaimAvailableAt ??
+          res.data.data?.user?.nextRewardAvailableAt;
+
+        const updatedUser: typeof user = res.data.data?.user || {
           ...user,
           credits: (user.credits || 0) + bonusCoins,
+          totalCreditsEarned: (user.totalCreditsEarned || 0) + bonusCoins,
           dailyRewardClaimedToday: true,
-          streakDays: res.data.data?.streakDays || streak,
-          nextRewardAvailableAt: res.data.data?.nextClaimAvailableAt,
+          streakDays: streakDays,
+          nextRewardAvailableAt: nextAt,
         };
 
         updateUser(updatedUser);
@@ -74,9 +89,18 @@ export const DailyRewardCard: React.FC<DailyRewardCardProps> = ({
         if (onRewardClaimed) {
           onRewardClaimed(bonusCoins, updatedUser.streakDays);
         }
+      } else {
+        setClaimFeedback(res.data?.message || 'Daily reward check failed. Please refresh.');
       }
     } catch (err: any) {
-      setClaimFeedback(err.response?.data?.message || 'Failed to claim bonus.');
+      console.error('Claim daily reward error:', err);
+      const msg =
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        (err.message === 'Network Error'
+          ? 'Network connection issue. Please check your internet.'
+          : 'Failed to claim bonus. Please try again.');
+      setClaimFeedback(msg);
     } finally {
       setIsClaiming(false);
     }
@@ -90,10 +114,10 @@ export const DailyRewardCard: React.FC<DailyRewardCardProps> = ({
         >
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-stone-300 flex items-center gap-1.5">
-              <Flame className="w-4 h-4 text-amber-500 fill-amber-500" />
+              <Flame className="w-4 h-4 text-red-500 fill-red-500" />
               <span>Daily Streak</span>
             </span>
-            <span className="font-extrabold text-amber-400 text-xs px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20">
+            <span className="font-extrabold text-red-400 text-xs px-2 py-0.5 rounded-full bg-red-500/10 border border-red-500/20">
               Day {user.streakDays || 1}
             </span>
           </div>
@@ -107,7 +131,7 @@ export const DailyRewardCard: React.FC<DailyRewardCardProps> = ({
             <button
               onClick={handleClaim}
               disabled={isClaiming}
-              className="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-black text-xs shadow-md transition-all active:scale-95 flex items-center justify-center gap-1.5"
+              className="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white font-black text-xs shadow-md transition-all active:scale-95 flex items-center justify-center gap-1.5"
             >
               <Gift className="w-3.5 h-3.5" />
               <span>{isClaiming ? 'Claiming...' : `Claim +${potentialReward} Coins`}</span>
@@ -115,7 +139,7 @@ export const DailyRewardCard: React.FC<DailyRewardCardProps> = ({
           )}
 
           {claimFeedback && (
-            <p className="text-[10px] text-amber-300 font-semibold text-center truncate">{claimFeedback}</p>
+            <p className="text-[10px] text-red-300 font-semibold text-center truncate">{claimFeedback}</p>
           )}
         </div>
 
@@ -134,18 +158,18 @@ export const DailyRewardCard: React.FC<DailyRewardCardProps> = ({
   return (
     <>
       <div
-        className={`p-6 rounded-3xl bg-gradient-to-br from-amber-500/15 via-stone-900 to-stone-900 border border-amber-500/40 text-stone-100 space-y-4 shadow-xl flex flex-col justify-between relative overflow-hidden ${className}`}
+        className={`p-6 rounded-3xl bg-gradient-to-br from-red-600/15 via-stone-900 to-stone-900 border border-red-600/40 text-stone-100 space-y-4 shadow-xl flex flex-col justify-between relative overflow-hidden ${className}`}
       >
         {/* Glow */}
-        <div className="absolute top-0 right-0 w-48 h-48 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-0 right-0 w-48 h-48 bg-red-600/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="space-y-3 relative z-10">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-black text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
-              <Flame className="w-4 h-4 text-amber-500 fill-amber-500" />
+            <span className="text-xs font-black text-red-400 uppercase tracking-wider flex items-center gap-1.5">
+              <Flame className="w-4 h-4 text-red-500 fill-red-500" />
               Daily Check-in Reward
             </span>
-            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-black bg-amber-500 text-stone-950 shadow-sm">
+            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-black bg-red-600 text-white shadow-sm">
               Day {user.streakDays || 1} Streak 🔥
             </span>
           </div>
@@ -164,9 +188,9 @@ export const DailyRewardCard: React.FC<DailyRewardCardProps> = ({
                   key={dayNum}
                   className={`py-1 rounded-lg text-center text-[10px] font-bold border transition-all ${
                     isToday
-                      ? 'bg-amber-500 text-stone-950 border-amber-400 shadow-sm'
+                      ? 'bg-red-600 text-white border-red-500 shadow-sm'
                       : isPastOrCurrent
-                      ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                      ? 'bg-red-600/20 text-red-300 border-red-500/30'
                       : 'bg-stone-800/60 text-stone-500 border-stone-800'
                   }`}
                 >
@@ -177,8 +201,8 @@ export const DailyRewardCard: React.FC<DailyRewardCardProps> = ({
           </div>
 
           {claimFeedback && (
-            <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-bold flex items-center gap-2">
-              <Sparkles className="w-4 h-4 shrink-0 text-amber-400" />
+            <div className="p-3 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-300 text-xs font-bold flex items-center gap-2">
+              <Sparkles className="w-4 h-4 shrink-0 text-red-400" />
               <span>{claimFeedback}</span>
             </div>
           )}
@@ -195,16 +219,16 @@ export const DailyRewardCard: React.FC<DailyRewardCardProps> = ({
                 <span>Claimed Today (+{potentialReward} Coins)</span>
               </button>
               <div className="flex items-center justify-center gap-1.5 text-[11px] font-semibold text-stone-400">
-                <Clock className="w-3.5 h-3.5 text-amber-400" />
+                <Clock className="w-3.5 h-3.5 text-red-400" />
                 <span>Next reward unlocks in:</span>
-                <span className="font-mono text-amber-400 font-bold">{timeLeft || '00:00:00'}</span>
+                <span className="font-mono text-red-400 font-bold">{timeLeft || '00:00:00'}</span>
               </div>
             </div>
           ) : (
             <button
               onClick={handleClaim}
               disabled={isClaiming}
-              className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-black text-xs sm:text-sm transition-all shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 active:scale-95"
+              className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white font-black text-xs sm:text-sm transition-all shadow-lg shadow-red-600/25 flex items-center justify-center gap-2 active:scale-95"
             >
               <Gift className="w-4 h-4" />
               <span>{isClaiming ? 'Claiming Reward...' : `Claim +${potentialReward} Bonus Coins Now`}</span>

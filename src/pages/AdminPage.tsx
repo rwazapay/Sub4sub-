@@ -95,7 +95,7 @@ export const AdminPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-800 pb-4">
         <div>
           <div className="flex items-center gap-2">
-            <Shield className="w-6 h-6 text-amber-400" />
+            <Shield className="w-6 h-6 text-red-400" />
             <h1 className="text-2xl font-black text-white">Admin Control Center</h1>
           </div>
           <p className="text-xs text-slate-400 mt-1">
@@ -127,7 +127,7 @@ export const AdminPage: React.FC = () => {
           onClick={() => setActiveTab('stats')}
           className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
             activeTab === 'stats'
-              ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
+              ? 'bg-red-600 text-slate-950 shadow-md shadow-red-600/25'
               : 'text-slate-400 hover:text-white hover:bg-slate-900'
           }`}
         >
@@ -139,7 +139,7 @@ export const AdminPage: React.FC = () => {
           onClick={() => setActiveTab('users')}
           className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
             activeTab === 'users'
-              ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
+              ? 'bg-red-600 text-slate-950 shadow-md shadow-red-600/25'
               : 'text-slate-400 hover:text-white hover:bg-slate-900'
           }`}
         >
@@ -151,7 +151,7 @@ export const AdminPage: React.FC = () => {
           onClick={() => setActiveTab('promotions')}
           className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
             activeTab === 'promotions'
-              ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
+              ? 'bg-red-600 text-slate-950 shadow-md shadow-red-600/25'
               : 'text-slate-400 hover:text-white hover:bg-slate-900'
           }`}
         >
@@ -163,7 +163,7 @@ export const AdminPage: React.FC = () => {
           onClick={() => setActiveTab('audit')}
           className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
             activeTab === 'audit'
-              ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
+              ? 'bg-red-600 text-slate-950 shadow-md shadow-red-600/25'
               : 'text-slate-400 hover:text-white hover:bg-slate-900'
           }`}
         >
@@ -189,7 +189,7 @@ export const AdminPage: React.FC = () => {
 
           <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 space-y-1">
             <span className="text-[10px] font-bold text-slate-400 uppercase">Credits in Circulation</span>
-            <p className="text-2xl font-black text-amber-400">{stats.totalCreditsInCirculation?.toLocaleString()}</p>
+            <p className="text-2xl font-black text-red-400">{stats.totalCreditsInCirculation?.toLocaleString()}</p>
             <p className="text-[11px] text-slate-400">User balances</p>
           </div>
 
@@ -210,7 +210,7 @@ export const AdminPage: React.FC = () => {
               placeholder="Search user by name, email..."
               value={userSearch}
               onChange={(e) => setUserSearch(e.target.value)}
-              className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
+              className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-red-500"
             />
           </div>
 
@@ -242,7 +242,7 @@ export const AdminPage: React.FC = () => {
                           <p className="text-[10px] text-slate-400">@{u.username}</p>
                         </div>
                       </td>
-                      <td className="p-3 font-bold text-amber-400">{u.credits}</td>
+                      <td className="p-3 font-bold text-red-400">{u.credits}</td>
                       <td className="p-3 text-slate-300">{u.streakDays} days</td>
                       <td className="p-3">
                         <span
@@ -251,7 +251,7 @@ export const AdminPage: React.FC = () => {
                               ? 'bg-emerald-500/20 text-emerald-400'
                               : u.status === 'suspended'
                               ? 'bg-red-500/20 text-red-400'
-                              : 'bg-amber-500/20 text-amber-400'
+                              : 'bg-red-600/15 text-red-400'
                           }`}
                         >
                           {u.status}
@@ -308,7 +308,7 @@ export const AdminPage: React.FC = () => {
                         p.status === 'active'
                           ? 'bg-emerald-500/20 text-emerald-400'
                           : p.status === 'paused'
-                          ? 'bg-amber-500/20 text-amber-400'
+                          ? 'bg-red-600/15 text-red-400'
                           : 'bg-red-500/20 text-red-400'
                       }`}
                     >
@@ -364,7 +364,7 @@ export const AdminPage: React.FC = () => {
                     <td className="p-3 text-slate-400 font-mono text-[10px]">
                       {new Date(log.createdAt).toLocaleString()}
                     </td>
-                    <td className="p-3 font-bold text-amber-400">@{log.adminUsername}</td>
+                    <td className="p-3 font-bold text-red-400">@{log.adminUsername}</td>
                     <td className="p-3 font-mono text-indigo-300 text-[10px] uppercase">{log.action}</td>
                     <td className="p-3 text-slate-200">{log.details}</td>
                   </tr>

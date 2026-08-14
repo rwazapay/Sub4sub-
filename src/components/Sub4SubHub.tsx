@@ -289,13 +289,13 @@ export const Sub4SubHub: React.FC = () => {
       )}
 
       {/* Sub4Sub Navigation Tabs */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-b border-amber-200 dark:border-slate-800 pb-3">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-b border-stone-200 dark:border-stone-800 pb-3">
         <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto">
           <button
             onClick={() => setActiveTab('feed')}
             className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 ${
               activeTab === 'feed'
-                ? 'bg-yellow-400 text-slate-950 shadow-md shadow-yellow-500/20'
+                ? 'bg-red-600 text-white shadow-md shadow-red-600/25'
                 : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
             }`}
           >
@@ -307,7 +307,7 @@ export const Sub4SubHub: React.FC = () => {
             onClick={() => setActiveTab('incoming')}
             className={`relative px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 ${
               activeTab === 'incoming'
-                ? 'bg-yellow-400 text-slate-950 shadow-md shadow-yellow-500/20'
+                ? 'bg-red-600 text-white shadow-md shadow-red-600/25'
                 : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
             }`}
           >
@@ -324,7 +324,7 @@ export const Sub4SubHub: React.FC = () => {
             onClick={() => setActiveTab('mutual')}
             className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 ${
               activeTab === 'mutual'
-                ? 'bg-yellow-400 text-slate-950 shadow-md shadow-yellow-500/20'
+                ? 'bg-red-600 text-white shadow-md shadow-red-600/25'
                 : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
             }`}
           >
@@ -339,7 +339,7 @@ export const Sub4SubHub: React.FC = () => {
             <select
               value={platformFilter}
               onChange={(e) => setPlatformFilter(e.target.value)}
-              className="bg-white dark:bg-slate-900 border border-amber-200 dark:border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-800 dark:text-slate-200 font-bold focus:outline-none focus:ring-2 focus:ring-yellow-400"
+              className="bg-white dark:bg-slate-900 border border-stone-200 dark:border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-800 dark:text-slate-200 font-bold focus:outline-none focus:ring-2 focus:ring-red-500"
             >
               {platforms.map((p) => (
                 <option key={p} value={p}>
@@ -355,7 +355,7 @@ export const Sub4SubHub: React.FC = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search..."
-                className="w-full bg-white dark:bg-slate-900 border border-amber-200 dark:border-slate-800 rounded-xl pl-8 pr-3 py-1.5 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                className="w-full bg-white dark:bg-slate-900 border border-stone-200 dark:border-slate-800 rounded-xl pl-8 pr-3 py-1.5 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-red-500"
               />
             </div>
           </div>
@@ -368,11 +368,11 @@ export const Sub4SubHub: React.FC = () => {
           {isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="h-44 rounded-2xl bg-amber-100/50 dark:bg-slate-900 animate-pulse" />
+                <div key={i} className="h-44 rounded-2xl bg-stone-100 dark:bg-slate-900 animate-pulse" />
               ))}
             </div>
           ) : creators.length === 0 ? (
-            <div className="p-12 text-center bg-white dark:bg-slate-900 border border-amber-200 dark:border-slate-800 rounded-3xl space-y-2">
+            <div className="p-12 text-center bg-white dark:bg-slate-900 border border-stone-200 dark:border-slate-800 rounded-3xl space-y-2">
               <Users className="w-10 h-10 text-slate-400 mx-auto" />
               <p className="font-bold text-slate-800 dark:text-slate-200">No creators found matching search.</p>
             </div>
@@ -381,7 +381,7 @@ export const Sub4SubHub: React.FC = () => {
               {creators.map((creator) => (
                 <div
                   key={creator.id}
-                  className="bg-white dark:bg-slate-900 border border-amber-200/80 dark:border-slate-800 hover:border-yellow-400/80 rounded-2xl p-5 space-y-4 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
+                  className="bg-white dark:bg-slate-900 border border-stone-200/80 dark:border-slate-800 hover:border-red-500/80 rounded-2xl p-5 space-y-4 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
                 >
                   <div className="space-y-3">
                     
@@ -391,7 +391,7 @@ export const Sub4SubHub: React.FC = () => {
                         <img
                           src={creator.avatar}
                           alt={creator.displayName}
-                          className="w-12 h-12 rounded-xl object-cover ring-2 ring-yellow-400/50"
+                          className="w-12 h-12 rounded-xl object-cover ring-2 ring-red-500/50"
                         />
                         <div>
                           <h3 className="font-bold text-slate-900 dark:text-white text-sm truncate max-w-[140px]">
@@ -401,7 +401,7 @@ export const Sub4SubHub: React.FC = () => {
                         </div>
                       </div>
 
-                      <span className="px-2 py-0.5 rounded text-[10px] font-extrabold bg-yellow-400/20 text-yellow-800 dark:text-yellow-300 border border-yellow-400/40">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-extrabold bg-red-500/15 text-red-700 dark:text-red-400 border border-red-500/30">
                         {creator.primaryChannel?.platform || 'YouTube'}
                       </span>
                     </div>
@@ -423,7 +423,7 @@ export const Sub4SubHub: React.FC = () => {
                   </div>
 
                   {/* Sub4Sub Action */}
-                  <div className="pt-3 border-t border-amber-100 dark:border-slate-800/80 flex items-center gap-2">
+                  <div className="pt-3 border-t border-stone-100 dark:border-slate-800/80 flex items-center gap-2">
                     <Link
                       to={`/creators/${creator.username}`}
                       className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300"
@@ -438,15 +438,15 @@ export const Sub4SubHub: React.FC = () => {
                         <span>Mutual Sub4Sub Partner 🤝</span>
                       </div>
                     ) : creator.sub4subState === 'pending_their_sub_back' ? (
-                      <div className="flex-1 py-2 px-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-300 font-bold text-xs text-center flex items-center justify-center gap-1.5">
-                        <Repeat className="w-4 h-4 text-yellow-600 animate-spin" />
+                      <div className="flex-1 py-2 px-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-800 dark:text-red-300 font-bold text-xs text-center flex items-center justify-center gap-1.5">
+                        <Repeat className="w-4 h-4 text-red-600 animate-spin" />
                         <span>Sub Back Pending ⏳</span>
                       </div>
                     ) : (
                       <button
                         onClick={() => handleSubscribeAndRequestSubBack(creator)}
                         disabled={processingId === creator.id}
-                        className="flex-1 py-2.5 px-3 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-black text-xs shadow-md shadow-yellow-500/20 active:scale-95 transition-all flex items-center justify-center gap-1.5"
+                        className="flex-1 py-2.5 px-3 rounded-xl bg-red-600 hover:bg-red-500 text-white font-black text-xs shadow-md shadow-red-600/25 active:scale-95 transition-all flex items-center justify-center gap-1.5"
                       >
                         <Repeat className="w-3.5 h-3.5 stroke-[2.5]" />
                         <span>
@@ -469,7 +469,7 @@ export const Sub4SubHub: React.FC = () => {
       {activeTab === 'incoming' && (
         <div className="space-y-4">
           {pendingRequests.length === 0 ? (
-            <div className="p-12 text-center bg-white dark:bg-slate-900 border border-amber-200 dark:border-slate-800 rounded-3xl space-y-2">
+            <div className="p-12 text-center bg-white dark:bg-slate-900 border border-stone-200 dark:border-slate-800 rounded-3xl space-y-2">
               <CheckCircle2 className="w-10 h-10 text-emerald-500 mx-auto" />
               <h3 className="font-bold text-slate-900 dark:text-white text-base">Your Sub Back queue is clear!</h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
@@ -481,29 +481,29 @@ export const Sub4SubHub: React.FC = () => {
               {pendingRequests.map((req) => (
                 <div
                   key={req.id}
-                  className="bg-white dark:bg-slate-900 border-2 border-yellow-400 rounded-2xl p-5 space-y-4 shadow-md flex flex-col justify-between"
+                  className="bg-white dark:bg-slate-900 border-2 border-red-500 rounded-2xl p-5 space-y-4 shadow-md flex flex-col justify-between"
                 >
                   <div className="flex items-center gap-3">
                     <img
                       src={req.followerAvatar}
                       alt={req.followerDisplayName}
-                      className="w-12 h-12 rounded-xl object-cover ring-2 ring-yellow-400"
+                      className="w-12 h-12 rounded-xl object-cover ring-2 ring-red-500"
                     />
                     <div className="space-y-0.5">
                       <div className="flex items-center gap-2">
                         <h4 className="font-bold text-slate-900 dark:text-white text-sm">{req.followerDisplayName}</h4>
-                        <span className="px-2 py-0.5 rounded text-[10px] font-extrabold bg-yellow-400/20 text-yellow-800 dark:text-yellow-300">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-extrabold bg-red-500/15 text-red-700 dark:text-red-400">
                           {req.followerPlatform}
                         </span>
                       </div>
                       <p className="text-xs text-slate-500 dark:text-slate-400">@{req.followerUsername}</p>
-                      <p className="text-[11px] text-amber-700 dark:text-amber-300 font-bold">
+                      <p className="text-[11px] text-red-600 dark:text-red-400 font-bold">
                         Subscribed to your channel & waiting for Sub Back!
                       </p>
                     </div>
                   </div>
 
-                  <div className="pt-3 border-t border-amber-100 dark:border-slate-800 flex items-center justify-between gap-2">
+                  <div className="pt-3 border-t border-stone-100 dark:border-slate-800 flex items-center justify-between gap-2">
                     <a
                       href={req.followerChannelUrl}
                       target="_blank"
@@ -517,7 +517,7 @@ export const Sub4SubHub: React.FC = () => {
                     <button
                       onClick={() => handleSubBack(req)}
                       disabled={processingId === req.id}
-                      className="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-yellow-400 to-amber-400 hover:from-yellow-300 hover:to-amber-300 text-slate-950 font-black text-xs shadow-md shadow-yellow-500/20 active:scale-95 transition-all flex items-center justify-center gap-2"
+                      className="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-black text-xs shadow-md shadow-red-600/25 active:scale-95 transition-all flex items-center justify-center gap-2"
                     >
                       <Sparkles className="w-4 h-4" />
                       <span>{processingId === req.id ? 'Connecting...' : 'Sub Back Now (+30 Credits) 🔁'}</span>
@@ -534,7 +534,7 @@ export const Sub4SubHub: React.FC = () => {
       {activeTab === 'mutual' && (
         <div className="space-y-4">
           {mutualSubs.length === 0 ? (
-            <div className="p-12 text-center bg-white dark:bg-slate-900 border border-amber-200 dark:border-slate-800 rounded-3xl space-y-2">
+            <div className="p-12 text-center bg-white dark:bg-slate-900 border border-stone-200 dark:border-slate-800 rounded-3xl space-y-2">
               <Repeat className="w-10 h-10 text-slate-400 mx-auto" />
               <h3 className="font-bold text-slate-900 dark:text-white text-base">No mutual Sub4Sub partners yet</h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
@@ -593,21 +593,21 @@ export const Sub4SubHub: React.FC = () => {
       {/* Anti-Fraud Verification Modal Overlay */}
       {activeChallenge && (
         <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
-          <div className="bg-white dark:bg-slate-900 border-2 border-yellow-400 rounded-3xl p-6 sm:p-8 max-w-md w-full space-y-6 shadow-2xl relative text-slate-900 dark:text-white">
+          <div className="bg-white dark:bg-slate-900 border-2 border-red-500 rounded-3xl p-6 sm:p-8 max-w-md w-full space-y-6 shadow-2xl relative text-slate-900 dark:text-white">
             
             {/* Header */}
             <div className="text-center space-y-2">
-              <div className="w-14 h-14 rounded-2xl bg-yellow-400/20 border-2 border-yellow-400 flex items-center justify-center mx-auto text-yellow-600 dark:text-yellow-400">
+              <div className="w-14 h-14 rounded-2xl bg-red-500/20 border-2 border-red-500 flex items-center justify-center mx-auto text-red-600 dark:text-red-400">
                 <ShieldCheck className="w-8 h-8" />
               </div>
               <h3 className="text-xl font-black">Anti-Fraud Task Audit</h3>
               <p className="text-xs text-slate-600 dark:text-slate-400">
-                Verifying genuine engagement for <span className="font-bold text-amber-800 dark:text-amber-300">@{activeChallenge.targetName}</span>
+                Verifying genuine engagement for <span className="font-bold text-red-700 dark:text-red-400">@{activeChallenge.targetName}</span>
               </p>
             </div>
 
             {/* Countdown Box */}
-            <div className="p-4 rounded-2xl bg-amber-50 dark:bg-slate-800/80 border border-amber-200 dark:border-slate-700 text-center space-y-2">
+            <div className="p-4 rounded-2xl bg-red-50 dark:bg-slate-800/80 border border-red-200 dark:border-slate-700 text-center space-y-2">
               <p className="text-xs font-extrabold text-slate-700 dark:text-slate-300">
                 {activeChallenge.countdown > 0
                   ? `Please stay on the channel and complete the action...`
@@ -615,13 +615,13 @@ export const Sub4SubHub: React.FC = () => {
               </p>
 
               <div className="flex items-center justify-center gap-2">
-                <div className="text-3xl font-black text-amber-800 dark:text-yellow-400 font-mono tracking-wider">
+                <div className="text-3xl font-black text-red-600 dark:text-red-400 font-mono tracking-wider">
                   00:0{activeChallenge.countdown}
                 </div>
               </div>
 
               {/* Security Details */}
-              <div className="pt-2 border-t border-amber-200/60 dark:border-slate-700/60 grid grid-cols-2 gap-2 text-[10px] font-bold text-slate-500">
+              <div className="pt-2 border-t border-red-200/60 dark:border-slate-700/60 grid grid-cols-2 gap-2 text-[10px] font-bold text-slate-500">
                 <div>Security Code: <span className="font-mono text-slate-800 dark:text-slate-200">#{activeChallenge.challengeCode}</span></div>
                 <div>Risk Gate: <span className="text-emerald-600">PASS (0%)</span></div>
               </div>
@@ -632,9 +632,9 @@ export const Sub4SubHub: React.FC = () => {
               <button
                 onClick={handleVerifyAndClaimTask}
                 disabled={activeChallenge.countdown > 0 || isVerifyingClaim}
-                className="w-full py-3.5 px-4 rounded-xl bg-yellow-400 hover:bg-yellow-300 disabled:opacity-40 disabled:cursor-not-allowed text-slate-950 font-black text-xs sm:text-sm shadow-lg shadow-yellow-500/20 transition-all flex items-center justify-center gap-2 active:scale-95"
+                className="w-full py-3.5 px-4 rounded-xl bg-red-600 hover:bg-red-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-black text-xs sm:text-sm shadow-lg shadow-red-600/25 transition-all flex items-center justify-center gap-2 active:scale-95"
               >
-                <ShieldCheck className="w-4 h-4 text-slate-950" />
+                <ShieldCheck className="w-4 h-4 text-white" />
                 <span>
                   {isVerifyingClaim
                     ? 'Auditing Task Fraud Checks...'

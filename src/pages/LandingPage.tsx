@@ -20,17 +20,17 @@ import { Footer } from '../components/Footer';
 
 export const LandingPage: React.FC = () => {
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans selection:bg-yellow-400 selection:text-slate-900">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans selection:bg-red-600 selection:text-slate-900">
       
       {/* Hero Section */}
       <section className="relative overflow-hidden pt-16 pb-20 md:pt-28 md:pb-32 bg-gradient-to-b from-amber-500/10 via-yellow-100/30 to-slate-50">
         
         {/* Glow Effects */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-yellow-400/20 rounded-full blur-[140px] pointer-events-none" />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-red-500/15 rounded-full blur-[140px] pointer-events-none" />
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center space-y-8">
           
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-yellow-400/30 border border-yellow-500/40 text-yellow-900 font-extrabold text-xs sm:text-sm">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-600/30 border border-yellow-500/40 text-yellow-900 font-extrabold text-xs sm:text-sm">
             <Sparkles className="w-4 h-4 text-yellow-600" />
             <span>Real Sub4Sub & Follow4Follow Creator Network</span>
           </div>
@@ -49,7 +49,7 @@ export const LandingPage: React.FC = () => {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
             <Link
               to="/register"
-              className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-black text-base shadow-xl shadow-yellow-500/20 transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
+              className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-red-600 hover:bg-red-500 text-white font-black text-base shadow-xl shadow-red-600/25 transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
             >
               <span>Join Sub4Sub Network Free</span>
               <ChevronRight className="w-5 h-5 text-slate-950 stroke-[2.5]" />
@@ -71,7 +71,7 @@ export const LandingPage: React.FC = () => {
               <span>Instant Reciprocal Sub Backs</span>
             </div>
             <div className="flex items-center gap-2">
-              <Globe2 className="w-4 h-4 text-amber-600" />
+              <Globe2 className="w-4 h-4 text-red-600" />
               <span>YouTube, TikTok, Instagram, X & Facebook</span>
             </div>
             <div className="flex items-center gap-2">
@@ -95,7 +95,7 @@ export const LandingPage: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             
             <div className="bg-amber-50/50 border border-amber-200 rounded-3xl p-8 space-y-4 hover:border-yellow-400 transition-all group shadow-sm">
-              <div className="w-12 h-12 rounded-2xl bg-yellow-400/30 text-slate-950 flex items-center justify-center font-black text-xl group-hover:scale-110 transition-transform">
+              <div className="w-12 h-12 rounded-2xl bg-red-600/30 text-slate-950 flex items-center justify-center font-black text-xl group-hover:scale-110 transition-transform">
                 1
               </div>
               <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
@@ -106,12 +106,12 @@ export const LandingPage: React.FC = () => {
               </p>
             </div>
 
-            <div className="bg-amber-50/50 border border-amber-200 rounded-3xl p-8 space-y-4 hover:border-amber-400 transition-all group shadow-sm">
-              <div className="w-12 h-12 rounded-2xl bg-amber-400/30 text-slate-950 flex items-center justify-center font-black text-xl group-hover:scale-110 transition-transform">
+            <div className="bg-amber-50/50 border border-amber-200 rounded-3xl p-8 space-y-4 hover:border-red-400 transition-all group shadow-sm">
+              <div className="w-12 h-12 rounded-2xl bg-red-500/30 text-slate-950 flex items-center justify-center font-black text-xl group-hover:scale-110 transition-transform">
                 2
               </div>
               <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                <Gift className="w-5 h-5 text-amber-600" /> Creator Subscribes Back
+                <Gift className="w-5 h-5 text-red-600" /> Creator Subscribes Back
               </h3>
               <p className="text-slate-600 text-sm leading-relaxed">
                 The creator receives an instant alert to Sub Back to your channel to earn +30 Credits and form a mutual partnership.
@@ -119,7 +119,7 @@ export const LandingPage: React.FC = () => {
             </div>
 
             <div className="bg-amber-50/50 border border-amber-200 rounded-3xl p-8 space-y-4 hover:border-yellow-400 transition-all group shadow-sm">
-              <div className="w-12 h-12 rounded-2xl bg-yellow-400/30 text-slate-950 flex items-center justify-center font-black text-xl group-hover:scale-110 transition-transform">
+              <div className="w-12 h-12 rounded-2xl bg-red-600/30 text-slate-950 flex items-center justify-center font-black text-xl group-hover:scale-110 transition-transform">
                 3
               </div>
               <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
@@ -154,7 +154,7 @@ export const LandingPage: React.FC = () => {
           </div>
 
           <div className="p-6 rounded-2xl bg-white border border-amber-200 space-y-3 shadow-sm">
-            <Megaphone className="w-8 h-8 text-amber-600" />
+            <Megaphone className="w-8 h-8 text-red-600" />
             <h4 className="font-bold text-slate-900 text-base">Promotion Campaigns</h4>
             <p className="text-slate-600 text-xs leading-relaxed">
               Target specific categories and platforms with customizable promotion budgets and durations.
@@ -202,7 +202,7 @@ export const LandingPage: React.FC = () => {
           </div>
 
           <div className="p-6 rounded-2xl bg-white border border-amber-200 space-y-3 shadow-sm">
-            <Globe2 className="w-8 h-8 text-amber-600" />
+            <Globe2 className="w-8 h-8 text-red-600" />
             <h4 className="font-bold text-slate-900 text-base">Global & African Focus</h4>
             <p className="text-slate-600 text-xs leading-relaxed">
               Highlighting emerging African digital creators while remaining globally scalable worldwide.

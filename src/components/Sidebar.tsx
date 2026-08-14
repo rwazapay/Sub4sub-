@@ -52,7 +52,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           
           <div className="space-y-6">
             <div>
-              <p className="px-3 text-[10px] font-extrabold uppercase tracking-wider text-amber-500">
+              <p className="px-3 text-[10px] font-extrabold uppercase tracking-wider text-red-500">
                 Menu
               </p>
               <nav className="mt-2 space-y-1">
@@ -65,7 +65,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                     className={({ isActive }) =>
                       `flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all ${
                         isActive
-                          ? 'bg-amber-500 text-stone-950 shadow-md shadow-amber-500/20'
+                          ? 'bg-red-600 text-white shadow-md shadow-red-600/25'
                           : 'text-stone-300 hover:text-white hover:bg-[#1a1612]'
                       }`
                     }
@@ -82,8 +82,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                     className={({ isActive }) =>
                       `flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all mt-4 ${
                         isActive
-                          ? 'bg-amber-500 text-stone-950'
-                          : 'text-amber-400 hover:bg-amber-500/10'
+                          ? 'bg-red-600 text-white'
+                          : 'text-red-400 hover:bg-red-500/10'
                       }`
                     }
                   >
@@ -99,7 +99,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             <TourTriggerButton className="w-full justify-center py-2" />
 
             <div className="p-3.5 rounded-2xl bg-[#161310] border border-[#262018] space-y-2 text-xs">
-              <div className="flex items-center gap-1.5 font-bold text-amber-400">
+              <div className="flex items-center gap-1.5 font-bold text-red-400">
                 <HelpCircle className="w-4 h-4" />
                 <span>Zero Anti-Cheat Tolerance</span>
               </div>

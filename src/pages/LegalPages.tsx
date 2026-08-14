@@ -6,7 +6,7 @@ export const TermsPage: React.FC = () => {
     <div className="max-w-4xl mx-auto space-y-6 text-stone-800 dark:text-stone-300 py-6 text-xs sm:text-sm leading-relaxed">
       <div className="border-b border-stone-200 dark:border-stone-800 pb-4">
         <h1 className="text-2xl font-black text-stone-900 dark:text-white flex items-center gap-2">
-          <BookOpen className="w-6 h-6 text-amber-500" />
+          <BookOpen className="w-6 h-6 text-red-500" />
           Terms of Service & Disclaimer
         </h1>
         <p className="text-xs text-stone-500 dark:text-slate-400 mt-1">Last Updated: February 2026</p>
@@ -73,7 +73,7 @@ export const RefundPage: React.FC = () => {
     <div className="max-w-4xl mx-auto space-y-6 text-stone-800 dark:text-stone-300 py-6 text-xs sm:text-sm leading-relaxed">
       <div className="border-b border-stone-200 dark:border-stone-800 pb-4">
         <h1 className="text-2xl font-black text-stone-900 dark:text-white flex items-center gap-2">
-          <RotateCcw className="w-6 h-6 text-amber-500" />
+          <RotateCcw className="w-6 h-6 text-red-500" />
           Refund Policy
         </h1>
         <p className="text-xs text-stone-500 dark:text-slate-400 mt-1">Satisfaction Guarantee & Refund Eligibility</p>
@@ -92,7 +92,7 @@ export const RefundPage: React.FC = () => {
 
         <h2 className="text-base font-bold text-stone-900 dark:text-white">3. Requesting a Refund</h2>
         <p>
-          To request a refund, please email <code className="text-amber-600 dark:text-amber-400 font-mono">support@sub4subpro.com</code> with your order ID, account email, and reason for request. Refunds are processed within 3–5 business days to the original payment method.
+          To request a refund, please email <code className="text-red-600 dark:text-red-400 font-mono">support@sub4subpro.com</code> with your order ID, account email, and reason for request. Refunds are processed within 3–5 business days to the original payment method.
         </p>
       </div>
     </div>
@@ -104,7 +104,7 @@ export const CommunityGuidelinesPage: React.FC = () => {
     <div className="max-w-4xl mx-auto space-y-6 text-stone-800 dark:text-stone-300 py-6 text-xs sm:text-sm leading-relaxed">
       <div className="border-b border-stone-200 dark:border-stone-800 pb-4">
         <h1 className="text-2xl font-black text-stone-900 dark:text-white flex items-center gap-2">
-          <ShieldCheck className="w-6 h-6 text-amber-500" />
+          <ShieldCheck className="w-6 h-6 text-red-500" />
           Community Guidelines
         </h1>
         <p className="text-xs text-stone-500 dark:text-slate-400 mt-1">Building an Authentic Creator Community</p>
@@ -130,7 +130,7 @@ export const ContactPage: React.FC = () => {
     <div className="max-w-4xl mx-auto space-y-6 text-stone-800 dark:text-stone-300 py-6 text-xs sm:text-sm leading-relaxed">
       <div className="border-b border-stone-200 dark:border-stone-800 pb-4">
         <h1 className="text-2xl font-black text-stone-900 dark:text-white flex items-center gap-2">
-          <Mail className="w-6 h-6 text-amber-500" />
+          <Mail className="w-6 h-6 text-red-500" />
           Contact & Support
         </h1>
         <p className="text-xs text-stone-500 dark:text-slate-400 mt-1">Get in touch with the Sub4Sub Pro team</p>
@@ -140,7 +140,7 @@ export const ContactPage: React.FC = () => {
         <p>
           Need help with your account, coin transactions, or campaign setup? Our support team is here to assist you 24/7.
         </p>
-        <div className="p-4 rounded-xl bg-stone-50 dark:bg-[#0d0b09] border border-stone-200 dark:border-[#262018] font-mono text-xs text-amber-600 dark:text-amber-400 space-y-2">
+        <div className="p-4 rounded-xl bg-stone-50 dark:bg-[#0d0b09] border border-stone-200 dark:border-[#262018] font-mono text-xs text-red-600 dark:text-red-400 space-y-2">
           <p>📧 Email Support: support@sub4subpro.com</p>
           <p>🛡️ Moderation & Appeals: safety@sub4subpro.com</p>
         </div>
@@ -172,7 +172,7 @@ export const AccountDeletionPage: React.FC = () => {
           <li>Click <strong className="text-stone-900 dark:text-white">Delete Account & Purge Data</strong> and confirm your password.</li>
         </ol>
         <p className="text-xs text-stone-500 dark:text-slate-400">
-          Alternatively, email <code className="text-amber-600 dark:text-amber-400">privacy@sub4subpro.com</code> with the subject "Account Deletion Request".
+          Alternatively, email <code className="text-red-600 dark:text-red-400">privacy@sub4subpro.com</code> with the subject "Account Deletion Request".
         </p>
       </div>
     </div>

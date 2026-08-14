@@ -48,7 +48,7 @@ const ProtectedRoute: React.FC = () => {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="flex flex-col items-center gap-3 text-slate-600">
-          <div className="w-8 h-8 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
           <span className="text-xs font-semibold tracking-wide">Loading SubLoop...</span>
         </div>
       </div>
@@ -70,7 +70,7 @@ const PublicOnlyRoute: React.FC = () => {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="flex flex-col items-center gap-3 text-slate-600">
-          <div className="w-8 h-8 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
           <span className="text-xs font-semibold tracking-wide">Loading SubLoop...</span>
         </div>
       </div>
@@ -96,7 +96,7 @@ const AppLayout: React.FC = () => {
   useOnboardingTour();
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans selection:bg-yellow-400 selection:text-slate-900">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans selection:bg-red-500 selection:text-white">
       {/* Top Navbar */}
       <Navbar onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 

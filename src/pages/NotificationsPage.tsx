@@ -121,7 +121,7 @@ export const NotificationsPage: React.FC = () => {
               }`}
             >
               <div className="p-2.5 rounded-xl bg-white border border-amber-200 text-yellow-600 shrink-0 mt-0.5 shadow-sm">
-                {n.type === 'credit' ? <Coins className="w-5 h-5 text-amber-500 fill-amber-300" /> :
+                {n.type === 'credit' ? <Coins className="w-5 h-5 text-red-500 fill-amber-300" /> :
                  n.type === 'promotion' ? <Megaphone className="w-5 h-5 text-purple-600" /> :
                  n.type === 'warning' ? <AlertTriangle className="w-5 h-5 text-red-500" /> :
                  <ShieldCheck className="w-5 h-5 text-emerald-600" />}

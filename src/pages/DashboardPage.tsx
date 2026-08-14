@@ -73,18 +73,25 @@ export const DashboardPage: React.FC = () => {
   const handleClaimDailyStreak = async () => {
     setIsClaimingStreak(true);
     try {
-      const res = await apiClient.post('/auth/daily-streak-claim');
-      if (res.data.success) {
+      let res;
+      try {
+        res = await apiClient.post('/auth/daily-streak-claim');
+      } catch {
+        res = await apiClient.post('/wallet/daily-claim');
+      }
+
+      if (res.data?.success) {
+        const bonus = res.data.data?.streakBonus ?? res.data.data?.bonusCoins ?? 25;
         if (res.data.data?.user) {
           updateUser(res.data.data.user);
         } else {
           updateUser({
             ...user,
             dailyRewardClaimedToday: true,
-            credits: user.credits + (res.data.data?.streakBonus || 25),
+            credits: user.credits + bonus,
           });
         }
-        setStreakClaimMessage(`🎉 +${res.data.data?.streakBonus || 25} Coins claimed!`);
+        setStreakClaimMessage(`🎉 +${bonus} Coins claimed!`);
         setTimeout(() => setStreakClaimMessage(null), 4000);
       }
     } catch (err: any) {
@@ -104,12 +111,12 @@ export const DashboardPage: React.FC = () => {
       <div className="bg-gradient-to-r from-stone-900 via-[#1c1813] to-stone-900 border border-stone-800 dark:border-[#262018] rounded-3xl p-6 sm:p-8 space-y-4 shadow-xl relative overflow-hidden">
         
         {/* Subtle decorative glow */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-red-600/5 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-amber-500/20 text-amber-400 border border-amber-500/30">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-red-600/15 text-red-400 border border-red-500/30">
                 Level {user.level} Creator
               </span>
               <span className="text-xs font-semibold text-stone-400">@{user.username}</span>
@@ -135,7 +142,7 @@ export const DashboardPage: React.FC = () => {
             <Link
               id="tour-dashboard-earn"
               to="/earn"
-              className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-black text-xs flex items-center gap-2 transition-all shadow-md shadow-amber-500/20 active:scale-95"
+              className="px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-black text-xs flex items-center gap-2 transition-all shadow-md shadow-red-600/25 active:scale-95"
             >
               <Repeat className="w-4 h-4 text-stone-950 stroke-[2.5]" />
               <span>Earn & Exchange Hub 🔁</span>
@@ -146,16 +153,16 @@ export const DashboardPage: React.FC = () => {
               to="/promote"
               className="px-4 py-2.5 rounded-xl bg-stone-900/90 hover:bg-stone-800 text-stone-200 font-bold text-xs flex items-center gap-2 border border-stone-700 dark:border-[#332b21] transition-all"
             >
-              <Plus className="w-4 h-4 text-amber-400" />
+              <Plus className="w-4 h-4 text-red-400" />
               <span>Launch Campaign</span>
             </Link>
 
             <Link
               id="tour-dashboard-wallet"
               to="/wallet"
-              className="px-4 py-2.5 rounded-xl bg-stone-900/90 hover:bg-stone-800 text-amber-300 font-bold text-xs flex items-center gap-2 border border-stone-700 dark:border-[#332b21] transition-all"
+              className="px-4 py-2.5 rounded-xl bg-stone-900/90 hover:bg-stone-800 text-red-300 font-bold text-xs flex items-center gap-2 border border-stone-700 dark:border-[#332b21] transition-all"
             >
-              <Coins className="w-4 h-4 text-amber-400" />
+              <Coins className="w-4 h-4 text-red-400" />
               <span>Coins & Wallet</span>
             </Link>
           </div>
@@ -169,7 +176,7 @@ export const DashboardPage: React.FC = () => {
               className="px-3 py-2 rounded-xl bg-stone-900/60 hover:bg-stone-800 border border-stone-700/80 text-stone-400 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-all"
               title="Refresh dashboard analytics data"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-amber-400' : ''}`} />
+              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-red-400' : ''}`} />
               <span className="hidden sm:inline">Refresh Data</span>
             </button>
           </div>
@@ -196,10 +203,10 @@ export const DashboardPage: React.FC = () => {
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           
-          <div className="p-5 rounded-2xl bg-white dark:bg-[#161310] border border-stone-200 dark:border-[#262018] space-y-1 shadow-sm hover:border-amber-500/40 transition-colors">
+          <div className="p-5 rounded-2xl bg-white dark:bg-[#161310] border border-stone-200 dark:border-[#262018] space-y-1 shadow-sm hover:border-red-500/40 transition-colors">
             <div className="flex items-center justify-between text-stone-500 dark:text-stone-400">
               <span className="text-xs font-semibold">Coins Balance</span>
-              <Coins className="w-4 h-4 text-amber-500 fill-amber-500/20" />
+              <Coins className="w-4 h-4 text-red-500 fill-red-500/20" />
             </div>
             <p className="text-2xl font-black text-stone-900 dark:text-white">{user.credits.toLocaleString()}</p>
             <span className="text-[10px] text-stone-400 dark:text-stone-500 block">
@@ -207,10 +214,10 @@ export const DashboardPage: React.FC = () => {
             </span>
           </div>
 
-          <div className="p-5 rounded-2xl bg-white dark:bg-[#161310] border border-stone-200 dark:border-[#262018] space-y-1 shadow-sm hover:border-amber-500/40 transition-colors">
+          <div className="p-5 rounded-2xl bg-white dark:bg-[#161310] border border-stone-200 dark:border-[#262018] space-y-1 shadow-sm hover:border-red-500/40 transition-colors">
             <div className="flex items-center justify-between text-stone-500 dark:text-stone-400">
               <span className="text-xs font-semibold">Active Campaigns</span>
-              <Megaphone className="w-4 h-4 text-amber-500" />
+              <Megaphone className="w-4 h-4 text-red-500" />
             </div>
             <p className="text-2xl font-black text-stone-900 dark:text-white">{activePromos.length}</p>
             <span className="text-[10px] text-stone-400 dark:text-stone-500 block">
@@ -218,7 +225,7 @@ export const DashboardPage: React.FC = () => {
             </span>
           </div>
 
-          <div className="p-5 rounded-2xl bg-white dark:bg-[#161310] border border-stone-200 dark:border-[#262018] space-y-1 shadow-sm hover:border-amber-500/40 transition-colors">
+          <div className="p-5 rounded-2xl bg-white dark:bg-[#161310] border border-stone-200 dark:border-[#262018] space-y-1 shadow-sm hover:border-red-500/40 transition-colors">
             <div className="flex items-center justify-between text-stone-500 dark:text-stone-400">
               <span className="text-xs font-semibold">Reputation Score</span>
               <Award className="w-4 h-4 text-emerald-500" />
@@ -229,7 +236,7 @@ export const DashboardPage: React.FC = () => {
             </span>
           </div>
 
-          <div className="p-5 rounded-2xl bg-white dark:bg-[#161310] border border-stone-200 dark:border-[#262018] space-y-1 shadow-sm hover:border-amber-500/40 transition-colors">
+          <div className="p-5 rounded-2xl bg-white dark:bg-[#161310] border border-stone-200 dark:border-[#262018] space-y-1 shadow-sm hover:border-red-500/40 transition-colors">
             <div className="flex items-center justify-between text-stone-500 dark:text-stone-400">
               <span className="text-xs font-semibold">Referrals Earned</span>
               <Gift className="w-4 h-4 text-purple-500" />
@@ -250,10 +257,10 @@ export const DashboardPage: React.FC = () => {
         <div className="lg:col-span-7 bg-white dark:bg-[#161310] border border-stone-200 dark:border-[#262018] rounded-3xl p-6 space-y-4 shadow-sm">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-bold text-stone-900 dark:text-white flex items-center gap-2">
-              <Megaphone className="w-5 h-5 text-amber-500" />
+              <Megaphone className="w-5 h-5 text-red-500" />
               Your Active Promotions
             </h2>
-            <Link to="/promotions" className="text-xs font-bold text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1">
+            <Link to="/promotions" className="text-xs font-bold text-red-600 dark:text-red-400 hover:underline flex items-center gap-1">
               <span>View All</span>
               <ChevronRight className="w-3.5 h-3.5" />
             </Link>
@@ -300,7 +307,7 @@ export const DashboardPage: React.FC = () => {
               <p className="text-xs text-stone-500 dark:text-stone-400">You don't have any active promotions running right now.</p>
               <Link
                 to="/promote"
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs shadow-md shadow-amber-500/20 transition-all"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs shadow-md shadow-red-600/25 transition-all"
               >
                 <Plus className="w-4 h-4" />
                 <span>Launch First Campaign</span>
@@ -316,7 +323,7 @@ export const DashboardPage: React.FC = () => {
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-600 dark:text-amber-400 uppercase">
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-red-600/15 text-red-600 dark:text-red-400 uppercase">
                             {promo.platform}
                           </span>
                           <h3 className="font-bold text-stone-900 dark:text-white text-sm truncate max-w-xs">{promo.title}</h3>
@@ -332,11 +339,11 @@ export const DashboardPage: React.FC = () => {
                     <div className="space-y-1.5 pt-1">
                       <div className="flex justify-between text-[11px] text-stone-500 dark:text-stone-400">
                         <span>Budget Spent: {promo.spentCredits} / {promo.budgetCredits} Coins</span>
-                        <span className="font-bold text-amber-500">{percentSpent}%</span>
+                        <span className="font-bold text-red-500">{percentSpent}%</span>
                       </div>
                       <div className="w-full h-2 bg-stone-200 dark:bg-[#201b16] rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-gradient-to-r from-amber-500 to-amber-600 rounded-full transition-all duration-300"
+                          className="h-full bg-gradient-to-r from-red-600 to-rose-600 rounded-full transition-all duration-300"
                           style={{ width: `${percentSpent}%` }}
                         />
                       </div>
@@ -345,7 +352,7 @@ export const DashboardPage: React.FC = () => {
                     <div className="flex items-center justify-between text-[11px] text-stone-500 dark:text-stone-400 pt-1 border-t border-stone-200 dark:border-[#201b16]">
                       <span>Impressions: <strong>{promo.impressions}</strong></span>
                       <span>Discoveries: <strong>{promo.uniqueDiscoveries}</strong></span>
-                      <Link to={`/promotions/${promo.id}`} className="text-amber-600 dark:text-amber-400 font-bold hover:underline">
+                      <Link to={`/promotions/${promo.id}`} className="text-red-600 dark:text-red-400 font-bold hover:underline">
                         View Analytics →
                       </Link>
                     </div>
@@ -385,10 +392,10 @@ export const DashboardPage: React.FC = () => {
               <div className="bg-white dark:bg-[#161310] border border-stone-200 dark:border-[#262018] rounded-3xl p-6 space-y-4 shadow-sm">
                 <div className="flex items-center justify-between">
                   <h2 className="text-lg font-bold text-stone-900 dark:text-white flex items-center gap-2">
-                    <Compass className="w-5 h-5 text-amber-500" />
+                    <Compass className="w-5 h-5 text-red-500" />
                     Earn Coins Now
                   </h2>
-                  <span className="text-xs text-amber-600 dark:text-amber-400 font-bold">+50 Coins / Sub</span>
+                  <span className="text-xs text-red-600 dark:text-red-400 font-bold">+50 Coins / Sub</span>
                 </div>
 
                 <p className="text-xs text-stone-600 dark:text-stone-400 leading-relaxed">
@@ -397,7 +404,7 @@ export const DashboardPage: React.FC = () => {
 
                 <Link
                   to="/earn"
-                  className="w-full py-3 px-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-black text-xs shadow-md shadow-amber-500/20 transition-all flex items-center justify-center gap-2"
+                  className="w-full py-3 px-4 rounded-2xl bg-red-600 hover:bg-red-500 text-white font-black text-xs shadow-md shadow-red-600/25 transition-all flex items-center justify-center gap-2"
                 >
                   <Compass className="w-4 h-4" />
                   <span>Launch Earn & Exchange Hub</span>
@@ -405,15 +412,15 @@ export const DashboardPage: React.FC = () => {
               </div>
 
               <div className="p-6 rounded-3xl bg-white dark:bg-[#161310] border border-stone-200 dark:border-[#262018] space-y-3 shadow-sm">
-                <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 font-bold text-xs">
+                <div className="flex items-center gap-2 text-red-600 dark:text-red-400 font-bold text-xs">
                   <Gift className="w-4 h-4" />
                   <span>Your Referral Code</span>
                 </div>
-                <div className="p-3 bg-stone-50 dark:bg-[#0d0b09] rounded-xl border border-stone-200 dark:border-[#262018] flex items-center justify-between font-mono font-bold text-amber-600 dark:text-amber-400 text-sm">
+                <div className="p-3 bg-stone-50 dark:bg-[#0d0b09] rounded-xl border border-stone-200 dark:border-[#262018] flex items-center justify-between font-mono font-bold text-red-600 dark:text-red-400 text-sm">
                   <span>{user.referralCode}</span>
                   <span className="text-[10px] text-stone-500 dark:text-stone-400 font-sans font-normal">+100 Coins per invite</span>
                 </div>
-                <Link to="/earn" className="text-xs text-amber-600 dark:text-amber-400 hover:underline font-semibold block text-right">
+                <Link to="/earn" className="text-xs text-red-600 dark:text-red-400 hover:underline font-semibold block text-right">
                   View Referral Details →
                 </Link>
               </div>

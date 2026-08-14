@@ -161,7 +161,7 @@ export const AiGrowthAuditModal: React.FC<AiGrowthAuditModalProps> = ({
 
               <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800/80 space-y-1">
                 <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-400">
-                  <Activity className="w-3.5 h-3.5 text-amber-400" />
+                  <Activity className="w-3.5 h-3.5 text-red-400" />
                   <span>Risk Level</span>
                 </div>
                 <p className="text-xs font-bold text-emerald-400">
@@ -196,7 +196,7 @@ export const AiGrowthAuditModal: React.FC<AiGrowthAuditModalProps> = ({
                   </div>
 
                   <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800">
-                    <Clock className="w-3.5 h-3.5 text-amber-400 mx-auto mb-1" />
+                    <Clock className="w-3.5 h-3.5 text-red-400 mx-auto mb-1" />
                     <div className="text-xs font-bold text-white">{metrics.avgRetentionSeconds}s</div>
                     <div className="text-[10px] text-slate-400">Avg Retention</div>
                   </div>

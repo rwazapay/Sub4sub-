@@ -34,7 +34,7 @@ export const MobileNav: React.FC = () => {
             className={({ isActive }) =>
               `flex flex-col items-center justify-center flex-1 py-1 text-[10px] font-semibold transition-all ${
                 isActive
-                  ? 'text-amber-500 font-bold scale-105'
+                  ? 'text-red-600 dark:text-red-500 font-bold scale-105'
                   : 'text-stone-500 dark:text-[#9c8e80] hover:text-stone-900 dark:hover:text-stone-200'
               }`
             }

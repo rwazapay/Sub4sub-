@@ -40,15 +40,15 @@ html:not(.dark) .border-pro-card {
 }
 
 .text-pro-gold {
-  color: #f59e0b;
+  color: #ef4444;
 }
 
 .bg-pro-gold {
-  background-color: #f59e0b;
+  background-color: #ef4444;
 }
 
 .hover\:bg-pro-gold-hover:hover {
-  background-color: #d97706;
+  background-color: #dc2626;
 }
 
 @keyframes shimmer-sweep {
@@ -101,7 +101,7 @@ html:not(.dark) .animate-shimmer::after {
   border: 1px solid #332b21 !important;
   border-radius: 20px !important;
   padding: 18px 20px !important;
-  box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.7), 0 0 25px rgba(245, 158, 11, 0.15) !important;
+  box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.7), 0 0 25px rgba(239, 68, 68, 0.15) !important;
   max-width: 360px !important;
   font-family: inherit !important;
   z-index: 100000 !important;
@@ -110,7 +110,7 @@ html:not(.dark) .animate-shimmer::after {
 .driver-popover.subloop-custom-popover .driver-popover-title {
   font-size: 15px !important;
   font-weight: 800 !important;
-  color: #f59e0b !important;
+  color: #ef4444 !important;
   margin-bottom: 8px !important;
   display: flex !important;
   align-items: center !important;
@@ -142,8 +142,8 @@ html:not(.dark) .animate-shimmer::after {
 
 .driver-popover.subloop-custom-popover .driver-popover-next-btn,
 .driver-popover.subloop-custom-popover .driver-popover-done-btn {
-  background: #f59e0b !important;
-  color: #0c0a09 !important;
+  background: #ef4444 !important;
+  color: #ffffff !important;
   font-weight: 800 !important;
   font-size: 12px !important;
   padding: 7px 14px !important;
@@ -156,7 +156,7 @@ html:not(.dark) .animate-shimmer::after {
 
 .driver-popover.subloop-custom-popover .driver-popover-next-btn:hover,
 .driver-popover.subloop-custom-popover .driver-popover-done-btn:hover {
-  background: #fbbf24 !important;
+  background: #dc2626 !important;
   transform: translateY(-1px) !important;
 }
 

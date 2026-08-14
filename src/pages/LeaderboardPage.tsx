@@ -25,8 +25,8 @@ export const LeaderboardPage: React.FC = () => {
     <div className="space-y-8 animate-fade-in pb-12">
       
       {/* Header Banner */}
-      <div className="bg-gradient-to-r from-slate-900 via-amber-950/40 to-slate-900 border border-amber-500/30 rounded-3xl p-6 sm:p-8 space-y-3 shadow-xl">
-        <div className="flex items-center gap-2 text-amber-400 font-bold text-xs uppercase tracking-wider">
+      <div className="bg-gradient-to-r from-slate-900 via-amber-950/40 to-slate-900 border border-red-500/30 rounded-3xl p-6 sm:p-8 space-y-3 shadow-xl">
+        <div className="flex items-center gap-2 text-red-400 font-bold text-xs uppercase tracking-wider">
           <Trophy className="w-4 h-4" />
           <span>Community Leaderboard</span>
         </div>
@@ -44,7 +44,7 @@ export const LeaderboardPage: React.FC = () => {
           onClick={() => setActiveTab('discoverers')}
           className={`px-4 py-2 rounded-xl transition-all ${
             activeTab === 'discoverers'
-              ? 'bg-amber-500 text-slate-950 font-extrabold shadow-md shadow-amber-500/20'
+              ? 'bg-red-600 text-slate-950 font-extrabold shadow-md shadow-red-600/25'
               : 'text-slate-400 hover:text-white hover:bg-slate-900'
           }`}
         >
@@ -55,7 +55,7 @@ export const LeaderboardPage: React.FC = () => {
           onClick={() => setActiveTab('reputation')}
           className={`px-4 py-2 rounded-xl transition-all ${
             activeTab === 'reputation'
-              ? 'bg-amber-500 text-slate-950 font-extrabold shadow-md shadow-amber-500/20'
+              ? 'bg-red-600 text-slate-950 font-extrabold shadow-md shadow-red-600/25'
               : 'text-slate-400 hover:text-white hover:bg-slate-900'
           }`}
         >
@@ -66,7 +66,7 @@ export const LeaderboardPage: React.FC = () => {
           onClick={() => setActiveTab('promoters')}
           className={`px-4 py-2 rounded-xl transition-all ${
             activeTab === 'promoters'
-              ? 'bg-amber-500 text-slate-950 font-extrabold shadow-md shadow-amber-500/20'
+              ? 'bg-red-600 text-slate-950 font-extrabold shadow-md shadow-red-600/25'
               : 'text-slate-400 hover:text-white hover:bg-slate-900'
           }`}
         >
@@ -88,7 +88,7 @@ export const LeaderboardPage: React.FC = () => {
               key={item.id}
               className={`p-4 rounded-2xl border flex items-center justify-between gap-4 transition-all ${
                 item.rank === 1
-                  ? 'bg-gradient-to-r from-amber-500/10 via-slate-900 to-slate-900 border-amber-500/50 shadow-lg'
+                  ? 'bg-gradient-to-r from-amber-500/10 via-slate-900 to-slate-900 border-red-500/50 shadow-lg'
                   : item.rank === 2
                   ? 'bg-slate-900 border-slate-700'
                   : item.rank === 3
@@ -101,7 +101,7 @@ export const LeaderboardPage: React.FC = () => {
                 <div
                   className={`w-8 h-8 rounded-xl font-black text-xs flex items-center justify-center shrink-0 ${
                     item.rank === 1
-                      ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/40'
+                      ? 'bg-red-600 text-slate-950 shadow-md shadow-amber-500/40'
                       : item.rank === 2
                       ? 'bg-slate-300 text-slate-950'
                       : item.rank === 3
@@ -140,8 +140,8 @@ export const LeaderboardPage: React.FC = () => {
               <div className="text-right shrink-0">
                 {activeTab === 'discoverers' && (
                   <div>
-                    <span className="font-extrabold text-amber-300 text-sm flex items-center gap-1 justify-end">
-                      <Coins className="w-4 h-4 text-amber-400" />
+                    <span className="font-extrabold text-red-300 text-sm flex items-center gap-1 justify-end">
+                      <Coins className="w-4 h-4 text-red-400" />
                       +{item.totalEarned.toLocaleString()}
                     </span>
                     <span className="text-[10px] text-slate-500">Credits Earned</span>

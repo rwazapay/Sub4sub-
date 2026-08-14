@@ -153,12 +153,12 @@ export const PromotePage: React.FC = () => {
           }}
           className={`p-4 rounded-3xl text-left transition-all border space-y-2 relative ${
             campaignType === 'subscribers'
-              ? 'bg-amber-500/5 dark:bg-[#1c1813] border-amber-500 ring-1 ring-amber-500'
+              ? 'bg-red-600/5 dark:bg-[#1c1813] border-red-500 ring-1 ring-red-500'
               : 'bg-white dark:bg-[#161310] border-stone-200 dark:border-[#262018] hover:border-stone-300'
           }`}
         >
-          <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
-            <Rocket className="w-5 h-5 text-amber-500" />
+          <div className="w-10 h-10 rounded-2xl bg-red-600/10 text-red-500 flex items-center justify-center">
+            <Rocket className="w-5 h-5 text-red-500" />
           </div>
           <div>
             <h3 className="font-extrabold text-stone-900 dark:text-white text-sm">
@@ -180,12 +180,12 @@ export const PromotePage: React.FC = () => {
           }}
           className={`p-4 rounded-3xl text-left transition-all border space-y-2 relative ${
             campaignType === 'views'
-              ? 'bg-amber-500/5 dark:bg-[#1c1813] border-amber-500 ring-1 ring-amber-500'
+              ? 'bg-red-600/5 dark:bg-[#1c1813] border-red-500 ring-1 ring-red-500'
               : 'bg-white dark:bg-[#161310] border-stone-200 dark:border-[#262018] hover:border-stone-300'
           }`}
         >
-          <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
-            <Video className="w-5 h-5 text-amber-500" />
+          <div className="w-10 h-10 rounded-2xl bg-red-600/10 text-red-500 flex items-center justify-center">
+            <Video className="w-5 h-5 text-red-500" />
           </div>
           <div>
             <h3 className="font-extrabold text-stone-900 dark:text-white text-sm">
@@ -207,7 +207,7 @@ export const PromotePage: React.FC = () => {
           <span
             className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
               currentStep === 1
-                ? 'bg-amber-500 text-stone-950'
+                ? 'bg-red-600 text-stone-950'
                 : 'bg-stone-200 dark:bg-[#201b16] text-stone-600 dark:text-stone-400'
             }`}
           >
@@ -225,7 +225,7 @@ export const PromotePage: React.FC = () => {
           <span
             className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
               currentStep === 2
-                ? 'bg-amber-500 text-stone-950'
+                ? 'bg-red-600 text-stone-950'
                 : 'bg-stone-200 dark:bg-[#201b16] text-stone-600 dark:text-stone-400'
             }`}
           >
@@ -243,7 +243,7 @@ export const PromotePage: React.FC = () => {
           <span
             className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
               currentStep === 3
-                ? 'bg-amber-500 text-stone-950'
+                ? 'bg-red-600 text-stone-950'
                 : 'bg-stone-200 dark:bg-[#201b16] text-stone-600 dark:text-stone-400'
             }`}
           >
@@ -286,7 +286,7 @@ export const PromotePage: React.FC = () => {
                     ? 'https://www.youtube.com/@yourchannel'
                     : 'https://www.youtube.com/watch?v=...'
                 }
-                className="w-full bg-stone-50 dark:bg-[#0d0b09] border border-stone-200 dark:border-[#262018] rounded-2xl px-4 py-3.5 text-stone-900 dark:text-white placeholder-stone-400 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500"
+                className="w-full bg-stone-50 dark:bg-[#0d0b09] border border-stone-200 dark:border-[#262018] rounded-2xl px-4 py-3.5 text-stone-900 dark:text-white placeholder-stone-400 text-xs focus:outline-none focus:ring-2 focus:ring-red-500"
               />
             </div>
 
@@ -320,7 +320,7 @@ export const PromotePage: React.FC = () => {
               type="button"
               onClick={handleLookup}
               disabled={lookingUp || !targetUrl.trim()}
-              className="w-full py-3.5 px-4 rounded-2xl bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-stone-950 font-bold text-xs shadow-md shadow-amber-500/10 transition-all flex items-center justify-center gap-2"
+              className="w-full py-3.5 px-4 rounded-2xl bg-red-600 hover:bg-red-500 disabled:opacity-50 text-stone-950 font-bold text-xs shadow-md shadow-red-600/15 transition-all flex items-center justify-center gap-2"
             >
               <Search className="w-4 h-4 text-stone-950" />
               <span>{lookingUp ? 'Looking up...' : 'Look up'}</span>
@@ -330,7 +330,7 @@ export const PromotePage: React.FC = () => {
             <button
               type="button"
               onClick={handleContinueToBudget}
-              className="w-full py-3.5 px-4 rounded-2xl bg-amber-500/30 hover:bg-amber-500/40 text-amber-900 dark:text-amber-200 font-bold text-xs transition-all"
+              className="w-full py-3.5 px-4 rounded-2xl bg-red-600/30 hover:bg-red-600/40 text-amber-900 dark:text-amber-200 font-bold text-xs transition-all"
             >
               Continue
             </button>
@@ -352,7 +352,7 @@ export const PromotePage: React.FC = () => {
             <div className="space-y-3 p-4 bg-stone-50 dark:bg-[#0d0b09] rounded-2xl border border-stone-200 dark:border-[#262018]">
               <div className="flex items-center justify-between text-xs font-bold">
                 <span>Target {campaignType === 'subscribers' ? 'Subscribers' : 'Views'}</span>
-                <span className="text-amber-500 font-mono text-sm">{targetCount}</span>
+                <span className="text-red-500 font-mono text-sm">{targetCount}</span>
               </div>
 
               <input
@@ -362,13 +362,13 @@ export const PromotePage: React.FC = () => {
                 step={campaignType === 'subscribers' ? '5' : '10'}
                 value={targetCount}
                 onChange={(e) => setTargetCount(parseInt(e.target.value, 10))}
-                className="w-full accent-amber-500 cursor-pointer"
+                className="w-full accent-red-500 cursor-pointer"
               />
 
               <div className="flex justify-between items-center pt-2 border-t border-stone-200 dark:border-[#262018] text-xs font-bold">
                 <span className="text-stone-600 dark:text-stone-400">Total Coins Required</span>
-                <span className="text-amber-500 flex items-center gap-1 font-mono text-sm">
-                  <Coins className="w-4 h-4 fill-amber-500/20" />
+                <span className="text-red-500 flex items-center gap-1 font-mono text-sm">
+                  <Coins className="w-4 h-4 fill-red-500/20" />
                   {totalCostCoins} coins
                 </span>
               </div>
@@ -385,7 +385,7 @@ export const PromotePage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setCurrentStep(3)}
-                className="w-2/3 py-3.5 px-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs shadow-md"
+                className="w-2/3 py-3.5 px-4 rounded-2xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs shadow-md"
               >
                 Continue to Review
               </button>
@@ -412,11 +412,11 @@ export const PromotePage: React.FC = () => {
               </div>
               <div className="flex justify-between">
                 <span className="text-stone-500">Target:</span>
-                <span className="font-bold text-amber-500">{targetCount} {campaignType}</span>
+                <span className="font-bold text-red-500">{targetCount} {campaignType}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-stone-500">Total Cost:</span>
-                <span className="font-bold text-amber-500 font-mono">{totalCostCoins} coins</span>
+                <span className="font-bold text-red-500 font-mono">{totalCostCoins} coins</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-stone-500">Your Coin Balance:</span>
@@ -436,7 +436,7 @@ export const PromotePage: React.FC = () => {
                 type="button"
                 onClick={handleSubmitCampaign}
                 disabled={isSubmitting || user.credits < totalCostCoins}
-                className="w-2/3 py-3.5 px-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-black text-xs shadow-md flex items-center justify-center gap-2"
+                className="w-2/3 py-3.5 px-4 rounded-2xl bg-red-600 hover:bg-red-500 text-white font-black text-xs shadow-md flex items-center justify-center gap-2"
               >
                 <Sparkles className="w-4 h-4 fill-stone-950" />
                 <span>{isSubmitting ? 'Launching...' : 'Launch Campaign Now'}</span>

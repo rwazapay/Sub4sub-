@@ -107,7 +107,7 @@ export const TourTriggerButton: React.FC<{ className?: string; variant?: 'badge'
     return (
       <button
         onClick={() => startTour(true)}
-        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 hover:bg-amber-500 hover:text-stone-950 transition-all ${className}`}
+        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20 hover:bg-red-600 hover:text-white transition-all ${className}`}
         title="Start Interactive Walkthrough"
       >
         <Sparkles className="w-3.5 h-3.5" />
@@ -120,7 +120,7 @@ export const TourTriggerButton: React.FC<{ className?: string; variant?: 'badge'
     return (
       <button
         onClick={() => startTour(true)}
-        className={`p-2 rounded-xl bg-stone-100 dark:bg-[#161310] border border-stone-200 dark:border-[#262018] text-stone-600 dark:text-stone-300 hover:text-amber-500 hover:border-amber-500/50 transition-colors ${className}`}
+        className={`p-2 rounded-xl bg-stone-100 dark:bg-[#161310] border border-stone-200 dark:border-[#262018] text-stone-600 dark:text-stone-300 hover:text-red-500 hover:border-red-500/50 transition-colors ${className}`}
         title="App Walkthrough Guide"
         aria-label="Start Walkthrough"
       >
@@ -135,7 +135,7 @@ export const TourTriggerButton: React.FC<{ className?: string; variant?: 'badge'
       className={`px-3 py-2 rounded-xl bg-stone-800/80 hover:bg-stone-700 text-stone-200 hover:text-white text-xs font-bold flex items-center gap-1.5 border border-stone-700 transition-all shadow-sm ${className}`}
       title="Take an Interactive Tour"
     >
-      <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+      <Sparkles className="w-3.5 h-3.5 text-red-400" />
       <span>Walkthrough Tour</span>
     </button>
   );

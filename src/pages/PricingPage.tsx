@@ -10,7 +10,7 @@ export const PricingPage: React.FC = () => {
       {/* Banner */}
       <div className="text-center max-w-3xl mx-auto space-y-3 pt-6">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 font-bold text-xs">
-          <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+          <Sparkles className="w-3.5 h-3.5 text-red-300" />
           <span>Transparent Creator Plans</span>
         </div>
         <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight">

@@ -99,7 +99,7 @@ export const OffersPage: React.FC = () => {
         {/* Title Header */}
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <Gift className="w-6 h-6 text-amber-500" />
+            <Gift className="w-6 h-6 text-red-500" />
             <h1 className="text-2xl sm:text-3xl font-extrabold text-white font-sans">
               Offers
             </h1>
@@ -115,16 +115,16 @@ export const OffersPage: React.FC = () => {
             <div
               key={offer.id}
               className={`relative bg-[#161310] border ${
-                offer.popular ? 'border-amber-500/80 shadow-xl shadow-amber-500/10' : 'border-[#262018]'
-              } rounded-3xl p-5 space-y-4 flex flex-col justify-between hover:border-amber-500/50 transition-all group`}
+                offer.popular ? 'border-red-500/80 shadow-xl shadow-red-600/15' : 'border-[#262018]'
+              } rounded-3xl p-5 space-y-4 flex flex-col justify-between hover:border-red-500/50 transition-all group`}
             >
               {/* Badge Ribbon */}
               <div className="flex items-center justify-between">
-                <span className="px-3 py-1 rounded-full bg-amber-500/20 text-amber-400 font-extrabold text-xs border border-amber-500/30">
+                <span className="px-3 py-1 rounded-full bg-red-600/15 text-red-400 font-extrabold text-xs border border-red-500/30">
                   {offer.badge}
                 </span>
                 {offer.popular && (
-                  <span className="px-2.5 py-0.5 rounded-full bg-amber-500 text-stone-950 font-black text-[10px] uppercase tracking-wider flex items-center gap-1">
+                  <span className="px-2.5 py-0.5 rounded-full bg-red-600 text-stone-950 font-black text-[10px] uppercase tracking-wider flex items-center gap-1">
                     <Flame className="w-3 h-3 fill-stone-950" /> Most Popular
                   </span>
                 )}
@@ -133,7 +133,7 @@ export const OffersPage: React.FC = () => {
               {/* Offer Features */}
               <div className="space-y-3 my-2">
                 <div className="flex items-center gap-3">
-                  <div className="p-2.5 bg-[#201b16] rounded-2xl text-amber-400">
+                  <div className="p-2.5 bg-[#201b16] rounded-2xl text-red-400">
                     <Users className="w-5 h-5" />
                   </div>
                   <div>
@@ -143,7 +143,7 @@ export const OffersPage: React.FC = () => {
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <div className="p-2.5 bg-[#201b16] rounded-2xl text-amber-400">
+                  <div className="p-2.5 bg-[#201b16] rounded-2xl text-red-400">
                     <Play className="w-5 h-5" />
                   </div>
                   <div>
@@ -162,7 +162,7 @@ export const OffersPage: React.FC = () => {
 
                 <button
                   onClick={() => handleBuyClick(offer)}
-                  className="px-5 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-black text-xs flex items-center gap-1.5 shadow-md shadow-amber-500/20 active:scale-95 transition-all"
+                  className="px-5 py-2.5 rounded-2xl bg-red-600 hover:bg-red-500 text-white font-black text-xs flex items-center gap-1.5 shadow-md shadow-red-600/25 active:scale-95 transition-all"
                 >
                   <span>Buy Combo</span>
                   <ArrowRight className="w-4 h-4" />
@@ -174,7 +174,7 @@ export const OffersPage: React.FC = () => {
 
         {/* Guarantees Box */}
         <div className="bg-[#161310] border border-[#262018] rounded-3xl p-5 space-y-3">
-          <div className="flex items-center gap-2 text-amber-400 font-bold text-sm">
+          <div className="flex items-center gap-2 text-red-400 font-bold text-sm">
             <ShieldCheck className="w-5 h-5" />
             <span>Sub4Sub Pro Guarantee</span>
           </div>
@@ -201,12 +201,12 @@ export const OffersPage: React.FC = () => {
                 Activate Combo Offer ({selectedOffer.subscribers} Subs + {selectedOffer.views} Views)
               </h3>
               <p className="text-xs text-stone-400">
-                Total Price: <span className="text-amber-400 font-bold">{selectedOffer.priceInr} ({selectedOffer.priceUsd})</span>
+                Total Price: <span className="text-red-400 font-bold">{selectedOffer.priceInr} ({selectedOffer.priceUsd})</span>
               </p>
             </div>
 
             {message && (
-              <div className="p-3 bg-amber-500/10 border border-amber-500/40 text-amber-300 text-xs rounded-xl font-bold">
+              <div className="p-3 bg-red-600/10 border border-red-500/40 text-red-300 text-xs rounded-xl font-bold">
                 {message}
               </div>
             )}
@@ -222,7 +222,7 @@ export const OffersPage: React.FC = () => {
                   placeholder="e.g. https://youtube.com/@mychannel"
                   value={channelUrl}
                   onChange={(e) => setChannelUrl(e.target.value)}
-                  className="w-full px-4 py-3 rounded-2xl bg-[#0d0b09] border border-[#262018] text-white text-xs focus:outline-none focus:border-amber-500"
+                  className="w-full px-4 py-3 rounded-2xl bg-[#0d0b09] border border-[#262018] text-white text-xs focus:outline-none focus:border-red-500"
                 />
               </div>
 
@@ -235,7 +235,7 @@ export const OffersPage: React.FC = () => {
                   placeholder="e.g. https://youtu.be/watch?v=xyz"
                   value={videoUrl}
                   onChange={(e) => setVideoUrl(e.target.value)}
-                  className="w-full px-4 py-3 rounded-2xl bg-[#0d0b09] border border-[#262018] text-white text-xs focus:outline-none focus:border-amber-500"
+                  className="w-full px-4 py-3 rounded-2xl bg-[#0d0b09] border border-[#262018] text-white text-xs focus:outline-none focus:border-red-500"
                 />
               </div>
 
@@ -243,7 +243,7 @@ export const OffersPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 active:scale-95 transition-all disabled:opacity-50"
+                  className="w-full py-3.5 rounded-2xl bg-red-600 hover:bg-red-500 text-white font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-red-600/25 active:scale-95 transition-all disabled:opacity-50"
                 >
                   <Sparkles className="w-4 h-4" />
                   <span>{loading ? 'Activating Campaign...' : `Pay ${selectedOffer.priceInr} & Launch Campaigns`}</span>
