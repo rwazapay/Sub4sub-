@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { apiClient } from '../services/api';
 import { CreatorProfile } from '../types';
 import { Users, Search, Globe2, Award, ChevronRight, Zap } from 'lucide-react';
+import { AiVerificationBadge } from '../components/AiVerificationBadge';
 
 export const CreatorsDirectoryPage: React.FC = () => {
   const [creators, setCreators] = useState<CreatorProfile[]>([]);
@@ -124,11 +125,16 @@ export const CreatorsDirectoryPage: React.FC = () => {
                     alt={c.displayName}
                     className="w-12 h-12 rounded-xl object-cover ring-2 ring-indigo-500/30 group-hover:scale-105 transition-transform"
                   />
-                  <div>
-                    <h3 className="font-bold text-white text-base group-hover:text-indigo-300 transition-colors">
-                      {c.displayName}
-                    </h3>
-                    <p className="text-xs text-slate-400">@{c.username}</p>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <h3 className="font-bold text-white text-base group-hover:text-indigo-300 transition-colors truncate">
+                        {c.displayName}
+                      </h3>
+                      {c.isAiVerified && (
+                        <AiVerificationBadge isVerified={true} verificationData={c.aiVerificationData} size="sm" />
+                      )}
+                    </div>
+                    <p className="text-xs text-slate-400 truncate">@{c.username}</p>
                   </div>
                 </div>
 

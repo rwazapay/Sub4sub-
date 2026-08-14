@@ -24,7 +24,7 @@ export const MobileNav: React.FC = () => {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-[#0d0b09] border-t border-[#262018] backdrop-blur-lg">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#0d0b09]/95 border-t border-stone-200 dark:border-[#262018] backdrop-blur-lg transition-colors">
       <div className="flex items-center justify-around h-16 max-w-2xl mx-auto px-1">
         {tabs.map((tab) => (
           <NavLink
@@ -34,7 +34,7 @@ export const MobileNav: React.FC = () => {
               `flex flex-col items-center justify-center flex-1 py-1 text-[10px] font-semibold transition-all ${
                 isActive
                   ? 'text-amber-500 font-bold scale-105'
-                  : 'text-[#9c8e80] hover:text-stone-200'
+                  : 'text-stone-500 dark:text-[#9c8e80] hover:text-stone-900 dark:hover:text-stone-200'
               }`
             }
           >

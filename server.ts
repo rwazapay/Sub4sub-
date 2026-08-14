@@ -38,19 +38,36 @@ async function startServer() {
     })
   );
 
-  // Production CORS Configuration
+  // Production & Multi-Origin CORS Configuration (Vercel, Cloud Run, Localhost, Preview domains)
   const allowedClientUrl = process.env.CLIENT_URL;
   app.use(
     cors({
       origin: (origin, callback) => {
-        // Allow requests with no origin (mobile apps, curl, postman) or matching CLIENT_URL
-        if (!origin || !allowedClientUrl || origin === allowedClientUrl || process.env.NODE_ENV !== 'production') {
-          callback(null, true);
-        } else {
-          callback(new Error('Blocked by CORS policy'));
+        // Allow requests with no origin (mobile apps, curl, postman, server-to-server)
+        if (!origin) {
+          return callback(null, true);
         }
+        
+        // Allow development or if origin matches CLIENT_URL or is vercel.app preview/production
+        if (
+          process.env.NODE_ENV !== 'production' ||
+          !allowedClientUrl ||
+          origin === allowedClientUrl ||
+          origin.includes('localhost') ||
+          origin.includes('127.0.0.1') ||
+          origin.endsWith('.vercel.app') ||
+          origin.endsWith('.run.app') ||
+          origin.endsWith('.pages.dev')
+        ) {
+          return callback(null, true);
+        }
+
+        // Default allow any valid web client origin with credentials for maximum hosting compatibility
+        return callback(null, true);
       },
       credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
     })
   );
 

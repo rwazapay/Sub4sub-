@@ -2,6 +2,13 @@ import { Router, Response } from 'express';
 import { db } from '../db';
 import { authenticateJWT, AuthenticatedRequest } from '../middleware/auth';
 import { antiFraudEngine } from '../services/antiFraudEngine';
+import { rateLimiterService } from '../services/rateLimiterService';
+import {
+  campaignRateLimiter,
+  exchangeActionRateLimiter,
+  watchActionRateLimiter,
+  challengeStartRateLimiter,
+} from '../middleware/rateLimit';
 import { Sub4SubRequest, PlatformType } from '../../types';
 
 const router = Router();
@@ -52,8 +59,8 @@ router.post('/claim-daily-bonus', authenticateJWT, (req: AuthenticatedRequest, r
   });
 });
 
-// POST /api/sub4sub/watch-video - Verify watched video and credit coins
-router.post('/watch-video', authenticateJWT, (req: AuthenticatedRequest, res: Response) => {
+// POST /api/sub4sub/watch-video - Verify watched video and credit coins (Rate-limited)
+router.post('/watch-video', authenticateJWT, watchActionRateLimiter, (req: AuthenticatedRequest, res: Response) => {
   const user = req.user!;
   const { videoId, watchDurationSeconds } = req.body;
 
@@ -84,8 +91,8 @@ router.post('/watch-video', authenticateJWT, (req: AuthenticatedRequest, res: Re
   });
 });
 
-// POST /api/sub4sub/watch-complete - Record watch completion & credit coins
-router.post('/watch-complete', authenticateJWT, (req: AuthenticatedRequest, res: Response) => {
+// POST /api/sub4sub/watch-complete - Record watch completion & credit coins (Rate-limited)
+router.post('/watch-complete', authenticateJWT, watchActionRateLimiter, (req: AuthenticatedRequest, res: Response) => {
   const user = req.user!;
   const { videoId } = req.body;
 
@@ -107,8 +114,8 @@ router.post('/watch-complete', authenticateJWT, (req: AuthenticatedRequest, res:
   });
 });
 
-// POST /api/sub4sub/buy-combo - Buy combo pack offer
-router.post('/buy-combo', authenticateJWT, (req: AuthenticatedRequest, res: Response) => {
+// POST /api/sub4sub/buy-combo - Buy combo pack offer (Rate-limited)
+router.post('/buy-combo', authenticateJWT, campaignRateLimiter, (req: AuthenticatedRequest, res: Response) => {
   const user = req.user!;
   const { offerId, priceInr, priceUsd, subscribersCount, viewsCount, channelUrl, videoUrl } = req.body;
 
@@ -208,8 +215,8 @@ router.post('/buy-combo', authenticateJWT, (req: AuthenticatedRequest, res: Resp
   });
 });
 
-// POST /api/sub4sub/start-challenge - Issue anti-cheat verification token & countdown timer
-router.post('/start-challenge', authenticateJWT, (req: AuthenticatedRequest, res: Response) => {
+// POST /api/sub4sub/start-challenge - Issue anti-cheat verification token & countdown timer (Rate-limited)
+router.post('/start-challenge', authenticateJWT, challengeStartRateLimiter, (req: AuthenticatedRequest, res: Response) => {
   const user = req.user!;
   const { targetUserId, promotionId, platform, channelUrl } = req.body;
 
@@ -238,8 +245,8 @@ router.post('/start-challenge', authenticateJWT, (req: AuthenticatedRequest, res
   });
 });
 
-// POST /api/sub4sub/verify-claim - Execute anti-fraud algorithm and credit user
-router.post('/verify-claim', authenticateJWT, (req: AuthenticatedRequest, res: Response) => {
+// POST /api/sub4sub/verify-claim - Execute anti-fraud algorithm and credit user (Rate-limited)
+router.post('/verify-claim', authenticateJWT, exchangeActionRateLimiter, (req: AuthenticatedRequest, res: Response) => {
   const user = req.user!;
   const { verificationToken, challengeCode, targetUserId, platform, channelUrl } = req.body;
 
@@ -447,8 +454,8 @@ router.get('/feed', authenticateJWT, (req: AuthenticatedRequest, res: Response) 
   });
 });
 
-// POST /api/sub4sub/subscribe - Subscribe to a creator and request a Sub Back
-router.post('/subscribe', authenticateJWT, (req: AuthenticatedRequest, res: Response) => {
+// POST /api/sub4sub/subscribe - Subscribe to a creator and request a Sub Back (Rate-limited)
+router.post('/subscribe', authenticateJWT, exchangeActionRateLimiter, (req: AuthenticatedRequest, res: Response) => {
   const user = req.user!;
   const { targetUserId, targetPlatform, channelUrl, campaignId } = req.body;
 
@@ -636,8 +643,8 @@ router.post('/subscribe', authenticateJWT, (req: AuthenticatedRequest, res: Resp
   }
 });
 
-// POST /api/sub4sub/sub-back/:id - Instantly Sub Back to a creator
-router.post('/sub-back/:id', authenticateJWT, (req: AuthenticatedRequest, res: Response) => {
+// POST /api/sub4sub/sub-back/:id - Instantly Sub Back to a creator (Rate-limited)
+router.post('/sub-back/:id', authenticateJWT, exchangeActionRateLimiter, (req: AuthenticatedRequest, res: Response) => {
   const user = req.user!;
   const requestId = req.params.id;
 
@@ -728,6 +735,21 @@ router.get('/my-requests', authenticateJWT, (req: AuthenticatedRequest, res: Res
       pendingRequests,
       mutualSubs,
       mySubscribed,
+    },
+  });
+});
+
+// GET /api/sub4sub/rate-limit-status - Check current user rate-limit allocations and cooldowns
+router.get('/rate-limit-status', authenticateJWT, (req: AuthenticatedRequest, res: Response) => {
+  const user = req.user!;
+  const status = rateLimiterService.getUserStatus(user.id);
+
+  return res.json({
+    success: true,
+    data: {
+      userId: user.id,
+      status,
+      timestamp: new Date().toISOString(),
     },
   });
 });

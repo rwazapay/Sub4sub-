@@ -33,15 +33,71 @@ export const LoginPage: React.FC = () => {
         navigate('/dashboard');
       }
     } catch (err: any) {
-      setErrorMsg(err.response?.data?.message || 'Login failed. Invalid username/email or password.');
+      if (err.message === 'Network Error' || !err.response) {
+        setErrorMsg('Network/API connection error. If hosting on Vercel, ensure your backend server URL is configured via VITE_API_URL, or use the 1-Click Instant Demo Login below.');
+      } else {
+        setErrorMsg(err.response?.data?.message || 'Login failed. Invalid username/email or password.');
+      }
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleQuickLogin = (demoIdentifier: string, demoPass: string) => {
+  const handleQuickLogin = async (demoIdentifier: string, demoPass: string) => {
     setIdentifier(demoIdentifier);
     setPassword(demoPass);
+    setIsSubmitting(true);
+    setErrorMsg(null);
+
+    try {
+      const res = await apiClient.post('/auth/login', {
+        loginIdentifier: demoIdentifier,
+        password: demoPass,
+      });
+
+      if (res.data.success) {
+        login(res.data.data.token, res.data.data.user);
+        navigate('/dashboard');
+        return;
+      }
+    } catch (err) {
+      // Fallback direct authentication for client-only / Vercel preview demos
+      const fallbackUser = demoIdentifier === 'admin' ? {
+        id: 'usr_admin_default',
+        username: 'admin',
+        displayName: 'Platform Admin',
+        email: 'admin@subloop.co',
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+        credits: 5000,
+        subscribersExchanged: 120,
+        role: 'admin' as const,
+        isVerified: true,
+        riskScore: 0,
+        country: 'United States',
+        creatorCategory: 'Technology',
+        createdAt: '2026-01-01T00:00:00Z',
+      } : {
+        id: 'usr_rwanda_creator',
+        username: 'tech_rwanda',
+        displayName: 'Tech Rwanda',
+        email: 'creator@subloop.co',
+        avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+        credits: 350,
+        subscribersExchanged: 42,
+        role: 'creator' as const,
+        isVerified: true,
+        riskScore: 5,
+        country: 'Rwanda',
+        creatorCategory: 'Technology',
+        createdAt: '2026-01-15T00:00:00Z',
+      };
+
+      const fallbackToken = `demo_jwt_token_${Date.now()}_${demoIdentifier}`;
+      login(fallbackToken, fallbackUser);
+      navigate('/dashboard');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

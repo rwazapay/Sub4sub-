@@ -2,6 +2,7 @@ import { Router, Response } from 'express';
 import { db } from '../db';
 import { rankPromotions } from '../services/rankingAlgorithm';
 import { authenticateJWT, AuthenticatedRequest } from '../middleware/auth';
+import { discoveryActionRateLimiter } from '../middleware/rateLimit';
 
 const router = Router();
 
@@ -33,8 +34,8 @@ router.get('/', (req, res) => {
   });
 });
 
-// POST /api/discover/:id/complete - Complete legitimate discovery activity & earn credits
-router.post('/:id/complete', authenticateJWT, (req: AuthenticatedRequest, res: Response) => {
+// POST /api/discover/:id/complete - Complete legitimate discovery activity & earn credits (Rate-limited)
+router.post('/:id/complete', authenticateJWT, discoveryActionRateLimiter, (req: AuthenticatedRequest, res: Response) => {
   const user = req.user!;
   const promotionId = req.params.id;
 

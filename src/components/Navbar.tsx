@@ -4,7 +4,6 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import {
   Coins,
-  Download,
   Plus,
   Menu,
   X,
@@ -31,7 +30,6 @@ export const Navbar: React.FC<NavbarProps> = () => {
   const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [showApkModal, setShowApkModal] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showContactModal, setShowContactModal] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
@@ -49,7 +47,7 @@ export const Navbar: React.FC<NavbarProps> = () => {
       <header className="sticky top-0 z-40 w-full border-b border-[#262018] dark:border-[#262018] bg-white dark:bg-[#0d0b09]/95 text-stone-900 dark:text-stone-100 backdrop-blur-md transition-colors">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-3 sm:px-6">
           
-          {/* Left: Sub4Sub Pro Brand Logo & Download APK */}
+          {/* Left: Sub4Sub Pro Brand Logo */}
           <div className="flex items-center gap-2 sm:gap-3">
             <Link to={user ? "/dashboard" : "/"} className="flex items-center gap-2 group">
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500 text-stone-950 font-black shadow-md shadow-amber-500/20 group-hover:scale-105 transition-transform">
@@ -59,15 +57,6 @@ export const Navbar: React.FC<NavbarProps> = () => {
                 Sub4Sub <span className="text-amber-500">Pro</span>
               </span>
             </Link>
-
-            {/* Download APK Pill Button */}
-            <button
-              onClick={() => setShowApkModal(true)}
-              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/40 text-amber-600 dark:text-amber-400 font-bold text-[11px] sm:text-xs hover:bg-amber-500/20 transition-all ml-1 sm:ml-2"
-            >
-              <Download className="w-3.5 h-3.5 text-amber-500" />
-              <span>Download APK</span>
-            </button>
           </div>
 
           {/* Right Actions */}
@@ -86,7 +75,7 @@ export const Navbar: React.FC<NavbarProps> = () => {
                 {/* Settings Button */}
                 <Link
                   to="/settings"
-                  className="flex h-8 w-8 items-center justify-center rounded-full bg-stone-100 dark:bg-[#1c1813] border border-stone-200 dark:border-[#332b21] text-stone-700 dark:text-stone-300 hover:text-amber-500 hover:border-amber-500/60 transition-all"
+                  className="hidden sm:flex h-8 w-8 items-center justify-center rounded-full bg-stone-100 dark:bg-[#1c1813] border border-stone-200 dark:border-[#332b21] text-stone-700 dark:text-stone-300 hover:text-amber-500 hover:border-amber-500/60 transition-all"
                   title="Settings & Profile"
                 >
                   <Settings className="w-4 h-4" />
@@ -95,19 +84,21 @@ export const Navbar: React.FC<NavbarProps> = () => {
                 {/* Coin Balance Pill */}
                 <Link
                   to="/wallet"
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-stone-100 dark:bg-[#1c1813] border border-stone-200 dark:border-[#332b21] text-amber-600 dark:text-amber-400 font-extrabold text-xs hover:border-amber-500/60 transition-all"
+                  className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full bg-stone-100 dark:bg-[#1c1813] border border-stone-200 dark:border-[#332b21] text-amber-600 dark:text-amber-400 font-extrabold text-xs hover:border-amber-500/60 transition-all"
+                  title="Coins & Wallet"
                 >
                   <Coins className="w-4 h-4 text-amber-500 fill-amber-500/30" />
                   <span>{user.credits.toLocaleString()}</span>
                 </Link>
 
-                {/* Hamburger Button */}
+                {/* Hamburger / Menu Icon Button representing Drawer Menu on Mobile & Desktop */}
                 <button
                   onClick={() => setIsDrawerOpen(true)}
-                  className="p-2 rounded-xl text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-[#1a1612] transition-colors"
-                  aria-label="Toggle Drawer Menu"
+                  className="flex items-center justify-center p-2 rounded-xl bg-stone-100 dark:bg-[#161310] border border-stone-200 dark:border-[#262018] text-stone-800 dark:text-stone-200 hover:text-amber-500 hover:border-amber-500/50 transition-colors shadow-xs"
+                  aria-label="Open Navigation Menu"
+                  title="Navigation Menu"
                 >
-                  <Menu className="w-6 h-6" />
+                  <Menu className="w-5 h-5 sm:w-5 sm:h-5 text-stone-800 dark:text-stone-200" />
                 </button>
               </>
             ) : (
@@ -350,47 +341,6 @@ export const Navbar: React.FC<NavbarProps> = () => {
                 Average response time: 15–30 minutes (24/7 Creator Care)
               </p>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* APK Download Modal */}
-      {showApkModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
-          <div className="w-full max-w-md bg-white dark:bg-[#161310] border border-stone-200 dark:border-[#262018] rounded-3xl p-6 text-stone-900 dark:text-stone-100 relative space-y-4 shadow-2xl">
-            <button
-              onClick={() => setShowApkModal(false)}
-              className="absolute top-4 right-4 p-2 text-stone-400 hover:text-stone-900 dark:hover:text-white rounded-full bg-stone-100 dark:bg-[#201b16]"
-            >
-              <X className="w-4 h-4" />
-            </button>
-
-            <div className="flex items-center gap-3">
-              <div className="p-3 bg-amber-500/20 rounded-2xl text-amber-500 border border-amber-500/30">
-                <Download className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-stone-900 dark:text-white">Sub4Sub Pro Android App</h3>
-                <p className="text-xs text-stone-500 dark:text-stone-400">Version 3.4.0 · Official Direct APK</p>
-              </div>
-            </div>
-
-            <p className="text-xs text-stone-700 dark:text-stone-300 leading-relaxed bg-stone-50 dark:bg-[#0d0b09] p-3.5 rounded-2xl border border-stone-200 dark:border-[#262018]">
-              Install Sub4Sub Pro on your Android device for instant push notifications, auto-watch coin rewards, fast campaign tracking, and zero ads!
-            </p>
-
-            <a
-              href="#download"
-              onClick={(e) => {
-                e.preventDefault();
-                alert('Sub4Sub Pro APK direct download started! (sub4subpro_v3.4.0.apk)');
-                setShowApkModal(false);
-              }}
-              className="w-full py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-extrabold text-sm flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 transition-all"
-            >
-              <Download className="w-4 h-4" />
-              <span>Download Direct APK (14.2 MB)</span>
-            </a>
           </div>
         </div>
       )}

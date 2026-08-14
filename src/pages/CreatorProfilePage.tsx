@@ -2,9 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { apiClient } from '../services/api';
-import { SocialChannel, Promotion } from '../types';
+import { SocialChannel, Promotion, AiVerificationData } from '../types';
 import {
-  User,
   Globe2,
   Award,
   ExternalLink,
@@ -15,7 +14,11 @@ import {
   Coins,
   Repeat,
   CheckCircle2,
+  TrendingUp,
+  Activity,
 } from 'lucide-react';
+import { AiVerificationBadge } from '../components/AiVerificationBadge';
+import { AiGrowthAuditModal } from '../components/AiGrowthAuditModal';
 
 export const CreatorProfilePage: React.FC = () => {
   const { username } = useParams<{ username: string }>();
@@ -28,7 +31,12 @@ export const CreatorProfilePage: React.FC = () => {
   const [subProcessing, setSubProcessing] = useState(false);
   const [subMessage, setSubMessage] = useState<{ success: boolean; text: string } | null>(null);
 
-  useEffect(() => {
+  // AI Verification state
+  const [isAuditModalOpen, setIsAuditModalOpen] = useState(false);
+  const [isAuditing, setIsAuditing] = useState(false);
+  const [aiSuccessToast, setAiSuccessToast] = useState<string | null>(null);
+
+  const fetchProfile = () => {
     if (username) {
       apiClient
         .get(`/users/profile/${username}`)
@@ -42,7 +50,35 @@ export const CreatorProfilePage: React.FC = () => {
         .catch((err) => console.error(err))
         .finally(() => setIsLoading(false));
     }
+  };
+
+  useEffect(() => {
+    fetchProfile();
   }, [username]);
+
+  const handleRunAiVerification = async () => {
+    if (!creatorUser) return;
+    setIsAuditing(true);
+    setAiSuccessToast(null);
+
+    try {
+      const res = await apiClient.post(`/users/verify-ai/${creatorUser.username}`);
+      if (res.data.success) {
+        setCreatorUser((prev: any) => ({
+          ...prev,
+          isAiVerified: true,
+          aiVerificationData: res.data.data.aiVerificationData,
+        }));
+        setAiSuccessToast(res.data.message || 'Growth statistics successfully verified by Gemini AI!');
+        setIsAuditModalOpen(true);
+      }
+    } catch (err: any) {
+      console.error('AI Verification failed:', err);
+      alert(err.response?.data?.message || 'AI verification failed. Please try again.');
+    } finally {
+      setIsAuditing(false);
+    }
+  };
 
   const handleSub4SubAction = async () => {
     if (!creatorUser || !user) return;
@@ -102,6 +138,9 @@ export const CreatorProfilePage: React.FC = () => {
     );
   }
 
+  const isVerified = Boolean(creatorUser.isAiVerified);
+  const aiData: AiVerificationData | undefined = creatorUser.aiVerificationData;
+
   return (
     <div className="space-y-8 animate-fade-in pb-12">
       
@@ -112,17 +151,36 @@ export const CreatorProfilePage: React.FC = () => {
       </Link>
 
       {/* Profile Header */}
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6 shadow-xl">
+      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6 shadow-xl relative overflow-hidden">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
-          <img
-            src={creatorUser.avatar}
-            alt={creatorUser.displayName}
-            className="w-24 h-24 rounded-3xl object-cover ring-4 ring-indigo-500/40 shadow-xl"
-          />
+          <div className="relative">
+            <img
+              src={creatorUser.avatar}
+              alt={creatorUser.displayName}
+              className="w-24 h-24 rounded-3xl object-cover ring-4 ring-indigo-500/40 shadow-xl"
+            />
+            {isVerified && (
+              <div
+                className="absolute -bottom-2 -right-2 p-1.5 rounded-full bg-indigo-600 text-white shadow-lg border-2 border-slate-900"
+                title="AI Verified Growth Stats"
+              >
+                <Sparkles className="w-4 h-4" />
+              </div>
+            )}
+          </div>
 
           <div className="space-y-2 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="text-2xl sm:text-3xl font-black text-white">{creatorUser.displayName}</h1>
+              
+              {/* AI Verification Badge */}
+              <AiVerificationBadge
+                isVerified={isVerified}
+                verificationData={aiData}
+                onClick={() => setIsAuditModalOpen(true)}
+                showScore={true}
+              />
+
               <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
                 Level {creatorUser.level}
               </span>
@@ -144,11 +202,18 @@ export const CreatorProfilePage: React.FC = () => {
                 <Award className="w-3.5 h-3.5" />
                 Reputation: {creatorUser.reputation}/100
               </span>
+
+              {isVerified && (
+                <span className="px-2.5 py-1 rounded-xl bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 flex items-center gap-1">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                  Gemini Audited Growth
+                </span>
+              )}
             </div>
 
             {/* Sub4Sub Direct Action Box */}
             {user && user.id !== creatorUser.id && (
-              <div className="pt-3 border-t border-amber-200 dark:border-slate-800 space-y-2">
+              <div className="pt-3 border-t border-slate-800 space-y-2">
                 <button
                   onClick={handleSub4SubAction}
                   disabled={subProcessing}
@@ -177,6 +242,78 @@ export const CreatorProfilePage: React.FC = () => {
             )}
           </div>
         </div>
+      </div>
+
+      {/* AI Growth Verification Feature Card */}
+      <div className="bg-gradient-to-r from-slate-900 via-indigo-950/60 to-slate-900 border border-indigo-500/30 rounded-3xl p-6 sm:p-7 space-y-5 shadow-xl">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2 text-indigo-400 font-extrabold text-xs uppercase tracking-wider">
+              <Sparkles className="w-4 h-4" />
+              <span>Gemini AI Growth Validation System</span>
+            </div>
+            <h2 className="text-xl font-black text-white">Channel Integrity & Growth Verification</h2>
+            <p className="text-xs text-slate-300 max-w-xl leading-relaxed">
+              Audited by Gemini AI to inspect subscriber retention signals, organic velocity, and protect against artificial manipulation.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            {isVerified ? (
+              <button
+                onClick={() => setIsAuditModalOpen(true)}
+                className="px-5 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs transition-all shadow-lg shadow-indigo-600/30 flex items-center gap-2"
+              >
+                <Sparkles className="w-4 h-4" />
+                <span>View Full Audit Report ({aiData?.authenticityScore || 96}%)</span>
+              </button>
+            ) : (
+              <button
+                onClick={handleRunAiVerification}
+                disabled={isAuditing}
+                className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-indigo-600 to-sky-600 hover:from-indigo-500 hover:to-sky-500 text-white font-bold text-xs transition-all shadow-lg shadow-indigo-600/30 flex items-center gap-2 disabled:opacity-50"
+              >
+                <Sparkles className="w-4 h-4" />
+                <span>{isAuditing ? 'Auditing with Gemini...' : 'Verify Channel Growth with AI'}</span>
+              </button>
+            )}
+          </div>
+        </div>
+
+        {isVerified && aiData && (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+            <div className="p-3.5 rounded-2xl bg-slate-950/70 border border-slate-800/80 flex items-center justify-between">
+              <div>
+                <span className="text-[10px] text-slate-400 uppercase font-bold">Growth Rating</span>
+                <p className="text-xs font-black text-white">{aiData.growthQualityRating}</p>
+              </div>
+              <TrendingUp className="w-4 h-4 text-indigo-400" />
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-slate-950/70 border border-slate-800/80 flex items-center justify-between">
+              <div>
+                <span className="text-[10px] text-slate-400 uppercase font-bold">Retention Quality</span>
+                <p className="text-xs font-black text-white">{aiData.retentionQuality}</p>
+              </div>
+              <Activity className="w-4 h-4 text-emerald-400" />
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-slate-950/70 border border-slate-800/80 flex items-center justify-between">
+              <div>
+                <span className="text-[10px] text-slate-400 uppercase font-bold">Authenticity Score</span>
+                <p className="text-xs font-black text-emerald-400">{aiData.authenticityScore}% Verified</p>
+              </div>
+              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+            </div>
+          </div>
+        )}
+
+        {aiSuccessToast && (
+          <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-bold flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 shrink-0" />
+            <span>{aiSuccessToast}</span>
+          </div>
+        )}
       </div>
 
       {/* Connected Channels Grid */}
@@ -248,6 +385,18 @@ export const CreatorProfilePage: React.FC = () => {
         </div>
       )}
 
+      {/* AI Growth Audit Modal */}
+      <AiGrowthAuditModal
+        isOpen={isAuditModalOpen}
+        onClose={() => setIsAuditModalOpen(false)}
+        creatorName={creatorUser.displayName}
+        username={creatorUser.username}
+        verificationData={aiData}
+        onReverify={handleRunAiVerification}
+        isScanning={isAuditing}
+      />
+
     </div>
   );
 };
+

@@ -53,7 +53,11 @@ export const RegisterPage: React.FC = () => {
         navigate('/dashboard');
       }
     } catch (err: any) {
-      setErrorMsg(err.response?.data?.message || 'Registration failed. Please check your information.');
+      if (err.message === 'Network Error' || !err.response) {
+        setErrorMsg('Network connection error. If running on a preview domain, verify backend API reachability or sign in with the 1-click demo account.');
+      } else {
+        setErrorMsg(err.response?.data?.message || 'Registration failed. Please check your information.');
+      }
     } finally {
       setIsSubmitting(false);
     }

@@ -10,10 +10,20 @@ import {
   CheckCircle2,
   Clock,
   Sparkles,
+  Search,
+  ExternalLink,
+  Flame,
+  Filter,
+  Check,
+  Zap,
+  Radio,
   Tv,
+  Globe,
+  RefreshCw,
+  AlertCircle,
 } from 'lucide-react';
 
-interface ChannelCampaign {
+export interface ChannelCampaign {
   id: string;
   channelName: string;
   channelUrl: string;
@@ -24,7 +34,7 @@ interface ChannelCampaign {
   rewardCoins: number;
 }
 
-interface VideoCampaign {
+export interface VideoCampaign {
   id: string;
   videoTitle: string;
   youtubeId: string;
@@ -37,7 +47,31 @@ interface VideoCampaign {
   watchTimeSeconds: number;
 }
 
-// Initial mock campaigns matching screenshot data
+export interface PromotedLookupItem {
+  id: string;
+  lookupType: 'channel' | 'video' | 'campaign' | 'combo';
+  title: string;
+  channelName?: string;
+  creatorUsername?: string;
+  creatorAvatar?: string;
+  avatarOrThumbnail: string;
+  platform: string;
+  targetUrl: string;
+  youtubeId?: string;
+  rewardCoins: number;
+  rewardType: 'per_subscriber' | 'per_view' | 'per_discovery';
+  subscribersRemaining?: number;
+  viewsRemaining?: number;
+  completedCount?: number;
+  totalTarget?: number;
+  watchTimeSeconds?: number;
+  status: 'active' | 'completed' | 'paused';
+  isAiVerified?: boolean;
+  isSponsored?: boolean;
+  createdAt?: string;
+}
+
+// Initial fallback channel campaigns
 const MOCK_CHANNEL_CAMPAIGNS: ChannelCampaign[] = [
   {
     id: 'ch-1',
@@ -75,7 +109,7 @@ const MOCK_VIDEO_CAMPAIGNS: VideoCampaign[] = [
   {
     id: 'vid-1',
     videoTitle: 'FINALLY 🔥 BGMI 4.5 UPDATE IS HERE , NARUTO X BGMI 🔥 BEST UPDATE?| Mitalda Plays',
-    youtubeId: 'dQw4w9WgXcQ', // fallback embeddable ID
+    youtubeId: 'dQw4w9WgXcQ',
     channelName: 'Mitalda Plays',
     thumbnail: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&auto=format&fit=crop&q=80',
     rewardCoins: 10,
@@ -96,14 +130,26 @@ const MOCK_VIDEO_CAMPAIGNS: VideoCampaign[] = [
     totalTarget: 60,
     watchTimeSeconds: 30,
   },
+  {
+    id: 'vid-3',
+    videoTitle: 'How to Grow Fast on YouTube in 2026 📈 Complete Algorithm Secrets',
+    youtubeId: 'kJQP7kiw5Fk',
+    channelName: 'Tech Byte Official',
+    thumbnail: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80',
+    rewardCoins: 10,
+    viewsRemaining: 88,
+    watchedCount: 12,
+    totalTarget: 100,
+    watchTimeSeconds: 30,
+  },
 ];
 
 export const EarnPage: React.FC = () => {
   const { user, updateUser } = useAuth();
-  
-  // Tab state: 'subscribe' | 'watch'
-  const [activeTab, setActiveTab] = useState<'subscribe' | 'watch'>('subscribe');
-  
+
+  // Tab state: 'subscribe' | 'watch' | 'lookup'
+  const [activeTab, setActiveTab] = useState<'subscribe' | 'watch' | 'lookup'>('subscribe');
+
   // Channel campaigns list state
   const [channelCampaigns, setChannelCampaigns] = useState<ChannelCampaign[]>(MOCK_CHANNEL_CAMPAIGNS);
   const [subscribedIds, setSubscribedIds] = useState<string[]>([]);
@@ -119,7 +165,100 @@ export const EarnPage: React.FC = () => {
   const [claiming, setClaiming] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  // Look Up Engine State
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [lookupFilterType, setLookupFilterType] = useState<'all' | 'channel' | 'video' | 'campaign'>('all');
+  const [lookupItems, setLookupItems] = useState<PromotedLookupItem[]>([]);
+  const [isSearchingLookup, setIsSearchingLookup] = useState<boolean>(false);
+  const [hasCustomUrlInspected, setHasCustomUrlInspected] = useState<boolean>(false);
+
   if (!user) return null;
+
+  // Load lookup items from backend
+  const fetchLookupData = async (query = '', type = 'all') => {
+    setIsSearchingLookup(true);
+    try {
+      const res = await apiClient.get('/promotions/lookup', {
+        params: {
+          q: query,
+          type: type,
+        },
+      });
+      if (res.data.success) {
+        setLookupItems(res.data.data.items || []);
+      }
+    } catch (err) {
+      // Fallback local search aggregation
+      const combined: PromotedLookupItem[] = [
+        ...channelCampaigns.map((c) => ({
+          id: c.id,
+          lookupType: 'channel' as const,
+          title: `${c.channelName} - YouTube Creator Promotion`,
+          channelName: c.channelName,
+          creatorUsername: c.channelName.toLowerCase().replace(/\s+/g, ''),
+          avatarOrThumbnail: c.avatar,
+          platform: 'youtube',
+          targetUrl: c.channelUrl,
+          rewardCoins: c.rewardCoins,
+          rewardType: 'per_subscriber' as const,
+          subscribersRemaining: c.subscribersRemaining,
+          completedCount: c.subscribedCount,
+          totalTarget: c.totalTarget,
+          status: 'active' as const,
+          isAiVerified: true,
+          isSponsored: true,
+        })),
+        ...videoCampaigns.map((v) => ({
+          id: v.id,
+          lookupType: 'video' as const,
+          title: v.videoTitle,
+          channelName: v.channelName,
+          creatorUsername: v.channelName.toLowerCase().replace(/\s+/g, ''),
+          avatarOrThumbnail: v.thumbnail,
+          youtubeId: v.youtubeId,
+          platform: 'youtube',
+          targetUrl: `https://www.youtube.com/watch?v=${v.youtubeId}`,
+          rewardCoins: v.rewardCoins,
+          rewardType: 'per_view' as const,
+          viewsRemaining: v.viewsRemaining,
+          completedCount: v.watchedCount,
+          totalTarget: v.totalTarget,
+          watchTimeSeconds: v.watchTimeSeconds,
+          status: 'active' as const,
+          isAiVerified: true,
+          isSponsored: false,
+        })),
+      ];
+
+      let filtered = combined;
+      if (type !== 'all') {
+        filtered = filtered.filter((i) => i.lookupType === type);
+      }
+      if (query.trim()) {
+        const q = query.toLowerCase();
+        filtered = filtered.filter(
+          (i) =>
+            i.title.toLowerCase().includes(q) ||
+            i.channelName?.toLowerCase().includes(q) ||
+            i.targetUrl.toLowerCase().includes(q)
+        );
+      }
+      setLookupItems(filtered);
+    } finally {
+      setIsSearchingLookup(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchLookupData(searchQuery, lookupFilterType);
+  }, [lookupFilterType]);
+
+  // Handle Search Input Submission or Typing
+  const handleSearchSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setActiveTab('lookup');
+    fetchLookupData(searchQuery, lookupFilterType);
+  };
 
   // Timer effect for watching videos
   useEffect(() => {
@@ -136,17 +275,23 @@ export const EarnPage: React.FC = () => {
   }, [timerRunning, timer]);
 
   // Handle subscribe action
-  const handleSubscribe = async (campaign: ChannelCampaign) => {
-    window.open(campaign.channelUrl, '_blank');
-    
+  const handleSubscribe = async (campaign: ChannelCampaign | PromotedLookupItem) => {
+    const rawCampaign = campaign as any;
+    const channelUrl = rawCampaign.channelUrl || rawCampaign.targetUrl;
+    if (channelUrl) {
+      window.open(channelUrl, '_blank');
+    }
+
+    const reward = campaign.rewardCoins || 50;
+
     // Optimistically update
     if (!subscribedIds.includes(campaign.id)) {
       setSubscribedIds((prev) => [...prev, campaign.id]);
-      
-      const newCredits = user.credits + campaign.rewardCoins;
+
+      const newCredits = user.credits + reward;
       updateUser({ ...user, credits: newCredits });
 
-      setToastMessage(`🎉 You earned +${campaign.rewardCoins} coins! Channel verification recorded.`);
+      setToastMessage(`🎉 You earned +${reward} coins! Channel verification recorded.`);
       setTimeout(() => setToastMessage(null), 3000);
 
       // Update campaign counts
@@ -162,6 +307,18 @@ export const EarnPage: React.FC = () => {
         )
       );
 
+      setLookupItems((prev) =>
+        prev.map((item) =>
+          item.id === campaign.id
+            ? {
+                ...item,
+                completedCount: (item.completedCount || 0) + 1,
+                subscribersRemaining: Math.max(0, (item.subscribersRemaining || 1) - 1),
+              }
+            : item
+        )
+      );
+
       try {
         await apiClient.post('/sub4sub/subscribe', { campaignId: campaign.id });
       } catch (err) {
@@ -171,9 +328,23 @@ export const EarnPage: React.FC = () => {
   };
 
   // Start watching a video
-  const startWatchingVideo = (video: VideoCampaign) => {
-    setActiveVideo(video);
-    setTimer(video.watchTimeSeconds || 30);
+  const startWatchingVideo = (video: VideoCampaign | PromotedLookupItem) => {
+    const rawVideo = video as any;
+    const videoData: VideoCampaign = {
+      id: video.id,
+      videoTitle: rawVideo.videoTitle || rawVideo.title,
+      youtubeId: rawVideo.youtubeId || 'dQw4w9WgXcQ',
+      channelName: video.channelName || 'YouTube Creator',
+      thumbnail: rawVideo.thumbnail || rawVideo.avatarOrThumbnail,
+      rewardCoins: video.rewardCoins || 10,
+      viewsRemaining: rawVideo.viewsRemaining || 50,
+      watchedCount: rawVideo.watchedCount || rawVideo.completedCount || 0,
+      totalTarget: video.totalTarget || 60,
+      watchTimeSeconds: rawVideo.watchTimeSeconds || 30,
+    };
+
+    setActiveVideo(videoData);
+    setTimer(videoData.watchTimeSeconds || 30);
     setTimerRunning(true);
     setCanClaimCoins(false);
   };
@@ -223,7 +394,6 @@ export const EarnPage: React.FC = () => {
 
   return (
     <div className="max-w-xl mx-auto space-y-6 pb-12 text-stone-900 dark:text-stone-100">
-      
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-amber-500 text-stone-950 font-bold px-4 py-2.5 rounded-full shadow-2xl flex items-center gap-2 text-xs animate-in fade-in slide-in-from-top-4">
@@ -234,22 +404,50 @@ export const EarnPage: React.FC = () => {
 
       {/* Page Title & Subtitle */}
       {!activeVideo && (
-        <div className="space-y-1 pt-2">
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-stone-900 dark:text-white">
-            Earn coins
-          </h1>
-          <p className="text-xs sm:text-sm text-stone-600 dark:text-stone-400">
-            Subscribe or watch a video below to earn coins once verified.
-          </p>
+        <div className="space-y-3 pt-2">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-stone-900 dark:text-white">
+                Earn Coins & Look Up
+              </h1>
+              <p className="text-xs sm:text-sm text-stone-600 dark:text-stone-400">
+                Subscribe, watch videos, or look up any promoted campaign & channel in one place.
+              </p>
+            </div>
+            <div className="px-3 py-1.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center gap-1.5 text-amber-600 dark:text-amber-400 text-xs font-bold shrink-0">
+              <Coins className="w-4 h-4 fill-amber-500/20" />
+              <span>{user.credits} Coins</span>
+            </div>
+          </div>
+
+          {/* Quick Universal Lookup Bar */}
+          <form onSubmit={handleSearchSubmit} className="relative">
+            <div className="relative flex items-center">
+              <Search className="w-4 h-4 text-stone-400 absolute left-3.5 pointer-events-none" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Look up any campaign, channel URL, or video ID to earn..."
+                className="w-full bg-white dark:bg-[#161310] border border-stone-200 dark:border-[#262018] rounded-2xl pl-10 pr-24 py-3 text-xs sm:text-sm text-stone-900 dark:text-white placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-500 shadow-xs"
+              />
+              <button
+                type="submit"
+                className="absolute right-2 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs shadow-xs transition-colors flex items-center gap-1"
+              >
+                <span>Look Up</span>
+              </button>
+            </div>
+          </form>
         </div>
       )}
 
-      {/* Tab Segmented Bar (Subscribe | Watch & Earn) */}
+      {/* Tab Segmented Bar (Subscribe | Watch & Earn | Look Up) */}
       {!activeVideo && (
         <div className="p-1 rounded-2xl bg-stone-100 dark:bg-[#1a1612] border border-stone-200/80 dark:border-[#262018] flex items-center text-xs font-bold">
           <button
             onClick={() => setActiveTab('subscribe')}
-            className={`flex-1 py-2.5 px-4 rounded-xl transition-all text-center ${
+            className={`flex-1 py-2.5 px-3 rounded-xl transition-all text-center ${
               activeTab === 'subscribe'
                 ? 'bg-white dark:bg-[#262018] text-stone-900 dark:text-white shadow-sm'
                 : 'text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
@@ -259,13 +457,27 @@ export const EarnPage: React.FC = () => {
           </button>
           <button
             onClick={() => setActiveTab('watch')}
-            className={`flex-1 py-2.5 px-4 rounded-xl transition-all text-center ${
+            className={`flex-1 py-2.5 px-3 rounded-xl transition-all text-center ${
               activeTab === 'watch'
                 ? 'bg-white dark:bg-[#262018] text-stone-900 dark:text-white shadow-sm'
                 : 'text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
             }`}
           >
             Watch & Earn
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab('lookup');
+              fetchLookupData(searchQuery, lookupFilterType);
+            }}
+            className={`flex-1 py-2.5 px-3 rounded-xl transition-all text-center flex items-center justify-center gap-1 ${
+              activeTab === 'lookup'
+                ? 'bg-white dark:bg-[#262018] text-stone-900 dark:text-white shadow-sm text-amber-500 font-extrabold'
+                : 'text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
+            }`}
+          >
+            <Search className="w-3.5 h-3.5" />
+            <span>Look Up</span>
           </button>
         </div>
       )}
@@ -278,7 +490,10 @@ export const EarnPage: React.FC = () => {
             <div className="space-y-4">
               {channelCampaigns.map((channel) => {
                 const isSubbed = subscribedIds.includes(channel.id);
-                const progressPct = Math.min(100, Math.round((channel.subscribedCount / channel.totalTarget) * 100));
+                const progressPct = Math.min(
+                  100,
+                  Math.round((channel.subscribedCount / channel.totalTarget) * 100)
+                );
 
                 return (
                   <div
@@ -292,10 +507,15 @@ export const EarnPage: React.FC = () => {
                         alt={channel.channelName}
                         className="w-12 h-12 rounded-full object-cover ring-2 ring-amber-500/20 shrink-0"
                       />
-                      <div className="space-y-0.5">
-                        <h3 className="font-bold text-stone-900 dark:text-white text-base">
-                          {channel.channelName}
-                        </h3>
+                      <div className="space-y-0.5 flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-bold text-stone-900 dark:text-white text-base truncate">
+                            {channel.channelName}
+                          </h3>
+                          <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                            Channel
+                          </span>
+                        </div>
                         <p className="text-xs text-stone-500 dark:text-stone-400 flex items-center gap-1">
                           <Users className="w-3.5 h-3.5 text-stone-400" />
                           <span>{channel.subscribersRemaining} subscribers remaining</span>
@@ -362,24 +582,240 @@ export const EarnPage: React.FC = () => {
                         <Play className="w-6 h-6 fill-stone-950 ml-0.5" />
                       </div>
                     </div>
+                    <div className="absolute top-2 right-2 px-2 py-0.5 rounded-md bg-black/70 backdrop-blur-xs text-[10px] font-bold text-white flex items-center gap-1">
+                      <Clock className="w-3 h-3 text-amber-400" />
+                      <span>{video.watchTimeSeconds || 30}s</span>
+                    </div>
                   </div>
 
                   {/* Title & Channel */}
                   <div className="space-y-1">
-                    <h3 className="font-bold text-stone-900 dark:text-white text-sm line-clamp-2 group-hover:text-amber-500 transition-colors leading-snug">
-                      {video.videoTitle}
-                    </h3>
+                    <div className="flex items-center justify-between gap-2">
+                      <h3 className="font-bold text-stone-900 dark:text-white text-sm line-clamp-2 group-hover:text-amber-500 transition-colors leading-snug">
+                        {video.videoTitle}
+                      </h3>
+                      <span className="shrink-0 px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 text-[11px] font-extrabold">
+                        +{video.rewardCoins} coins
+                      </span>
+                    </div>
                     <p className="text-xs text-stone-500 dark:text-stone-400">{video.channelName}</p>
                   </div>
                 </div>
               ))}
             </div>
           )}
+
+          {/* TAB 3: UNIFIED CAMPAIGN, CHANNEL & VIDEO LOOKUP EXPLORER */}
+          {activeTab === 'lookup' && (
+            <div className="space-y-4 animate-in fade-in">
+              {/* Category Filter Pills */}
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar text-xs font-bold">
+                <button
+                  onClick={() => setLookupFilterType('all')}
+                  className={`px-3 py-1.5 rounded-xl transition-colors shrink-0 ${
+                    lookupFilterType === 'all'
+                      ? 'bg-amber-500 text-stone-950'
+                      : 'bg-stone-100 dark:bg-[#161310] border border-stone-200 dark:border-[#262018] text-stone-600 dark:text-stone-400 hover:text-stone-900'
+                  }`}
+                >
+                  All Promoted ({lookupItems.length})
+                </button>
+                <button
+                  onClick={() => setLookupFilterType('channel')}
+                  className={`px-3 py-1.5 rounded-xl transition-colors shrink-0 ${
+                    lookupFilterType === 'channel'
+                      ? 'bg-amber-500 text-stone-950'
+                      : 'bg-stone-100 dark:bg-[#161310] border border-stone-200 dark:border-[#262018] text-stone-600 dark:text-stone-400 hover:text-stone-900'
+                  }`}
+                >
+                  Channels (Sub4Sub)
+                </button>
+                <button
+                  onClick={() => setLookupFilterType('video')}
+                  className={`px-3 py-1.5 rounded-xl transition-colors shrink-0 ${
+                    lookupFilterType === 'video'
+                      ? 'bg-amber-500 text-stone-950'
+                      : 'bg-stone-100 dark:bg-[#161310] border border-stone-200 dark:border-[#262018] text-stone-600 dark:text-stone-400 hover:text-stone-900'
+                  }`}
+                >
+                  Videos (Watch & Earn)
+                </button>
+                <button
+                  onClick={() => setLookupFilterType('campaign')}
+                  className={`px-3 py-1.5 rounded-xl transition-colors shrink-0 ${
+                    lookupFilterType === 'campaign'
+                      ? 'bg-amber-500 text-stone-950'
+                      : 'bg-stone-100 dark:bg-[#161310] border border-stone-200 dark:border-[#262018] text-stone-600 dark:text-stone-400 hover:text-stone-900'
+                  }`}
+                >
+                  Sponsored Campaigns
+                </button>
+              </div>
+
+              {/* Lookup Stats Banner */}
+              <div className="p-3.5 rounded-2xl bg-amber-500/5 border border-amber-500/20 flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2">
+                  <Flame className="w-4 h-4 text-amber-500 fill-amber-500" />
+                  <span className="font-bold text-stone-800 dark:text-stone-200">
+                    {searchQuery ? `Lookup results for "${searchQuery}"` : 'All Active Promoted Campaigns & Channels'}
+                  </span>
+                </div>
+                <button
+                  onClick={() => fetchLookupData(searchQuery, lookupFilterType)}
+                  className="p-1 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 transition-colors"
+                  title="Refresh Lookup"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${isSearchingLookup ? 'animate-spin' : ''}`} />
+                </button>
+              </div>
+
+              {/* Lookup Results List */}
+              {lookupItems.length === 0 ? (
+                <div className="bg-white dark:bg-[#161310] border border-stone-200 dark:border-[#262018] rounded-3xl p-8 text-center space-y-3">
+                  <div className="w-12 h-12 rounded-full bg-stone-100 dark:bg-[#0d0b09] flex items-center justify-center mx-auto text-stone-400">
+                    <Search className="w-6 h-6" />
+                  </div>
+                  <h3 className="font-bold text-stone-900 dark:text-white text-sm">
+                    No matching campaign or channel found
+                  </h3>
+                  <p className="text-xs text-stone-500 dark:text-stone-400 max-w-xs mx-auto">
+                    Try searching by another channel URL, video title, or creator username.
+                  </p>
+                </div>
+              ) : (
+                lookupItems.map((item) => {
+                  const isSubbed = subscribedIds.includes(item.id);
+                  const isVideo = item.lookupType === 'video';
+
+                  return (
+                    <div
+                      key={item.id}
+                      className="bg-white dark:bg-[#161310] border border-stone-200 dark:border-[#262018] rounded-3xl p-5 shadow-xs space-y-4 hover:border-amber-500/40 transition-colors"
+                    >
+                      {/* Top Bar: Type Pill & Reward */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5">
+                          <span
+                            className={`text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full ${
+                              isVideo
+                                ? 'bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20'
+                                : item.lookupType === 'channel'
+                                ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
+                                : 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20'
+                            }`}
+                          >
+                            {isVideo ? 'Promoted Video' : item.lookupType === 'channel' ? 'Channel Exchange' : 'Sponsored Boost'}
+                          </span>
+                          {item.isSponsored && (
+                            <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-md bg-stone-100 dark:bg-[#262018] text-stone-600 dark:text-stone-300">
+                              Featured
+                            </span>
+                          )}
+                        </div>
+                        <span className="px-2.5 py-1 rounded-xl bg-amber-500 text-stone-950 font-black text-xs shadow-xs">
+                          +{item.rewardCoins} coins
+                        </span>
+                      </div>
+
+                      {/* Item Content: Thumbnail/Avatar & Title */}
+                      <div className="flex items-start gap-3">
+                        <img
+                          src={item.avatarOrThumbnail}
+                          alt={item.title}
+                          className={`object-cover ring-1 ring-stone-200 dark:ring-[#262018] shrink-0 ${
+                            isVideo ? 'w-24 h-14 rounded-xl' : 'w-12 h-12 rounded-full'
+                          }`}
+                        />
+                        <div className="space-y-1 flex-1 min-w-0">
+                          <h3 className="font-bold text-stone-900 dark:text-white text-sm line-clamp-2 leading-snug">
+                            {item.title}
+                          </h3>
+                          <p className="text-xs text-stone-500 dark:text-stone-400 flex items-center gap-1 truncate">
+                            <span>{item.channelName || `@${item.creatorUsername}`}</span>
+                            <span>•</span>
+                            <span className="capitalize">{item.platform}</span>
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Progress / Slots Remaining */}
+                      {item.totalTarget && (
+                        <div className="space-y-1 pt-1">
+                          <div className="w-full bg-stone-100 dark:bg-[#0d0b09] h-1.5 rounded-full overflow-hidden border border-stone-200/40 dark:border-[#262018]">
+                            <div
+                              className="bg-amber-500 h-full rounded-full transition-all"
+                              style={{
+                                width: `${Math.min(
+                                  100,
+                                  Math.round(((item.completedCount || 0) / item.totalTarget) * 100)
+                                )}%`,
+                              }}
+                            />
+                          </div>
+                          <div className="flex justify-between text-[11px] text-stone-500 dark:text-stone-400">
+                            <span>
+                              {item.completedCount || 0} / {item.totalTarget} completed
+                            </span>
+                            <span>
+                              {item.subscribersRemaining || item.viewsRemaining || 0} remaining
+                            </span>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Direct Earn Actions */}
+                      <div className="flex items-center gap-2 pt-1">
+                        {isVideo ? (
+                          <button
+                            onClick={() => startWatchingVideo(item)}
+                            className="flex-1 py-3 px-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs shadow-md shadow-amber-500/20 active:scale-[0.99] transition-all flex items-center justify-center gap-2"
+                          >
+                            <Play className="w-4 h-4 fill-stone-950" />
+                            <span>Watch & Earn {item.rewardCoins} Coins (30s)</span>
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleSubscribe(item)}
+                            disabled={isSubbed}
+                            className={`flex-1 py-3 px-4 rounded-2xl font-bold text-xs transition-all shadow-md flex items-center justify-center gap-2 ${
+                              isSubbed
+                                ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 cursor-default'
+                                : 'bg-amber-500 hover:bg-amber-400 text-stone-950 shadow-amber-500/20 active:scale-[0.99]'
+                            }`}
+                          >
+                            {isSubbed ? (
+                              <>
+                                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                                <span>Subscribed · Earned 50 coins</span>
+                              </>
+                            ) : (
+                              <span>Subscribe & Earn {item.rewardCoins} Coins</span>
+                            )}
+                          </button>
+                        )}
+
+                        {item.targetUrl && (
+                          <a
+                            href={item.targetUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-3 rounded-2xl bg-stone-100 dark:bg-[#0d0b09] border border-stone-200 dark:border-[#262018] text-stone-600 dark:text-stone-400 hover:text-amber-500 transition-colors"
+                            title="Open direct URL in new tab"
+                          >
+                            <ExternalLink className="w-4 h-4" />
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          )}
         </>
       ) : (
-        /* ACTIVE VIDEO WATCHING MODE (Screenshot 5) */
+        /* ACTIVE VIDEO WATCHING MODE */
         <div className="bg-white dark:bg-[#161310] border border-stone-200 dark:border-[#262018] rounded-3xl p-5 shadow-lg space-y-5 animate-in fade-in">
-          
           {/* Back Navigation & Header */}
           <div className="flex items-center gap-3 pb-2 border-b border-stone-200 dark:border-[#262018]">
             <button
@@ -411,7 +847,6 @@ export const EarnPage: React.FC = () => {
 
           {/* Stats Grid: Coins / view & Remaining */}
           <div className="grid grid-cols-2 gap-3">
-            
             <div className="bg-stone-50 dark:bg-[#0d0b09] border border-stone-200/80 dark:border-[#262018] rounded-2xl p-4 text-center space-y-1">
               <div className="flex justify-center text-amber-500">
                 <Coins className="w-5 h-5 fill-amber-500/20" />
@@ -431,7 +866,6 @@ export const EarnPage: React.FC = () => {
               </p>
               <p className="text-xs text-stone-500 dark:text-stone-400">remaining</p>
             </div>
-
           </div>
 
           {/* Watched Progress Line */}
@@ -479,11 +913,8 @@ export const EarnPage: React.FC = () => {
               </span>
             </div>
           )}
-
         </div>
       )}
-
     </div>
   );
 };
-
