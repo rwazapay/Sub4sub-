@@ -234,95 +234,49 @@ export const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
                   />
                 </svg>
               </div>
-              <h3 className="text-xl font-black text-stone-900 dark:text-white">Choose a Google Account</h3>
+              <h3 className="text-xl font-black text-stone-900 dark:text-white">Sign In with Your Google Account</h3>
               <p className="text-xs text-stone-500 dark:text-stone-400 max-w-xs mx-auto">
-                Select an account or enter your email to sign in & claim your +100 bonus coins
+                Choose or type your email address to log in or register instantly with +100 Coins.
               </p>
             </div>
 
-            {/* Quick 1-Tap Google Accounts List */}
-            <div className="space-y-2">
-              {/* Kailjeze / User's Connected Account */}
-              <button
-                type="button"
-                onClick={() => handleConfirmGoogleLogin('kailjeze@gmail.com', 'Kail Jeze')}
-                className="w-full p-3 rounded-2xl border-2 border-amber-500/40 bg-amber-500/5 hover:bg-amber-500/10 hover:border-amber-500 text-left transition-all flex items-center justify-between group"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-amber-500 text-stone-950 font-black flex items-center justify-center text-sm shadow-xs">
-                    K
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold text-stone-900 dark:text-white">Kail Jeze</div>
-                    <div className="text-[11px] text-stone-500 dark:text-stone-400">kailjeze@gmail.com</div>
-                  </div>
-                </div>
-                <span className="px-2.5 py-1 rounded-xl bg-amber-500 text-stone-950 font-black text-[11px] shadow-xs group-hover:scale-105 transition-transform">
-                  Sign In
-                </span>
-              </button>
-
-              {/* Sample Creator Account */}
-              <button
-                type="button"
-                onClick={() => handleConfirmGoogleLogin('creator.global@gmail.com', 'Global Creator')}
-                className="w-full p-3 rounded-2xl border border-stone-200 dark:border-[#262018] bg-stone-50 dark:bg-[#0d0b09] hover:border-amber-500 text-left transition-all flex items-center justify-between"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-blue-500 text-white font-bold flex items-center justify-center text-sm">
-                    G
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold text-stone-900 dark:text-white">Global Creator</div>
-                    <div className="text-[11px] text-stone-500 dark:text-stone-400">creator.global@gmail.com</div>
-                  </div>
-                </div>
-                <span className="text-[10px] font-bold text-amber-500">+100 Coins</span>
-              </button>
-
-              {/* Tech Rwanda Studio Account */}
-              <button
-                type="button"
-                onClick={() => handleConfirmGoogleLogin('tech.rwanda@gmail.com', 'Tech Rwanda Studio')}
-                className="w-full p-3 rounded-2xl border border-stone-200 dark:border-[#262018] bg-stone-50 dark:bg-[#0d0b09] hover:border-amber-500 text-left transition-all flex items-center justify-between"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-emerald-500 text-white font-bold flex items-center justify-center text-sm">
-                    T
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold text-stone-900 dark:text-white">Tech Rwanda Studio</div>
-                    <div className="text-[11px] text-stone-500 dark:text-stone-400">tech.rwanda@gmail.com</div>
-                  </div>
-                </div>
-                <span className="text-[10px] font-bold text-amber-500">+100 Coins</span>
-              </button>
-            </div>
-
-            {/* Divider */}
-            <div className="flex items-center gap-3">
-              <div className="flex-1 h-px bg-stone-200 dark:bg-[#262018]" />
-              <span className="text-[11px] font-bold text-stone-400">or enter any Google email</span>
-              <div className="flex-1 h-px bg-stone-200 dark:bg-[#262018]" />
-            </div>
-
-            {/* Custom Google Account Input */}
+            {/* Custom Google Account Input Form */}
             <form
               onSubmit={(e) => {
                 e.preventDefault();
                 if (googleEmail) handleConfirmGoogleLogin(googleEmail, fullName);
               }}
-              className="space-y-3"
+              className="space-y-4"
             >
-              <div className="relative">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-stone-700 dark:text-stone-300">
+                  Your Google Email
+                </label>
+                <div className="relative">
+                  <input
+                    type="email"
+                    required
+                    value={googleEmail}
+                    onChange={(e) => setGoogleEmail(e.target.value)}
+                    placeholder="e.g. your_email@gmail.com"
+                    autoFocus
+                    className="w-full bg-stone-50 dark:bg-[#0d0b09] border border-stone-200 dark:border-[#262018] rounded-2xl px-4 py-3 pl-10 text-stone-900 dark:text-white placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-500 text-xs sm:text-sm"
+                  />
+                  <Mail className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-stone-700 dark:text-stone-300">
+                  Display Name (Optional)
+                </label>
                 <input
-                  type="email"
-                  value={googleEmail}
-                  onChange={(e) => setGoogleEmail(e.target.value)}
-                  placeholder="yourname@gmail.com"
-                  className="w-full bg-stone-50 dark:bg-[#0d0b09] border border-stone-200 dark:border-[#262018] rounded-2xl px-4 py-3 pl-10 text-stone-900 dark:text-white placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-500 text-xs sm:text-sm"
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="e.g. Alex Media or Channel Name"
+                  className="w-full bg-stone-50 dark:bg-[#0d0b09] border border-stone-200 dark:border-[#262018] rounded-2xl px-4 py-3 text-stone-900 dark:text-white placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-500 text-xs sm:text-sm"
                 />
-                <Mail className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
               </div>
 
               <button
@@ -331,14 +285,14 @@ export const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
                 className="w-full py-3.5 px-4 rounded-2xl bg-amber-500 hover:bg-amber-400 disabled:opacity-40 text-stone-950 font-black text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2 active:scale-98 cursor-pointer"
               >
                 <Globe className="w-4 h-4 text-stone-950" />
-                <span>Sign in with Google Account</span>
+                <span>Continue & Go to Dashboard</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </form>
 
-            <div className="flex items-center justify-center gap-1.5 text-[11px] text-stone-500 dark:text-stone-400 pt-0.5">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-              <span>Instant Google verification & guaranteed redirection</span>
+            <div className="flex items-center justify-center gap-1.5 text-[11px] text-stone-500 dark:text-stone-400 pt-1 border-t border-stone-200 dark:border-[#262018]">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+              <span>Free for all creators. No fixed emails required.</span>
             </div>
 
           </div>
