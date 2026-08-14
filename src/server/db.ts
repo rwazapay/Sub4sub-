@@ -98,6 +98,52 @@ class InAppDatabase {
     return this.isFirestoreConnected && this.firestoreDb !== null;
   }
 
+  public getFirestoreDb(): Firestore | null {
+    return this.firestoreDb;
+  }
+
+  public async getUserAsync(idOrEmail: string): Promise<User | undefined> {
+    if (!idOrEmail) return undefined;
+    const clean = idOrEmail.trim().toLowerCase();
+
+    // 1. Check in-memory map by exact ID
+    if (this.users.has(idOrEmail)) {
+      return this.users.get(idOrEmail);
+    }
+
+    // 2. Check in-memory by username or email
+    const inMem = Array.from(this.users.values()).find(
+      (u) => u.id === idOrEmail || u.email?.toLowerCase() === clean || u.username?.toLowerCase() === clean
+    );
+    if (inMem) return inMem;
+
+    // 3. Check Firestore
+    if (this.firestoreDb) {
+      try {
+        const docRef = doc(this.firestoreDb, 'users', idOrEmail);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const user = docSnap.data() as User;
+          this.users.set(user.id, user);
+          return user;
+        }
+
+        const q = await getDocs(collection(this.firestoreDb, 'users'));
+        for (const snap of q.docs) {
+          const u = snap.data() as User;
+          if (u.email?.toLowerCase() === clean || u.username?.toLowerCase() === clean || u.id === idOrEmail) {
+            this.users.set(u.id, u);
+            return u;
+          }
+        }
+      } catch (err) {
+        console.warn('Firestore getUserAsync notice:', err);
+      }
+    }
+
+    return undefined;
+  }
+
   // Sync existing cloud data from Firestore
   private async syncFromFirestore() {
     if (!this.firestoreDb) return;

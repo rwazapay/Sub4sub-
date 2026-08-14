@@ -61,9 +61,9 @@ router.post('/resolve', async (req: Request, res: Response) => {
 });
 
 // GET /api/channels - List user's social channels
-router.get('/', authenticateJWT, (req: AuthenticatedRequest, res: Response) => {
+router.get('/', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
   const user = req.user!;
-  const channels = Array.from(db.socialChannels.values()).filter((c) => c.userId === user.id);
+  let channels = Array.from(db.socialChannels.values()).filter((c) => c.userId === user.id);
 
   return res.json({
     success: true,

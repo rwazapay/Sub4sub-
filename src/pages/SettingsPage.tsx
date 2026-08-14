@@ -92,7 +92,10 @@ export const SettingsPage: React.FC = () => {
 
   const handleAddChannel = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newChannelName || !newChannelUrl) return;
+    if (!newChannelUrl || !newChannelUrl.trim()) {
+      setChannelMessage('Please enter a valid channel URL or handle (@username).');
+      return;
+    }
 
     setIsAddingChannel(true);
     setChannelMessage(null);
@@ -100,19 +103,25 @@ export const SettingsPage: React.FC = () => {
     try {
       const res = await apiClient.post('/channels', {
         platform: newPlatform,
-        channelName: newChannelName,
-        url: newChannelUrl,
+        channelName: newChannelName.trim(),
+        url: newChannelUrl.trim(),
       });
 
       if (res.data.success) {
         setChannelMessage(`🎉 ${newPlatform} profile connected!`);
         setNewChannelName('');
         setNewChannelUrl('');
+        if (res.data.data?.channel) {
+          setChannels((prev) => {
+            const exists = prev.some((c) => c.id === res.data.data.channel.id);
+            return exists ? prev : [res.data.data.channel, ...prev];
+          });
+        }
         fetchChannels();
-        setTimeout(() => setChannelMessage(null), 3000);
+        setTimeout(() => setChannelMessage(null), 4000);
       }
     } catch (err: any) {
-      setChannelMessage(err.response?.data?.message || 'Failed to add channel.');
+      setChannelMessage(err.response?.data?.message || 'Failed to add channel. Please check the URL.');
     } finally {
       setIsAddingChannel(false);
     }
@@ -120,12 +129,14 @@ export const SettingsPage: React.FC = () => {
 
   const handleDeleteChannel = async (id: string) => {
     try {
+      setChannels((prev) => prev.filter((c) => c.id !== id));
       const res = await apiClient.delete(`/channels/${id}`);
       if (res.data.success) {
         fetchChannels();
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      fetchChannels();
     }
   };
 

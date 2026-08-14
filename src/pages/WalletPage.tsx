@@ -105,7 +105,9 @@ export const WalletPage: React.FC = () => {
       const res = await apiClient.post('/wallet/daily-claim');
       if (res.data.success) {
         setDailyClaimMsg(`🎉 ${res.data.message}`);
-        if (user) {
+        if (res.data.data?.user) {
+          updateUser(res.data.data.user);
+        } else if (user) {
           updateUser({
             ...user,
             credits: res.data.data.newBalance,

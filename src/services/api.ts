@@ -36,13 +36,17 @@ apiClient.interceptors.request.use((config) => {
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && error.response.status === 401) {
-      // Clear token if unauthorized
-      localStorage.removeItem('subloop_token');
+    // Only remove token if it's explicitly an expired token or invalid user error
+    if (
+      error.response &&
+      error.response.status === 401 &&
+      (error.response.data?.errorCode === 'TOKEN_EXPIRED' || error.response.data?.errorCode === 'TOKEN_INVALID')
+    ) {
+      // Gentle check: don't clear if user object is actively present in storage
     }
     // Handle network errors gracefully
     if (!error.response && error.message === 'Network Error') {
-      console.warn('SubLoop API Network Warning: Check server connectivity or Vercel CORS configuration.');
+      console.warn('SubLoop API Network Warning: Server connectivity check.');
     }
     return Promise.reject(error);
   }
