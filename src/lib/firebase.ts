@@ -1,7 +1,18 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { initializeFirestore, doc, getDocFromServer } from 'firebase/firestore';
-import firebaseConfig from '../../firebase-applet-config.json';
+import baseFirebaseConfig from '../../firebase-applet-config.json';
+
+// Detect whether to use a custom auth domain (e.g. sub4sub-two.vercel.app or env)
+const customAuthDomain =
+  typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')
+    ? window.location.hostname
+    : (import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || baseFirebaseConfig.authDomain);
+
+const firebaseConfig = {
+  ...baseFirebaseConfig,
+  authDomain: customAuthDomain,
+};
 
 const app = initializeApp(firebaseConfig);
 export const db = initializeFirestore(app, {

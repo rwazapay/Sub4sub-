@@ -118,7 +118,14 @@ export const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
     } catch (err: any) {
       console.error('Google Sign-In Error:', err);
       if (onError) {
-        onError(err?.message || 'Google sign-in could not be completed. Please try again.');
+        if (err?.code === 'auth/unauthorized-domain') {
+          const currentHostname = window.location.hostname;
+          onError(
+            `This domain (${currentHostname}) is not authorized in your Firebase Authentication settings. To authorize it: Go to Firebase Console > Authentication > Settings > Authorized domains > Add domain "${currentHostname}". In the meantime, you can sign in directly below with your email & password.`
+          );
+        } else {
+          onError(err?.message || 'Google sign-in could not be completed. Please try again.');
+        }
       }
     } finally {
       setIsAuthenticating(false);
