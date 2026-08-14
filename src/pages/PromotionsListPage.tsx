@@ -61,36 +61,36 @@ export const PromotionsListPage: React.FC = () => {
     <div className="space-y-8 animate-fade-in pb-12">
       
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900 border border-slate-800 rounded-3xl p-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#161310] border border-stone-200 dark:border-[#262018] rounded-3xl p-6 shadow-xs">
         <div>
-          <h1 className="text-2xl font-black text-white tracking-tight flex items-center gap-2">
-            <Megaphone className="w-6 h-6 text-indigo-400" />
+          <h1 className="text-2xl font-black text-stone-900 dark:text-white tracking-tight flex items-center gap-2">
+            <Megaphone className="w-6 h-6 text-red-500" />
             My Promotion Campaigns
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-stone-600 dark:text-stone-400 mt-1 font-medium">
             Manage your active, paused, and past creator promotional campaigns
           </p>
         </div>
 
         <Link
           to="/promote"
-          className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-xs shadow-md shadow-indigo-600/20 flex items-center gap-1.5 shrink-0"
+          className="px-4 py-2.5 rounded-2xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs shadow-md shadow-red-600/20 flex items-center gap-1.5 shrink-0"
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="w-4 h-4 text-white" />
           <span>Launch Promotion</span>
         </Link>
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 text-xs font-semibold border-b border-slate-800">
+      <div className="flex items-center gap-2 overflow-x-auto pb-2 text-xs font-semibold border-b border-stone-200 dark:border-[#262018]">
         {['All', 'active', 'paused', 'completed', 'cancelled'].map((st) => (
           <button
             key={st}
             onClick={() => setFilterStatus(st)}
-            className={`px-3 py-1.5 rounded-xl capitalize transition-all ${
+            className={`px-3.5 py-1.5 rounded-xl capitalize transition-all ${
               filterStatus === st
-                ? 'bg-indigo-600 text-white font-bold'
-                : 'text-slate-400 hover:text-white hover:bg-slate-900'
+                ? 'bg-red-600 text-white font-bold shadow-xs'
+                : 'text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-[#1c1813]'
             }`}
           >
             {st}
@@ -102,13 +102,13 @@ export const PromotionsListPage: React.FC = () => {
       {isLoading ? (
         <div className="space-y-4">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-28 rounded-2xl bg-slate-900 animate-pulse" />
+            <div key={i} className="h-28 rounded-2xl bg-stone-100 dark:bg-[#161310] animate-pulse border border-stone-200 dark:border-[#262018]" />
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="p-12 text-center space-y-3 bg-slate-900 border border-slate-800 rounded-3xl">
-          <Zap className="w-8 h-8 text-slate-600 mx-auto" />
-          <p className="text-xs text-slate-400">No promotion campaigns found for status "{filterStatus}".</p>
+        <div className="p-12 text-center space-y-3 bg-white dark:bg-[#161310] border border-stone-200 dark:border-[#262018] rounded-3xl">
+          <Zap className="w-8 h-8 text-stone-400 mx-auto" />
+          <p className="text-xs text-stone-500 dark:text-stone-400">No promotion campaigns found for status "{filterStatus}".</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -118,23 +118,23 @@ export const PromotionsListPage: React.FC = () => {
             return (
               <div
                 key={promo.id}
-                className="p-5 rounded-2xl bg-slate-900 border border-slate-800 hover:border-slate-700 transition-all space-y-4"
+                className="p-5 rounded-3xl bg-white dark:bg-[#161310] border border-stone-200 dark:border-[#262018] hover:border-red-500/40 transition-all space-y-4 shadow-xs"
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-500/20 text-indigo-300">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-red-600/10 text-red-600 dark:text-red-400 uppercase">
                         {promo.platform}
                       </span>
-                      <h3 className="font-bold text-white text-base">{promo.title}</h3>
+                      <h3 className="font-bold text-stone-900 dark:text-white text-base">{promo.title}</h3>
                     </div>
-                    <p className="text-xs text-slate-400 mt-1 line-clamp-1">{promo.description}</p>
+                    <p className="text-xs text-stone-500 dark:text-stone-400 mt-1 line-clamp-1">{promo.description}</p>
                   </div>
 
                   <span className={`px-3 py-1 rounded-full text-xs font-extrabold uppercase shrink-0 ${
-                    promo.status === 'active' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
-                    promo.status === 'paused' ? 'bg-red-600/10 text-red-300 border border-red-500/20' :
-                    'bg-slate-800 text-slate-400'
+                    promo.status === 'active' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20' :
+                    promo.status === 'paused' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20' :
+                    'bg-stone-100 dark:bg-[#201b16] text-stone-500'
                   }`}>
                     {promo.status}
                   </span>
@@ -142,30 +142,30 @@ export const PromotionsListPage: React.FC = () => {
 
                 {/* Progress Bar */}
                 <div className="space-y-1">
-                  <div className="flex justify-between text-[11px] text-slate-400">
+                  <div className="flex justify-between text-[11px] text-stone-500 dark:text-stone-400">
                     <span>Budget: {promo.spentCredits} / {promo.budgetCredits} Credits</span>
-                    <span className="font-bold text-indigo-400">{percentSpent}%</span>
+                    <span className="font-bold text-red-500">{percentSpent}%</span>
                   </div>
-                  <div className="w-full h-2 bg-slate-950 rounded-full overflow-hidden">
+                  <div className="w-full h-2 bg-stone-100 dark:bg-[#0d0b09] rounded-full overflow-hidden border border-stone-200/40 dark:border-[#262018]">
                     <div
-                      className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full"
+                      className="h-full bg-red-600 rounded-full transition-all"
                       style={{ width: `${percentSpent}%` }}
                     />
                   </div>
                 </div>
 
                 {/* Stats & Actions */}
-                <div className="pt-2 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-3 text-xs">
-                  <div className="flex items-center gap-4 text-slate-400">
-                    <span>Impressions: <strong className="text-white">{promo.impressions}</strong></span>
-                    <span>Discoveries: <strong className="text-white">{promo.uniqueDiscoveries}</strong></span>
+                <div className="pt-2 border-t border-stone-150 dark:border-[#262018] flex flex-wrap items-center justify-between gap-3 text-xs">
+                  <div className="flex items-center gap-4 text-stone-500 dark:text-stone-400">
+                    <span>Impressions: <strong className="text-stone-900 dark:text-white">{promo.impressions}</strong></span>
+                    <span>Discoveries: <strong className="text-stone-900 dark:text-white">{promo.uniqueDiscoveries}</strong></span>
                   </div>
 
                   <div className="flex items-center gap-2">
                     {promo.status === 'active' && (
                       <button
                         onClick={() => handleAction(promo.id, 'pause')}
-                        className="px-2.5 py-1 rounded-lg bg-red-600/10 hover:bg-red-600/15 text-red-300 font-semibold border border-red-500/20 flex items-center gap-1"
+                        className="px-2.5 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/15 text-amber-600 dark:text-amber-400 font-semibold border border-amber-500/20 flex items-center gap-1"
                       >
                         <Pause className="w-3.5 h-3.5" />
                         <span>Pause</span>
@@ -175,7 +175,7 @@ export const PromotionsListPage: React.FC = () => {
                     {promo.status === 'paused' && (
                       <button
                         onClick={() => handleAction(promo.id, 'resume')}
-                        className="px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 font-semibold border border-emerald-500/20 flex items-center gap-1"
+                        className="px-2.5 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-semibold border border-emerald-500/20 flex items-center gap-1"
                       >
                         <Play className="w-3.5 h-3.5" />
                         <span>Resume</span>
@@ -185,7 +185,7 @@ export const PromotionsListPage: React.FC = () => {
                     {promo.status !== 'cancelled' && promo.status !== 'completed' && (
                       <button
                         onClick={() => handleAction(promo.id, 'cancel')}
-                        className="px-2.5 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 font-semibold border border-red-500/20 flex items-center gap-1"
+                        className="px-2.5 py-1.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 font-semibold border border-red-500/20 flex items-center gap-1"
                       >
                         <XCircle className="w-3.5 h-3.5" />
                         <span>Cancel</span>
@@ -194,9 +194,9 @@ export const PromotionsListPage: React.FC = () => {
 
                     <Link
                       to={`/promotions/${promo.id}`}
-                      className="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold flex items-center gap-1"
+                      className="px-3.5 py-1.5 rounded-xl bg-stone-100 dark:bg-[#201b16] hover:bg-stone-200 dark:hover:bg-[#2a241d] text-stone-800 dark:text-stone-200 font-bold flex items-center gap-1"
                     >
-                      <BarChart2 className="w-3.5 h-3.5 text-indigo-400" />
+                      <BarChart2 className="w-3.5 h-3.5 text-red-500" />
                       <span>Analytics</span>
                     </Link>
                   </div>

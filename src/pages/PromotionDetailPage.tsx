@@ -59,34 +59,34 @@ export const PromotionDetailPage: React.FC = () => {
     <div className="space-y-8 animate-fade-in pb-12">
       
       {/* Back Link */}
-      <Link to="/promotions" className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-400 hover:text-white">
+      <Link to="/promotions" className="inline-flex items-center gap-1.5 text-xs font-bold text-stone-500 hover:text-stone-900 dark:hover:text-white">
         <ArrowLeft className="w-4 h-4" />
         <span>Back to Campaigns</span>
       </Link>
 
       {/* Header Info */}
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 space-y-4">
+      <div className="bg-white dark:bg-[#161310] border border-stone-200 dark:border-[#262018] rounded-3xl p-6 space-y-4 shadow-xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-500/20 text-indigo-300">
+              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-red-600/10 text-red-600 dark:text-red-400 uppercase">
                 {promotion.platform}
               </span>
-              <span className="text-xs text-slate-400">Campaign #{promotion.id}</span>
+              <span className="text-xs text-stone-500">Campaign #{promotion.id}</span>
             </div>
-            <h1 className="text-2xl font-black text-white mt-1">{promotion.title}</h1>
+            <h1 className="text-2xl font-black text-stone-900 dark:text-white mt-1">{promotion.title}</h1>
             <a
               href={promotion.channelUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-xs text-indigo-400 hover:underline flex items-center gap-1 mt-1"
+              className="text-xs text-red-600 dark:text-red-400 hover:underline flex items-center gap-1 mt-1 font-medium"
             >
               <span>{promotion.channelUrl}</span>
               <ExternalLink className="w-3.5 h-3.5" />
             </a>
           </div>
 
-          <span className="px-3 py-1 rounded-full text-xs font-extrabold uppercase bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 self-start sm:self-auto">
+          <span className="px-3 py-1 rounded-full text-xs font-extrabold uppercase bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 self-start sm:self-auto">
             {promotion.status}
           </span>
         </div>
@@ -95,36 +95,36 @@ export const PromotionDetailPage: React.FC = () => {
       {/* Stats Cards Row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         
-        <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-1">
-          <div className="flex items-center justify-between text-slate-400 text-xs">
+        <div className="p-5 rounded-3xl bg-white dark:bg-[#161310] border border-stone-200 dark:border-[#262018] space-y-1 shadow-xs">
+          <div className="flex items-center justify-between text-stone-500 text-xs font-medium">
             <span>Impressions</span>
-            <Eye className="w-4 h-4 text-indigo-400" />
+            <Eye className="w-4 h-4 text-red-500" />
           </div>
-          <p className="text-2xl font-black text-white">{promotion.impressions.toLocaleString()}</p>
+          <p className="text-2xl font-black text-stone-900 dark:text-white">{promotion.impressions.toLocaleString()}</p>
         </div>
 
-        <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-1">
-          <div className="flex items-center justify-between text-slate-400 text-xs">
+        <div className="p-5 rounded-3xl bg-white dark:bg-[#161310] border border-stone-200 dark:border-[#262018] space-y-1 shadow-xs">
+          <div className="flex items-center justify-between text-stone-500 text-xs font-medium">
             <span>Unique Discoveries</span>
-            <MousePointer className="w-4 h-4 text-purple-400" />
+            <MousePointer className="w-4 h-4 text-red-500" />
           </div>
-          <p className="text-2xl font-black text-white">{promotion.uniqueDiscoveries.toLocaleString()}</p>
+          <p className="text-2xl font-black text-stone-900 dark:text-white">{promotion.uniqueDiscoveries.toLocaleString()}</p>
         </div>
 
-        <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-1">
-          <div className="flex items-center justify-between text-slate-400 text-xs">
+        <div className="p-5 rounded-3xl bg-white dark:bg-[#161310] border border-stone-200 dark:border-[#262018] space-y-1 shadow-xs">
+          <div className="flex items-center justify-between text-stone-500 text-xs font-medium">
             <span>Click-Through Rate</span>
-            <BarChart2 className="w-4 h-4 text-emerald-400" />
+            <BarChart2 className="w-4 h-4 text-emerald-500" />
           </div>
-          <p className="text-2xl font-black text-white">{analytics?.ctr || '0.0%'}</p>
+          <p className="text-2xl font-black text-stone-900 dark:text-white">{analytics?.ctr || '0.0%'}</p>
         </div>
 
-        <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-1">
-          <div className="flex items-center justify-between text-slate-400 text-xs">
+        <div className="p-5 rounded-3xl bg-white dark:bg-[#161310] border border-stone-200 dark:border-[#262018] space-y-1 shadow-xs">
+          <div className="flex items-center justify-between text-stone-500 text-xs font-medium">
             <span>Remaining Budget</span>
-            <Coins className="w-4 h-4 text-red-400" />
+            <Coins className="w-4 h-4 text-red-500" />
           </div>
-          <p className="text-2xl font-black text-white">{analytics?.remainingCredits || 0} Credits</p>
+          <p className="text-2xl font-black text-stone-900 dark:text-white">{analytics?.remainingCredits || 0} Credits</p>
         </div>
 
       </div>
@@ -142,23 +142,23 @@ export const PromotionDetailPage: React.FC = () => {
 
       {/* Recharts Analytics Daily Performance Line Chart */}
       {analytics?.dailyAnalytics && (
-        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 space-y-4">
-          <h2 className="text-lg font-bold text-white flex items-center gap-2">
-            <BarChart2 className="w-5 h-5 text-indigo-400" />
+        <div className="bg-white dark:bg-[#161310] border border-stone-200 dark:border-[#262018] rounded-3xl p-6 space-y-4 shadow-xs">
+          <h2 className="text-lg font-bold text-stone-900 dark:text-white flex items-center gap-2">
+            <BarChart2 className="w-5 h-5 text-red-500" />
             Daily Performance Trend
           </h2>
 
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={analytics.dailyAnalytics}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#332b21" />
                 <XAxis dataKey="day" stroke="#94a3b8" fontSize={12} />
                 <YAxis stroke="#94a3b8" fontSize={12} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '12px' }}
+                  contentStyle={{ backgroundColor: '#161310', borderColor: '#262018', borderRadius: '16px', color: '#fff' }}
                 />
-                <Line type="monotone" dataKey="impressions" stroke="#6366f1" strokeWidth={2} name="Impressions" />
-                <Line type="monotone" dataKey="clicks" stroke="#a855f7" strokeWidth={2} name="Discoveries" />
+                <Line type="monotone" dataKey="impressions" stroke="#ef4444" strokeWidth={2} name="Impressions" />
+                <Line type="monotone" dataKey="clicks" stroke="#f87171" strokeWidth={2} name="Discoveries" />
               </LineChart>
             </ResponsiveContainer>
           </div>
