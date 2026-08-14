@@ -65,6 +65,7 @@ export const Navbar: React.FC<NavbarProps> = () => {
               <>
                 {/* Plus Button - Create Campaign */}
                 <Link
+                  id="tour-create-btn"
                   to="/campaigns"
                   className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-500/20 border border-amber-500/50 text-amber-600 dark:text-amber-400 hover:bg-amber-500 hover:text-stone-950 transition-all font-black text-sm"
                   title="Create Campaign"
@@ -83,6 +84,7 @@ export const Navbar: React.FC<NavbarProps> = () => {
 
                 {/* Coin Balance Pill */}
                 <Link
+                  id="tour-wallet-pill"
                   to="/wallet"
                   className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full bg-stone-100 dark:bg-[#1c1813] border border-stone-200 dark:border-[#332b21] text-amber-600 dark:text-amber-400 font-extrabold text-xs hover:border-amber-500/60 transition-all"
                   title="Coins & Wallet"

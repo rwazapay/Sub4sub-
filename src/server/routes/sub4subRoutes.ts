@@ -60,7 +60,7 @@ router.post('/claim-daily-bonus', authenticateJWT, (req: AuthenticatedRequest, r
 });
 
 // POST /api/sub4sub/watch-video - Verify watched video and credit coins (Rate-limited)
-router.post('/watch-video', authenticateJWT, watchActionRateLimiter, (req: AuthenticatedRequest, res: Response) => {
+router.post('/watch-video', authenticateJWT, watchActionRateLimiter, async (req: AuthenticatedRequest, res: Response) => {
   const user = req.user!;
   const { videoId, watchDurationSeconds } = req.body;
 
@@ -81,18 +81,34 @@ router.post('/watch-video', authenticateJWT, watchActionRateLimiter, (req: Authe
     `Watched YouTube Video (${duration}s view duration)`
   );
 
+  let remainingViews: number | undefined;
+  if (videoId) {
+    const promo = db.promotions.get(videoId);
+    if (promo) {
+      promo.impressions = (promo.impressions || 0) + 1;
+      promo.clicks = (promo.clicks || 0) + 1;
+      promo.spentCredits = (promo.spentCredits || 0) + rewardCoins;
+      if (promo.spentCredits >= promo.budgetCredits) {
+        promo.status = 'completed';
+      }
+      await db.savePromotion(promo);
+      remainingViews = Math.max(0, Math.floor((promo.budgetCredits - promo.spentCredits) / 10));
+    }
+  }
+
   return res.json({
     success: true,
     message: `🎉 Video view verified! +${rewardCoins} coins added to your wallet.`,
     data: {
       rewardCoins,
       newBalance: user.credits,
+      remainingViews,
     },
   });
 });
 
 // POST /api/sub4sub/watch-complete - Record watch completion & credit coins (Rate-limited)
-router.post('/watch-complete', authenticateJWT, watchActionRateLimiter, (req: AuthenticatedRequest, res: Response) => {
+router.post('/watch-complete', authenticateJWT, watchActionRateLimiter, async (req: AuthenticatedRequest, res: Response) => {
   const user = req.user!;
   const { videoId } = req.body;
 
@@ -104,12 +120,28 @@ router.post('/watch-complete', authenticateJWT, watchActionRateLimiter, (req: Au
     `Watched YouTube Video (Campaign: ${videoId || 'active'})`
   );
 
+  let remainingViews: number | undefined;
+  if (videoId) {
+    const promo = db.promotions.get(videoId);
+    if (promo) {
+      promo.impressions = (promo.impressions || 0) + 1;
+      promo.clicks = (promo.clicks || 0) + 1;
+      promo.spentCredits = (promo.spentCredits || 0) + rewardCoins;
+      if (promo.spentCredits >= promo.budgetCredits) {
+        promo.status = 'completed';
+      }
+      await db.savePromotion(promo);
+      remainingViews = Math.max(0, Math.floor((promo.budgetCredits - promo.spentCredits) / 10));
+    }
+  }
+
   return res.json({
     success: true,
     message: `🎉 Video view verified! +${rewardCoins} coins added to your wallet.`,
     data: {
       rewardCoins,
       newBalance: user.credits,
+      remainingViews,
     },
   });
 });
@@ -455,7 +487,7 @@ router.get('/feed', authenticateJWT, (req: AuthenticatedRequest, res: Response) 
 });
 
 // POST /api/sub4sub/subscribe - Subscribe to a creator and request a Sub Back (Rate-limited)
-router.post('/subscribe', authenticateJWT, exchangeActionRateLimiter, (req: AuthenticatedRequest, res: Response) => {
+router.post('/subscribe', authenticateJWT, exchangeActionRateLimiter, async (req: AuthenticatedRequest, res: Response) => {
   const user = req.user!;
   const { targetUserId, targetPlatform, channelUrl, campaignId } = req.body;
 
@@ -468,11 +500,24 @@ router.post('/subscribe', authenticateJWT, exchangeActionRateLimiter, (req: Auth
       `Subscribed to Channel Campaign (${campaignId})`
     );
 
+    let remainingSubs: number | undefined;
+    const promo = db.promotions.get(campaignId);
+    if (promo) {
+      promo.clicks = (promo.clicks || 0) + 1;
+      promo.spentCredits = (promo.spentCredits || 0) + rewardCoins;
+      if (promo.spentCredits >= promo.budgetCredits) {
+        promo.status = 'completed';
+      }
+      await db.savePromotion(promo);
+      remainingSubs = Math.max(0, Math.floor((promo.budgetCredits - promo.spentCredits) / (promo.rewardPerDiscovery || 50)));
+    }
+
     return res.json({
       success: true,
       data: {
         rewardCredits: rewardCoins,
         newBalance: user.credits,
+        remainingSubscribers: remainingSubs,
       },
       message: `🎉 Subscribed successfully! +${rewardCoins} coins added to your balance.`,
     });

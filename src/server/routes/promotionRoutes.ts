@@ -3,180 +3,95 @@ import { db } from '../db';
 import { authenticateJWT, AuthenticatedRequest } from '../middleware/auth';
 import { campaignRateLimiter } from '../middleware/rateLimit';
 import { PlatformType } from '../../types';
+import { resolveTargetMetadata, extractYouTubeVideoId } from '../services/youtubeResolver';
 
 const router = Router();
 
 // GET /api/promotions/lookup - Unified search & inspector for campaigns, channels, and promoted videos
-router.get('/lookup', authenticateJWT, (req: AuthenticatedRequest, res: Response) => {
-  const query = (req.query.q as string || '').trim().toLowerCase();
-  const typeFilter = (req.query.type as string || 'all').toLowerCase();
-  const platformFilter = (req.query.platform as string || 'all').toLowerCase();
+router.get('/lookup', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+  const query = typeof req.query.q === 'string'
+    ? req.query.q.trim().toLowerCase()
+    : typeof req.query.email === 'string'
+    ? req.query.email.trim().toLowerCase()
+    : '';
+  const typeFilter = typeof req.query.type === 'string' ? req.query.type.toLowerCase() : 'all';
+  const platformFilter = typeof req.query.platform === 'string' ? req.query.platform.toLowerCase() : 'all';
 
-  // Aggregate Channel Campaigns
-  const channelList = [
-    {
-      id: 'ch-1',
-      lookupType: 'channel',
-      title: 'Mitalda Plays - Gaming Hub',
-      channelName: 'Mitalda Plays',
-      creatorUsername: 'mitaldaplays',
-      creatorAvatar: 'https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=150&auto=format&fit=crop&q=80',
-      avatarOrThumbnail: 'https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=150&auto=format&fit=crop&q=80',
-      platform: 'youtube',
-      targetUrl: 'https://youtube.com/@mitaldaplays',
-      rewardCoins: 50,
-      rewardType: 'per_subscriber',
-      subscribersRemaining: 6,
-      completedCount: 7,
-      totalTarget: 13,
-      status: 'active',
-      isAiVerified: true,
-      isSponsored: true,
-      createdAt: '2026-08-01T10:00:00Z',
-    },
-    {
-      id: 'ch-2',
-      lookupType: 'channel',
-      title: 'Nexus Gaming India - Esports',
-      channelName: 'Nexus Gaming India',
-      creatorUsername: 'nexusgaming',
-      creatorAvatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
-      avatarOrThumbnail: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
-      platform: 'youtube',
-      targetUrl: 'https://youtube.com/@nexusgaming',
-      rewardCoins: 50,
-      rewardType: 'per_subscriber',
-      subscribersRemaining: 12,
-      completedCount: 38,
-      totalTarget: 50,
-      status: 'active',
-      isAiVerified: true,
-      isSponsored: false,
-      createdAt: '2026-08-02T12:00:00Z',
-    },
-    {
-      id: 'ch-3',
-      lookupType: 'channel',
-      title: 'Tech Byte Official - Gadget Reviews',
-      channelName: 'Tech Byte Official',
-      creatorUsername: 'techbyte',
-      creatorAvatar: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=150&auto=format&fit=crop&q=80',
-      avatarOrThumbnail: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=150&auto=format&fit=crop&q=80',
-      platform: 'youtube',
-      targetUrl: 'https://youtube.com/@techbyte',
-      rewardCoins: 50,
-      rewardType: 'per_subscriber',
-      subscribersRemaining: 20,
-      completedCount: 80,
-      totalTarget: 100,
-      status: 'active',
-      isAiVerified: true,
-      isSponsored: true,
-      createdAt: '2026-08-03T15:00:00Z',
-    },
-  ];
+  // Aggregate user created and seed promotions dynamically from database
+  const dbPromotionsList = Array.from(db.promotions.values()).map((p) => {
+    const isVideo = !!p.videoEmbedUrl || (p.channelUrl && extractYouTubeVideoId(p.channelUrl) !== null);
+    const ytId = p.channelUrl ? extractYouTubeVideoId(p.channelUrl) : undefined;
+    const rewardCoins = isVideo ? 10 : (p.rewardPerDiscovery || 50);
+    const totalTarget = Math.max(1, Math.floor(p.budgetCredits / rewardCoins));
+    const completedCount = p.clicks || 0;
+    const remainingCount = Math.max(0, Math.floor((p.budgetCredits - p.spentCredits) / rewardCoins));
 
-  // Aggregate Video Campaigns
-  const videoList = [
-    {
-      id: 'vid-1',
-      lookupType: 'video',
-      title: 'FINALLY 🔥 BGMI 4.5 UPDATE IS HERE , NARUTO X BGMI 🔥 BEST UPDATE?| Mitalda Plays',
-      channelName: 'Mitalda Plays',
-      creatorUsername: 'mitaldaplays',
-      creatorAvatar: 'https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=150&auto=format&fit=crop&q=80',
-      avatarOrThumbnail: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&auto=format&fit=crop&q=80',
-      youtubeId: 'dQw4w9WgXcQ',
-      platform: 'youtube',
-      targetUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
-      rewardCoins: 10,
-      rewardType: 'per_view',
-      viewsRemaining: 63,
-      completedCount: 6,
-      totalTarget: 69,
-      watchTimeSeconds: 30,
-      status: 'active',
+    return {
+      id: p.id,
+      lookupType: isVideo ? ('video' as const) : ('channel' as const),
+      title: p.title,
+      channelName: p.creatorDisplayName || p.creatorUsername,
+      creatorUsername: p.creatorUsername,
+      creatorAvatar: p.creatorAvatar,
+      avatarOrThumbnail: p.creatorAvatar || (ytId ? `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg` : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80'),
+      platform: p.platform || 'YouTube',
+      targetUrl: p.channelUrl,
+      youtubeId: ytId,
+      rewardCoins,
+      rewardType: isVideo ? ('per_view' as const) : ('per_subscriber' as const),
+      subscribersRemaining: !isVideo ? remainingCount : undefined,
+      viewsRemaining: isVideo ? remainingCount : undefined,
+      completedCount,
+      totalTarget,
+      watchTimeSeconds: isVideo ? 30 : undefined,
+      status: p.status,
       isAiVerified: true,
-      isSponsored: true,
-      createdAt: '2026-08-05T14:00:00Z',
-    },
-    {
-      id: 'vid-2',
-      lookupType: 'video',
-      title: 'Top 10 Secret Tricks in BGMI Custom Rooms 🎮 Pro Gameplay Tips',
-      channelName: 'Nexus Gaming India',
-      creatorUsername: 'nexusgaming',
-      creatorAvatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
-      avatarOrThumbnail: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800&auto=format&fit=crop&q=80',
-      youtubeId: 'L_LUpnjgPso',
-      platform: 'youtube',
-      targetUrl: 'https://www.youtube.com/watch?v=L_LUpnjgPso',
-      rewardCoins: 10,
-      rewardType: 'per_view',
-      viewsRemaining: 45,
-      completedCount: 15,
-      totalTarget: 60,
-      watchTimeSeconds: 30,
-      status: 'active',
-      isAiVerified: true,
-      isSponsored: false,
-      createdAt: '2026-08-06T18:00:00Z',
-    },
-    {
-      id: 'vid-3',
-      lookupType: 'video',
-      title: 'How to Grow Fast on YouTube in 2026 📈 Complete Algorithm Secrets',
-      channelName: 'Tech Byte Official',
-      creatorUsername: 'techbyte',
-      creatorAvatar: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=150&auto=format&fit=crop&q=80',
-      avatarOrThumbnail: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80',
-      youtubeId: 'kJQP7kiw5Fk',
-      platform: 'youtube',
-      targetUrl: 'https://www.youtube.com/watch?v=kJQP7kiw5Fk',
-      rewardCoins: 10,
-      rewardType: 'per_view',
-      viewsRemaining: 88,
-      completedCount: 12,
-      totalTarget: 100,
-      watchTimeSeconds: 30,
-      status: 'active',
-      isAiVerified: true,
-      isSponsored: true,
-      createdAt: '2026-08-07T09:00:00Z',
-    },
-  ];
-
-  // Aggregate user created promotions in database
-  const dbPromotionsList = Array.from(db.promotions.values()).map((p) => ({
-    id: p.id,
-    lookupType: 'campaign',
-    title: p.title,
-    channelName: p.creatorDisplayName || p.creatorUsername,
-    creatorUsername: p.creatorUsername,
-    creatorAvatar: p.creatorAvatar,
-    avatarOrThumbnail: p.creatorAvatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
-    platform: p.platform || 'youtube',
-    targetUrl: p.channelUrl,
-    rewardCoins: p.rewardPerDiscovery || 25,
-    rewardType: 'per_discovery',
-    subscribersRemaining: Math.max(0, Math.floor((p.budgetCredits - p.spentCredits) / (p.rewardPerDiscovery || 10))),
-    completedCount: p.clicks || 0,
-    totalTarget: Math.floor(p.budgetCredits / (p.rewardPerDiscovery || 10)),
-    status: p.status,
-    isAiVerified: true,
-    isSponsored: p.isSponsored,
-    createdAt: p.createdAt,
-  }));
+      isSponsored: p.isSponsored,
+      createdAt: p.createdAt,
+    };
+  });
 
   // Combine all items
-  let allItems = [...channelList, ...videoList, ...dbPromotionsList];
+  let allItems = [...dbPromotionsList];
+
+  // If query is a real YouTube URL/ID/handle not yet in DB, resolve it on the fly!
+  if (query && (query.includes('youtube.com') || query.includes('youtu.be') || query.startsWith('@') || /^[a-zA-Z0-9_-]{11}$/.test(query))) {
+    try {
+      const resolved = await resolveTargetMetadata(query);
+      const onTheFlyItem = {
+        id: `resolved_${Date.now()}`,
+        lookupType: resolved.type === 'video' ? ('video' as const) : ('channel' as const),
+        title: resolved.title,
+        channelName: resolved.channelName,
+        creatorUsername: resolved.channelName.toLowerCase().replace(/[^a-z0-9_]/g, ''),
+        creatorAvatar: resolved.thumbnailUrl,
+        avatarOrThumbnail: resolved.thumbnailUrl,
+        platform: resolved.platform,
+        targetUrl: resolved.channelUrl,
+        youtubeId: resolved.youtubeId,
+        rewardCoins: resolved.type === 'video' ? 10 : 50,
+        rewardType: resolved.type === 'video' ? ('per_view' as const) : ('per_subscriber' as const),
+        subscribersRemaining: resolved.type === 'channel' ? 25 : undefined,
+        viewsRemaining: resolved.type === 'video' ? 50 : undefined,
+        completedCount: 5,
+        totalTarget: resolved.type === 'video' ? 55 : 30,
+        watchTimeSeconds: 30,
+        status: 'active' as const,
+        isAiVerified: true,
+        isSponsored: false,
+        createdAt: new Date().toISOString(),
+      };
+      allItems.unshift(onTheFlyItem);
+    } catch {
+      // Continue normal filtering
+    }
+  }
 
   // Apply Type Filter
   if (typeFilter !== 'all') {
     allItems = allItems.filter((item) => {
       if (typeFilter === 'channel') return item.lookupType === 'channel';
       if (typeFilter === 'video') return item.lookupType === 'video';
-      if (typeFilter === 'campaign') return item.lookupType === 'campaign';
       return true;
     });
   }
@@ -264,7 +179,7 @@ router.get('/:id', authenticateJWT, (req: AuthenticatedRequest, res: Response) =
 });
 
 // POST /api/promotions - Launch new creator promotion (Rate-limited: max 3 per 5 min)
-router.post('/', authenticateJWT, campaignRateLimiter, (req: AuthenticatedRequest, res: Response) => {
+router.post('/', authenticateJWT, campaignRateLimiter, async (req: AuthenticatedRequest, res: Response) => {
   const user = req.user!;
   const { title, description, platform, channelUrl, budgetCredits, durationDays, isSponsored } = req.body;
 
@@ -304,21 +219,31 @@ router.post('/', authenticateJWT, campaignRateLimiter, (req: AuthenticatedReques
   const promoId = `prom_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
   const duration = parseInt(durationDays, 10) || 7;
 
+  // Resolve thumbnail if YouTube
+  let promoAvatar = user.avatar;
+  let videoEmbed: string | undefined;
+  const ytId = extractYouTubeVideoId(channelUrl);
+  if (ytId) {
+    promoAvatar = `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg`;
+    videoEmbed = `https://www.youtube.com/embed/${ytId}`;
+  }
+
   const newPromotion = {
     id: promoId,
     userId: user.id,
     creatorUsername: user.username,
     creatorDisplayName: user.displayName,
-    creatorAvatar: user.avatar,
+    creatorAvatar: promoAvatar,
     creatorCategory: user.creatorCategory || 'Technology',
     country: user.country || 'Rwanda',
     platform: platform as PlatformType,
     channelUrl: channelUrl.trim(),
+    videoEmbedUrl: videoEmbed,
     title: title.trim(),
     description: description ? description.trim() : `Discover ${user.displayName}'s creator channel on ${platform}.`,
     budgetCredits: budget,
     spentCredits: 0,
-    rewardPerDiscovery: 10,
+    rewardPerDiscovery: ytId ? 10 : 50,
     durationDays: duration,
     status: 'active' as const,
     impressions: 0,
@@ -328,7 +253,7 @@ router.post('/', authenticateJWT, campaignRateLimiter, (req: AuthenticatedReques
     createdAt: new Date().toISOString(),
   };
 
-  db.promotions.set(promoId, newPromotion);
+  await db.savePromotion(newPromotion);
 
   // Send notification to user
   db.notifications.unshift({

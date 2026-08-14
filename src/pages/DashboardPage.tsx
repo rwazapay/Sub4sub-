@@ -25,6 +25,7 @@ import {
   PlayCircle,
   ArrowUpRight,
 } from 'lucide-react';
+import { TourTriggerButton, useOnboardingTour } from '../components/OnboardingWalkthrough';
 
 export const DashboardPage: React.FC = () => {
   const { user, updateUser } = useAuth();
@@ -150,6 +151,7 @@ export const DashboardPage: React.FC = () => {
         <div className="pt-2 flex flex-wrap items-center justify-between gap-3 relative z-10">
           <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
             <Link
+              id="tour-dashboard-earn"
               to="/earn"
               className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-black text-xs flex items-center gap-2 transition-all shadow-md shadow-amber-500/20 active:scale-95"
             >
@@ -158,6 +160,7 @@ export const DashboardPage: React.FC = () => {
             </Link>
 
             <Link
+              id="tour-dashboard-promote"
               to="/promote"
               className="px-4 py-2.5 rounded-xl bg-stone-900/90 hover:bg-stone-800 text-stone-200 font-bold text-xs flex items-center gap-2 border border-stone-700 dark:border-[#332b21] transition-all"
             >
@@ -166,6 +169,7 @@ export const DashboardPage: React.FC = () => {
             </Link>
 
             <Link
+              id="tour-dashboard-wallet"
               to="/wallet"
               className="px-4 py-2.5 rounded-xl bg-stone-900/90 hover:bg-stone-800 text-amber-300 font-bold text-xs flex items-center gap-2 border border-stone-700 dark:border-[#332b21] transition-all"
             >
@@ -174,15 +178,19 @@ export const DashboardPage: React.FC = () => {
             </Link>
           </div>
 
-          <button
-            onClick={handleRefresh}
-            disabled={isRefreshing || isLoadingAnalytics}
-            className="px-3 py-2 rounded-xl bg-stone-900/60 hover:bg-stone-800 border border-stone-700/80 text-stone-400 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-all"
-            title="Refresh dashboard analytics data"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-amber-400' : ''}`} />
-            <span className="hidden sm:inline">Refresh Data</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <TourTriggerButton variant="badge" />
+
+            <button
+              onClick={handleRefresh}
+              disabled={isRefreshing || isLoadingAnalytics}
+              className="px-3 py-2 rounded-xl bg-stone-900/60 hover:bg-stone-800 border border-stone-700/80 text-stone-400 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-all"
+              title="Refresh dashboard analytics data"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-amber-400' : ''}`} />
+              <span className="hidden sm:inline">Refresh Data</span>
+            </button>
+          </div>
         </div>
       </div>
 

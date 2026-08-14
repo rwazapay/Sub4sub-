@@ -85,11 +85,15 @@ const PublicOnlyRoute: React.FC = () => {
 };
 
 import { OffersPage } from './pages/OffersPage';
+import { useOnboardingTour } from './components/OnboardingWalkthrough';
 
 // Main Layout Wrapper
 const AppLayout: React.FC = () => {
   const { user } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  
+  // Non-intrusive onboarding tour hook for new users
+  useOnboardingTour();
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans selection:bg-yellow-400 selection:text-slate-900">

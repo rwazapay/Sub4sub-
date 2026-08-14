@@ -15,7 +15,9 @@ import {
   Globe2,
   Crop,
   Sparkles,
+  HelpCircle,
 } from 'lucide-react';
+import { TourTriggerButton } from '../components/OnboardingWalkthrough';
 
 export const SettingsPage: React.FC = () => {
   const { user, updateUser } = useAuth();
@@ -426,6 +428,18 @@ export const SettingsPage: React.FC = () => {
               </button>
             </form>
 
+          </div>
+
+          {/* Interactive Walkthrough Card */}
+          <div className="bg-white dark:bg-[#161310] border border-stone-200 dark:border-[#262018] rounded-3xl p-6 space-y-4 shadow-sm">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-amber-500" />
+              <h2 className="text-base font-bold text-stone-900 dark:text-white">Interactive Guided Tour</h2>
+            </div>
+            <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed">
+              New to Sub4Sub Pro? Launch the guided walkthrough anytime to discover how the Earn exchange, Promote campaigns, and Wallet credit systems work.
+            </p>
+            <TourTriggerButton className="w-full justify-center py-2.5" />
           </div>
 
         </div>

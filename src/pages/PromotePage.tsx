@@ -26,6 +26,8 @@ export const PromotePage: React.FC = () => {
   // Form inputs
   const [targetUrl, setTargetUrl] = useState('');
   const [targetName, setTargetName] = useState('');
+  const [targetThumbnail, setTargetThumbnail] = useState<string | null>(null);
+  const [targetChannelName, setTargetChannelName] = useState<string | null>(null);
   const [lookingUp, setLookingUp] = useState(false);
   const [lookupSuccess, setLookupSuccess] = useState(false);
 
@@ -39,21 +41,31 @@ export const PromotePage: React.FC = () => {
   const coinsPerAction = campaignType === 'subscribers' ? 50 : 10;
   const totalCostCoins = targetCount * coinsPerAction;
 
-  const handleLookup = () => {
+  const handleLookup = async () => {
     if (!targetUrl.trim()) return;
     setLookingUp(true);
     setErrorMsg(null);
 
-    // Simulate lookup
-    setTimeout(() => {
-      setLookingUp(false);
-      setLookupSuccess(true);
-      if (campaignType === 'subscribers') {
-        setTargetName(targetUrl.includes('@') ? targetUrl.split('@')[1] : 'Featured Channel');
+    try {
+      const res = await apiClient.get('/channels/lookup', {
+        params: { url: targetUrl.trim() },
+      });
+
+      if (res.data.success && res.data.data) {
+        const meta = res.data.data;
+        setTargetName(meta.title || meta.channelName || 'YouTube Target');
+        setTargetChannelName(meta.channelName || null);
+        setTargetThumbnail(meta.thumbnailUrl || null);
+        setLookupSuccess(true);
       } else {
-        setTargetName('FINALLY 🔥 BGMI 4.5 UPDATE IS HERE , NARUTO X BGMI 🔥');
+        throw new Error('Could not retrieve metadata for this URL.');
       }
-    }, 600);
+    } catch (err: any) {
+      setErrorMsg(err.response?.data?.message || err.message || 'Failed to resolve YouTube target. Please check the URL.');
+      setLookupSuccess(false);
+    } finally {
+      setLookingUp(false);
+    }
   };
 
   const handleContinueToBudget = () => {
@@ -265,9 +277,27 @@ export const PromotePage: React.FC = () => {
             </div>
 
             {lookupSuccess && (
-              <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl text-emerald-600 dark:text-emerald-400 text-xs font-semibold flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 shrink-0" />
-                <span>Found: {targetName}</span>
+              <div className="p-3.5 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl text-xs font-semibold flex items-center gap-3">
+                {targetThumbnail ? (
+                  <img
+                    src={targetThumbnail}
+                    alt={targetName}
+                    referrerPolicy="no-referrer"
+                    className="w-14 h-10 object-cover rounded-lg border border-emerald-500/20 shrink-0"
+                  />
+                ) : (
+                  <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
+                )}
+                <div className="min-w-0 flex-1">
+                  <div className="text-emerald-700 dark:text-emerald-300 font-bold truncate">
+                    {targetName}
+                  </div>
+                  {targetChannelName && (
+                    <div className="text-[11px] text-emerald-600/80 dark:text-emerald-400/80">
+                      Channel: {targetChannelName}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 

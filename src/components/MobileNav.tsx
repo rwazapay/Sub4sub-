@@ -16,11 +16,11 @@ export const MobileNav: React.FC = () => {
   if (!user) return null;
 
   const tabs = [
-    { label: 'Home', path: '/dashboard', icon: LayoutGrid },
-    { label: 'Earn', path: '/earn', icon: Compass },
-    { label: 'Campaigns', path: '/campaigns', icon: Rocket },
-    { label: 'Wallet', path: '/wallet', icon: Wallet },
-    { label: 'Settings', path: '/settings', icon: Settings },
+    { label: 'Home', path: '/dashboard', icon: LayoutGrid, id: 'tour-mobile-home' },
+    { label: 'Earn', path: '/earn', icon: Compass, id: 'tour-mobile-earn' },
+    { label: 'Campaigns', path: '/campaigns', icon: Rocket, id: 'tour-mobile-promote' },
+    { label: 'Wallet', path: '/wallet', icon: Wallet, id: 'tour-mobile-wallet' },
+    { label: 'Settings', path: '/settings', icon: Settings, id: 'tour-mobile-settings' },
   ];
 
   return (
@@ -29,6 +29,7 @@ export const MobileNav: React.FC = () => {
         {tabs.map((tab) => (
           <NavLink
             key={tab.path}
+            id={tab.id}
             to={tab.path}
             className={({ isActive }) =>
               `flex flex-col items-center justify-center flex-1 py-1 text-[10px] font-semibold transition-all ${

@@ -11,6 +11,7 @@ import {
   Shield,
   HelpCircle,
 } from 'lucide-react';
+import { TourTriggerButton } from './OnboardingWalkthrough';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -23,12 +24,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   if (!user) return null;
 
   const navItems = [
-    { label: 'Home', path: '/dashboard', icon: LayoutGrid },
-    { label: 'Earn Coins', path: '/earn', icon: Compass },
-    { label: 'Campaigns', path: '/campaigns', icon: Rocket },
-    { label: 'Offers', path: '/offers', icon: Gift },
-    { label: 'Wallet & Top-up', path: '/wallet', icon: Wallet },
-    { label: 'Settings', path: '/settings', icon: Settings },
+    { label: 'Home', path: '/dashboard', icon: LayoutGrid, id: 'tour-sidebar-home' },
+    { label: 'Earn Coins', path: '/earn', icon: Compass, id: 'tour-sidebar-earn' },
+    { label: 'Campaigns', path: '/campaigns', icon: Rocket, id: 'tour-sidebar-promote' },
+    { label: 'Offers', path: '/offers', icon: Gift, id: 'tour-sidebar-offers' },
+    { label: 'Wallet & Top-up', path: '/wallet', icon: Wallet, id: 'tour-sidebar-wallet' },
+    { label: 'Settings', path: '/settings', icon: Settings, id: 'tour-sidebar-settings' },
   ];
 
   return (
@@ -58,6 +59,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                 {navItems.map((item) => (
                   <NavLink
                     key={item.path}
+                    id={item.id}
                     to={item.path}
                     onClick={onClose}
                     className={({ isActive }) =>
@@ -93,14 +95,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             </div>
           </div>
 
-          <div className="p-3.5 rounded-2xl bg-[#161310] border border-[#262018] space-y-2 text-xs">
-            <div className="flex items-center gap-1.5 font-bold text-amber-400">
-              <HelpCircle className="w-4 h-4" />
-              <span>Zero Anti-Cheat Tolerance</span>
+          <div className="space-y-3">
+            <TourTriggerButton className="w-full justify-center py-2" />
+
+            <div className="p-3.5 rounded-2xl bg-[#161310] border border-[#262018] space-y-2 text-xs">
+              <div className="flex items-center gap-1.5 font-bold text-amber-400">
+                <HelpCircle className="w-4 h-4" />
+                <span>Zero Anti-Cheat Tolerance</span>
+              </div>
+              <p className="text-[11px] text-stone-400 leading-relaxed">
+                Real YouTube accounts only. Accounts faking subscriptions or unsubscribing will be permanently banned.
+              </p>
             </div>
-            <p className="text-[11px] text-stone-400 leading-relaxed">
-              Real YouTube accounts only. Accounts faking subscriptions or unsubscribing will be permanently banned.
-            </p>
           </div>
 
         </div>

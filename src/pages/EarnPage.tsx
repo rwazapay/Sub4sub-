@@ -184,8 +184,48 @@ export const EarnPage: React.FC = () => {
           type: type,
         },
       });
-      if (res.data.success) {
-        setLookupItems(res.data.data.items || []);
+      if (res.data.success && res.data.data?.items) {
+        const items: PromotedLookupItem[] = res.data.data.items;
+        setLookupItems(items);
+
+        // Dynamically extract and sync live channel campaigns
+        const dynamicChannels: ChannelCampaign[] = items
+          .filter((it) => it.lookupType === 'channel' || it.lookupType === 'campaign')
+          .map((it) => ({
+            id: it.id,
+            channelName: it.channelName || it.title,
+            channelUrl: it.targetUrl,
+            avatar: it.avatarOrThumbnail || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+            subscribersRemaining: it.subscribersRemaining !== undefined ? it.subscribersRemaining : Math.max(0, it.totalTarget - it.completedCount),
+            subscribedCount: it.completedCount || 0,
+            totalTarget: it.totalTarget || 20,
+            rewardCoins: it.rewardCoins || 50,
+            category: 'YouTube Creator',
+          }));
+
+        if (dynamicChannels.length > 0) {
+          setChannelCampaigns(dynamicChannels);
+        }
+
+        // Dynamically extract and sync live video campaigns
+        const dynamicVideos: VideoCampaign[] = items
+          .filter((it) => it.lookupType === 'video')
+          .map((it) => ({
+            id: it.id,
+            videoTitle: it.title,
+            youtubeId: it.youtubeId || (it.targetUrl.includes('v=') ? it.targetUrl.split('v=')[1]?.substring(0, 11) : 'dQw4w9WgXcQ'),
+            channelName: it.channelName || 'YouTube Creator',
+            thumbnail: it.avatarOrThumbnail || (it.youtubeId ? `https://i.ytimg.com/vi/${it.youtubeId}/hqdefault.jpg` : 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&auto=format&fit=crop&q=80'),
+            rewardCoins: it.rewardCoins || 10,
+            viewsRemaining: it.viewsRemaining !== undefined ? it.viewsRemaining : Math.max(0, it.totalTarget - it.completedCount),
+            watchedCount: it.completedCount || 0,
+            totalTarget: it.totalTarget || 50,
+            watchTimeSeconds: it.watchTimeSeconds || 30,
+          }));
+
+        if (dynamicVideos.length > 0) {
+          setVideoCampaigns(dynamicVideos);
+        }
       }
     } catch (err) {
       // Fallback local search aggregation
