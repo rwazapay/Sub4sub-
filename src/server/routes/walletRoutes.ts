@@ -8,6 +8,7 @@ const router = Router();
 // GET /api/wallet - Get balance & transaction history
 router.get('/', authenticateJWT, (req: AuthenticatedRequest, res: Response) => {
   const user = req.user!;
+  db.syncUserDailyState(user);
   const userTransactions = db.creditTransactions.filter((tx) => tx.userId === user.id);
 
   return res.json({
@@ -18,6 +19,7 @@ router.get('/', authenticateJWT, (req: AuthenticatedRequest, res: Response) => {
       totalSpent: user.totalCreditsSpent,
       streakDays: user.streakDays,
       dailyRewardClaimedToday: user.dailyRewardClaimedToday,
+      nextRewardAvailableAt: user.nextRewardAvailableAt,
       packages: db.creditPackages,
       transactions: userTransactions,
     },
@@ -27,58 +29,28 @@ router.get('/', authenticateJWT, (req: AuthenticatedRequest, res: Response) => {
 // POST /api/wallet/daily-claim - Claim daily bonus coins
 router.post('/daily-claim', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
   const user = req.user!;
-  const streak = user.streakDays || 1;
-  const bonusCoins = Math.min(25 + streak * 5, 100);
-
-  if (user.dailyRewardClaimedToday) {
+  try {
+    const claimResult = await db.claimDailyRewardAtomic(user.id);
     return res.json({
       success: true,
-      message: `Daily check-in reward already claimed for today! Current balance: ${user.credits} coins`,
+      message: claimResult.message,
       data: {
-        user,
-        newBalance: user.credits,
-        bonusCoins: 0,
-        streakDays: user.streakDays,
-        dailyRewardClaimedToday: true,
-        alreadyClaimed: true,
+        user: claimResult.user,
+        newBalance: claimResult.user.credits,
+        bonusCoins: claimResult.rewardAmount,
+        streakDays: claimResult.streakDays,
+        dailyRewardClaimedToday: claimResult.user.dailyRewardClaimedToday,
+        nextClaimAvailableAt: claimResult.nextClaimAvailableAt,
+        alreadyClaimed: claimResult.alreadyClaimed,
       },
     });
+  } catch (err: any) {
+    return res.status(500).json({
+      success: false,
+      message: err.message || 'Failed to claim daily check-in bonus.',
+      errorCode: 'CLAIM_FAILED',
+    });
   }
-
-  user.dailyRewardClaimedToday = true;
-  user.credits = (user.credits || 0) + bonusCoins;
-  user.totalCreditsEarned = (user.totalCreditsEarned || 0) + bonusCoins;
-
-  db.recordTransaction(
-    user.id,
-    'bonus',
-    bonusCoins,
-    `Daily Check-in Reward (Streak: Day ${streak})`
-  );
-
-  await db.saveUser(user);
-
-  db.notifications.unshift({
-    id: `notif_${Date.now()}`,
-    userId: user.id,
-    title: '🎁 Daily Check-in Bonus Claimed!',
-    message: `Received +${bonusCoins} Coins for keeping a ${streak}-day check-in streak!`,
-    type: 'credit',
-    isRead: false,
-    createdAt: new Date().toISOString(),
-  });
-
-  return res.json({
-    success: true,
-    message: `Claimed +${bonusCoins} Daily Bonus Coins!`,
-    data: {
-      user,
-      newBalance: user.credits,
-      bonusCoins,
-      streakDays: user.streakDays,
-      dailyRewardClaimedToday: true,
-    },
-  });
 });
 
 // POST /api/wallet/transfer - Transfer / Gift coins to another creator

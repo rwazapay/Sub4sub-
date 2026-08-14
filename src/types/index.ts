@@ -41,6 +41,8 @@ export interface User {
   referralRewardsEarned: number;
   streakDays: number;
   lastLoginDate?: string;
+  lastRewardClaimDate?: string;
+  nextRewardAvailableAt?: string;
   dailyRewardClaimedToday: boolean;
   dailyDiscoveryCountToday: number;
   riskScore: number;

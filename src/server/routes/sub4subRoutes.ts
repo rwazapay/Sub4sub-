@@ -14,49 +14,29 @@ import { Sub4SubRequest, PlatformType } from '../../types';
 const router = Router();
 
 // POST /api/sub4sub/claim-daily-bonus - Claim daily login bonus
-router.post('/claim-daily-bonus', authenticateJWT, (req: AuthenticatedRequest, res: Response) => {
+router.post('/claim-daily-bonus', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
   const user = req.user!;
-
-  if (user.dailyRewardClaimedToday) {
-    return res.status(400).json({
+  try {
+    const claimResult = await db.claimDailyRewardAtomic(user.id);
+    return res.json({
+      success: true,
+      message: claimResult.message,
+      data: {
+        bonusCoins: claimResult.rewardAmount,
+        newBalance: claimResult.user.credits,
+        streakDays: claimResult.streakDays,
+        dailyRewardClaimedToday: claimResult.user.dailyRewardClaimedToday,
+        nextClaimAvailableAt: claimResult.nextClaimAvailableAt,
+        alreadyClaimed: claimResult.alreadyClaimed,
+      },
+    });
+  } catch (err: any) {
+    return res.status(500).json({
       success: false,
-      message: 'Daily login bonus already claimed today! Come back tomorrow for more coins.',
-      errorCode: 'DAILY_BONUS_ALREADY_CLAIMED',
+      message: err.message || 'Failed to claim daily bonus.',
+      errorCode: 'CLAIM_FAILED',
     });
   }
-
-  const bonusCoins = 25;
-  user.dailyRewardClaimedToday = true;
-  user.streakDays = (user.streakDays || 0) + 1;
-
-  db.recordTransaction(
-    user.id,
-    'bonus',
-    bonusCoins,
-    `Daily Login Bonus (Day ${user.streakDays} Streak)`
-  );
-
-  db.notifications.unshift({
-    id: `notif_${Date.now()}`,
-    userId: user.id,
-    title: '🎁 Daily Bonus Claimed!',
-    message: `You earned +${bonusCoins} coins for logging in today! Streak: ${user.streakDays} days.`,
-    type: 'credit',
-    link: '/wallet',
-    isRead: false,
-    createdAt: new Date().toISOString(),
-  });
-
-  return res.json({
-    success: true,
-    message: `🎉 Claimed +${bonusCoins} coins daily bonus!`,
-    data: {
-      bonusCoins,
-      newBalance: user.credits,
-      streakDays: user.streakDays,
-      dailyRewardClaimedToday: true,
-    },
-  });
 });
 
 // POST /api/sub4sub/watch-video - Verify watched video and credit coins (Rate-limited)

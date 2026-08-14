@@ -37,6 +37,22 @@ function sanitizeForFirestore<T extends Record<string, any>>(obj: T): Record<str
   return sanitized;
 }
 
+export function getUtcDateString(date: Date = new Date()): string {
+  return date.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+}
+
+export function getNextUtcMidnight(date: Date = new Date()): Date {
+  const next = new Date(date);
+  next.setUTCHours(24, 0, 0, 0);
+  return next;
+}
+
+export function getDaysDifference(dateStr1: string, dateStr2: string): number {
+  const d1 = new Date(dateStr1 + 'T00:00:00.000Z').getTime();
+  const d2 = new Date(dateStr2 + 'T00:00:00.000Z').getTime();
+  return Math.round((d1 - d2) / (1000 * 60 * 60 * 24));
+}
+
 class InAppDatabase {
   public users: Map<string, User> = new Map();
   public creatorProfiles: Map<string, CreatorProfile> = new Map();
@@ -55,6 +71,9 @@ class InAppDatabase {
   
   // Password hashes stored securely for email/password authentication
   private passwordHashes: Map<string, string> = new Map();
+  
+  // Concurrency mutex lock set for atomic reward claims
+  private claimLocks: Set<string> = new Set();
 
   // Configurable System Settings
   public systemSettings = {
@@ -102,20 +121,42 @@ class InAppDatabase {
     return this.firestoreDb;
   }
 
+  public syncUserDailyState(user: User): User {
+    if (!user) return user;
+    const now = new Date();
+    const todayStr = getUtcDateString(now);
+    const lastClaimDateStr = user.lastRewardClaimDate ? getUtcDateString(new Date(user.lastRewardClaimDate)) : null;
+    
+    const alreadyClaimedToday = lastClaimDateStr === todayStr;
+    user.dailyRewardClaimedToday = alreadyClaimedToday;
+    user.nextRewardAvailableAt = getNextUtcMidnight(now).toISOString();
+
+    // If reward not claimed today and last claim exists, check if streak lapsed (missed > 1 day)
+    if (!alreadyClaimedToday && lastClaimDateStr) {
+      const daysSinceLastClaim = getDaysDifference(todayStr, lastClaimDateStr);
+      if (daysSinceLastClaim > 1) {
+        user.streakDays = 0; // ready for Day 1 on next claim
+      }
+    }
+
+    return user;
+  }
+
   public async getUserAsync(idOrEmail: string): Promise<User | undefined> {
     if (!idOrEmail) return undefined;
     const clean = idOrEmail.trim().toLowerCase();
 
     // 1. Check in-memory map by exact ID
     if (this.users.has(idOrEmail)) {
-      return this.users.get(idOrEmail);
+      const u = this.users.get(idOrEmail)!;
+      return this.syncUserDailyState(u);
     }
 
     // 2. Check in-memory by username or email
     const inMem = Array.from(this.users.values()).find(
       (u) => u.id === idOrEmail || u.email?.toLowerCase() === clean || u.username?.toLowerCase() === clean
     );
-    if (inMem) return inMem;
+    if (inMem) return this.syncUserDailyState(inMem);
 
     // 3. Check Firestore
     if (this.firestoreDb) {
@@ -125,7 +166,7 @@ class InAppDatabase {
         if (docSnap.exists()) {
           const user = docSnap.data() as User;
           this.users.set(user.id, user);
-          return user;
+          return this.syncUserDailyState(user);
         }
 
         const q = await getDocs(collection(this.firestoreDb, 'users'));
@@ -133,7 +174,7 @@ class InAppDatabase {
           const u = snap.data() as User;
           if (u.email?.toLowerCase() === clean || u.username?.toLowerCase() === clean || u.id === idOrEmail) {
             this.users.set(u.id, u);
-            return u;
+            return this.syncUserDailyState(u);
           }
         }
       } catch (err) {
@@ -142,6 +183,128 @@ class InAppDatabase {
     }
 
     return undefined;
+  }
+
+  /**
+   * Atomic, performant daily login coin reward check and claim.
+   * Uses memory-level concurrency lock + UTC calendar date delta comparison.
+   */
+  public async claimDailyRewardAtomic(userId: string): Promise<{
+    success: boolean;
+    alreadyClaimed: boolean;
+    user: User;
+    rewardAmount: number;
+    streakDays: number;
+    nextClaimAvailableAt: string;
+    message: string;
+    transaction?: CreditTransaction;
+  }> {
+    // Acquire mutex lock for this user to guarantee atomicity against concurrent requests
+    while (this.claimLocks.has(userId)) {
+      await new Promise((resolve) => setTimeout(resolve, 30));
+    }
+    this.claimLocks.add(userId);
+
+    try {
+      let user = this.users.get(userId);
+      if (!user) {
+        user = await this.getUserAsync(userId);
+      }
+      if (!user) {
+        user = Array.from(this.users.values()).find((u) => u.id === userId || u.username === userId || u.email === userId);
+      }
+      if (!user) {
+        throw new Error(`User not found for ID: ${userId}`);
+      }
+
+      const now = new Date();
+      const todayStr = getUtcDateString(now);
+      const nextMidnightIso = getNextUtcMidnight(now).toISOString();
+      const lastClaimDateStr = user.lastRewardClaimDate
+        ? getUtcDateString(new Date(user.lastRewardClaimDate))
+        : null;
+
+      // 1. Perform atomic timestamp / date check against today
+      if (lastClaimDateStr === todayStr) {
+        user.dailyRewardClaimedToday = true;
+        user.nextRewardAvailableAt = nextMidnightIso;
+        return {
+          success: true,
+          alreadyClaimed: true,
+          user,
+          rewardAmount: 0,
+          streakDays: user.streakDays || 1,
+          nextClaimAvailableAt: nextMidnightIso,
+          message: `Daily check-in reward already claimed for today! Next bonus unlocks at UTC midnight.`,
+        };
+      }
+
+      // 2. Calculate streak days atomically
+      let newStreak = 1;
+      if (lastClaimDateStr) {
+        const daysDiff = getDaysDifference(todayStr, lastClaimDateStr);
+        if (daysDiff === 1) {
+          // Consecutive calendar day
+          newStreak = (user.streakDays || 0) + 1;
+        } else {
+          // Streak broken (gap of 2+ days)
+          newStreak = 1;
+        }
+      } else {
+        // First claim ever
+        newStreak = (user.streakDays && user.streakDays > 0) ? user.streakDays : 1;
+      }
+
+      // 3. Calculate reward amount with progressive streak scaling (25 base + 5 per streak day, max 100)
+      const baseReward = this.systemSettings.dailyLoginBaseReward || 25;
+      const streakBonusMultiplier = Math.min((newStreak - 1) * 5, 75);
+      const totalReward = Math.min(baseReward + streakBonusMultiplier, 100);
+
+      // 4. Update user state atomically
+      user.streakDays = newStreak;
+      user.lastRewardClaimDate = now.toISOString();
+      user.lastLoginDate = now.toISOString();
+      user.dailyRewardClaimedToday = true;
+      user.nextRewardAvailableAt = nextMidnightIso;
+      user.credits = (user.credits || 0) + totalReward;
+      user.totalCreditsEarned = (user.totalCreditsEarned || 0) + totalReward;
+
+      // 5. Record immutable transaction
+      const tx = this.recordTransaction(
+        user.id,
+        'bonus',
+        totalReward,
+        `🔥 Day ${newStreak} Daily Login Streak Bonus`
+      );
+
+      // 6. Push notification
+      this.notifications.unshift({
+        id: `notif_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+        userId: user.id,
+        title: '🎁 Daily Login Reward Claimed!',
+        message: `Claimed +${totalReward} coins for Day ${newStreak} streak! Keep logging in daily to grow your streak multiplier.`,
+        type: 'credit',
+        link: '/wallet',
+        isRead: false,
+        createdAt: now.toISOString(),
+      });
+
+      // 7. Persist to Firestore
+      await this.saveUser(user);
+
+      return {
+        success: true,
+        alreadyClaimed: false,
+        user,
+        rewardAmount: totalReward,
+        streakDays: newStreak,
+        nextClaimAvailableAt: nextMidnightIso,
+        message: `🎉 Claimed +${totalReward} Coins for Day ${newStreak} login streak!`,
+        transaction: tx,
+      };
+    } finally {
+      this.claimLocks.delete(userId);
+    }
   }
 
   // Sync existing cloud data from Firestore

@@ -21,6 +21,7 @@ import {
   AlertCircle,
   HelpCircle,
 } from 'lucide-react';
+import { DailyRewardCard } from '../components/DailyRewardCard';
 
 export const WalletPage: React.FC = () => {
   const { user, updateUser } = useAuth();
@@ -217,44 +218,8 @@ export const WalletPage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Daily Bonus Claim Card */}
-        <div className="lg:col-span-1 p-6 rounded-3xl bg-gradient-to-br from-amber-500/15 via-stone-900 to-stone-900 border border-amber-500/40 text-stone-100 space-y-4 shadow-lg flex flex-col justify-between">
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-black text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
-                <Calendar className="w-4 h-4" />
-                Daily Check-in Reward
-              </span>
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-amber-500 text-stone-950">
-                Day {user.streakDays || 1} Streak
-              </span>
-            </div>
-
-            <p className="text-sm font-semibold text-stone-300">
-              Claim free bonus coins every day to boost your channel promotions!
-            </p>
-
-            {dailyClaimMsg && (
-              <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-bold flex items-center gap-2">
-                <Sparkles className="w-4 h-4 shrink-0 text-amber-400" />
-                <span>{dailyClaimMsg}</span>
-              </div>
-            )}
-          </div>
-
-          <button
-            onClick={handleClaimDailyBonus}
-            disabled={user.dailyRewardClaimedToday || isClaimingDaily}
-            className="w-full py-3.5 px-4 rounded-2xl bg-amber-500 hover:bg-amber-400 disabled:bg-stone-800 disabled:text-stone-500 text-stone-950 font-black text-xs sm:text-sm transition-all shadow-md flex items-center justify-center gap-2 active:scale-95"
-          >
-            <Gift className="w-4 h-4" />
-            <span>
-              {user.dailyRewardClaimedToday
-                ? '✓ Claimed Today (Check back tomorrow)'
-                : isClaimingDaily
-                ? 'Claiming...'
-                : `Claim +${Math.min(25 + (user.streakDays || 1) * 5, 100)} Bonus Coins`}
-            </span>
-          </button>
+        <div className="lg:col-span-1">
+          <DailyRewardCard onRewardClaimed={() => fetchWalletData()} />
         </div>
 
         {/* Balance Metrics */}

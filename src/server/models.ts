@@ -26,6 +26,8 @@ export interface IUserDocument {
   dailyRewardClaimedToday: boolean;
   dailyDiscoveryCountToday: number;
   lastLoginDate?: string;
+  lastRewardClaimDate?: string;
+  nextRewardAvailableAt?: string;
   riskScore: number;
   isPro: boolean;
   isAiVerified?: boolean;

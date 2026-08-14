@@ -169,23 +169,9 @@ router.post('/login', authLimiter, async (req, res) => {
     });
   }
 
-  // Handle daily streak login update
-  const now = new Date();
-  const lastLogin = user.lastLoginDate ? new Date(user.lastLoginDate) : null;
-  
-  if (lastLogin) {
-    const diffHours = (now.getTime() - lastLogin.getTime()) / (1000 * 3600);
-    if (diffHours >= 24 && diffHours < 48) {
-      user.streakDays += 1;
-      user.dailyRewardClaimedToday = false;
-      user.dailyDiscoveryCountToday = 0;
-    } else if (diffHours >= 48) {
-      user.streakDays = 1;
-      user.dailyRewardClaimedToday = false;
-      user.dailyDiscoveryCountToday = 0;
-    }
-  }
-  user.lastLoginDate = now.toISOString();
+  // Sync daily state & update last login date
+  db.syncUserDailyState(user);
+  user.lastLoginDate = new Date().toISOString();
 
   // Save updated user to Firestore
   await db.saveUser(user);
@@ -204,10 +190,12 @@ router.post('/login', authLimiter, async (req, res) => {
 
 // GET /api/auth/me
 router.get('/me', authenticateJWT, (req: AuthenticatedRequest, res: Response) => {
+  const user = req.user!;
+  db.syncUserDailyState(user);
   return res.json({
     success: true,
     data: {
-      user: req.user,
+      user,
     },
   });
 });
@@ -215,42 +203,27 @@ router.get('/me', authenticateJWT, (req: AuthenticatedRequest, res: Response) =>
 // POST /api/auth/daily-streak-claim
 router.post('/daily-streak-claim', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
   const user = req.user!;
-  const streak = user.streakDays || 1;
-  const streakBonus = Math.min(50, (db.systemSettings?.dailyLoginBaseReward || 25) + (streak - 1) * 5);
-
-  if (user.dailyRewardClaimedToday) {
+  try {
+    const claimResult = await db.claimDailyRewardAtomic(user.id);
     return res.json({
       success: true,
-      message: `Daily streak bonus already claimed for today! Current streak: ${streak} days`,
+      message: claimResult.message,
       data: {
-        user,
-        streakBonus: 0,
-        alreadyClaimed: true,
+        user: claimResult.user,
+        streakBonus: claimResult.rewardAmount,
+        streakDays: claimResult.streakDays,
+        alreadyClaimed: claimResult.alreadyClaimed,
+        nextClaimAvailableAt: claimResult.nextClaimAvailableAt,
+        newBalance: claimResult.user.credits,
       },
     });
+  } catch (err: any) {
+    return res.status(500).json({
+      success: false,
+      message: err.message || 'Failed to claim daily streak bonus.',
+      errorCode: 'CLAIM_FAILED',
+    });
   }
-
-  user.dailyRewardClaimedToday = true;
-  user.credits = (user.credits || 0) + streakBonus;
-  user.totalCreditsEarned = (user.totalCreditsEarned || 0) + streakBonus;
-
-  db.recordTransaction(
-    user.id,
-    'bonus',
-    streakBonus,
-    `🔥 Day ${streak} Login Streak Bonus`
-  );
-
-  await db.saveUser(user);
-
-  return res.json({
-    success: true,
-    message: `Claimed +${streakBonus} Coins for Day ${streak} streak!`,
-    data: {
-      user,
-      streakBonus,
-    },
-  });
 });
 
 // POST /api/auth/forgot-password (Architecture stub)

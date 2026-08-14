@@ -26,6 +26,7 @@ import {
   ArrowUpRight,
 } from 'lucide-react';
 import { TourTriggerButton, useOnboardingTour } from '../components/OnboardingWalkthrough';
+import { DailyRewardCard } from '../components/DailyRewardCard';
 
 export const DashboardPage: React.FC = () => {
   const { user, updateUser } = useAuth();
@@ -124,35 +125,8 @@ export const DashboardPage: React.FC = () => {
             </p>
           </div>
 
-          {/* Daily Streak Card */}
-          <div className="p-4 rounded-2xl bg-stone-950/80 border border-stone-800 dark:border-[#332b21] space-y-2 shrink-0 sm:min-w-[230px] shadow-lg">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-stone-300 flex items-center gap-1.5">
-                <Flame className="w-4 h-4 text-amber-500 fill-amber-500" />
-                <span>Daily Streak</span>
-              </span>
-              <span className="font-extrabold text-amber-400 text-sm">{user.streakDays} Days</span>
-            </div>
-
-            {user.dailyRewardClaimedToday ? (
-              <div className="p-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400 text-[11px] font-bold text-center flex items-center justify-center gap-1">
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                <span>Bonus Claimed Today</span>
-              </div>
-            ) : (
-              <button
-                onClick={handleClaimDailyStreak}
-                disabled={isClaimingStreak}
-                className="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 font-black text-xs shadow-md transition-all active:scale-95"
-              >
-                {isClaimingStreak ? 'Claiming...' : 'Claim Daily Login Bonus'}
-              </button>
-            )}
-
-            {streakClaimMessage && (
-              <p className="text-[10px] text-amber-300 font-semibold text-center">{streakClaimMessage}</p>
-            )}
-          </div>
+          {/* Daily Streak Reward Card */}
+          <DailyRewardCard variant="compact" />
         </div>
 
         {/* Action Buttons Bar */}
