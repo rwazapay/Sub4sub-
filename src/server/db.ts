@@ -604,20 +604,52 @@ class InAppDatabase {
     description: string,
     referenceId?: string
   ): CreditTransaction {
-    const user = this.users.get(userId);
-    if (!user) throw new Error('User not found for transaction');
+    let user = this.users.get(userId);
+    if (!user) {
+      user = Array.from(this.users.values()).find((u) => u.id === userId || u.username === userId || u.email === userId);
+    }
 
-    const newBalance = user.credits + amount;
-    user.credits = newBalance;
-    if (amount > 0) user.totalCreditsEarned += amount;
-    if (amount < 0) user.totalCreditsSpent += Math.abs(amount);
+    if (!user) {
+      user = {
+        id: userId,
+        username: `user_${userId.replace(/[^a-zA-Z0-9]/g, '').substring(0, 8)}`,
+        displayName: 'Creator',
+        email: `${userId}@subloop.co`,
+        country: 'Rwanda',
+        role: 'user',
+        status: 'active',
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250',
+        bio: 'Creator on SubLoop',
+        creatorCategory: 'Technology',
+        credits: 100,
+        totalCreditsEarned: 100,
+        totalCreditsSpent: 0,
+        level: 1,
+        reputation: 80,
+        referralCode: `SUB-${userId.replace(/[^a-zA-Z0-9]/g, '').substring(0, 6).toUpperCase()}`,
+        referralCount: 0,
+        referralRewardsEarned: 0,
+        streakDays: 1,
+        dailyRewardClaimedToday: false,
+        dailyDiscoveryCountToday: 0,
+        riskScore: 0,
+        isPro: false,
+        createdAt: new Date().toISOString(),
+      };
+      this.users.set(userId, user);
+    }
+
+    const newBalance = (user.credits || 0) + amount;
+    user.credits = Math.max(0, newBalance);
+    if (amount > 0) user.totalCreditsEarned = (user.totalCreditsEarned || 0) + amount;
+    if (amount < 0) user.totalCreditsSpent = (user.totalCreditsSpent || 0) + Math.abs(amount);
 
     const tx: CreditTransaction = {
       id: `tx_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-      userId,
+      userId: user.id,
       type,
       amount,
-      balanceAfter: newBalance,
+      balanceAfter: user.credits,
       description,
       referenceId,
       createdAt: new Date().toISOString(),

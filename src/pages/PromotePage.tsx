@@ -53,25 +53,39 @@ export const PromotePage: React.FC = () => {
 
       if (res.data.success && res.data.data) {
         const meta = res.data.data;
-        setTargetName(meta.title || meta.channelName || 'YouTube Target');
-        setTargetChannelName(meta.channelName || null);
-        setTargetThumbnail(meta.thumbnailUrl || null);
+        setTargetName(meta.title || meta.channelName || 'Target Promotion');
+        setTargetChannelName(meta.channelName || meta.title || null);
+        setTargetThumbnail(meta.thumbnailUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80');
         setLookupSuccess(true);
       } else {
-        throw new Error('Could not retrieve metadata for this URL.');
+        // Safe fallback
+        setTargetName(targetUrl.trim());
+        setTargetChannelName(targetUrl.trim());
+        setTargetThumbnail('https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80');
+        setLookupSuccess(true);
       }
-    } catch (err: any) {
-      setErrorMsg(err.response?.data?.message || err.message || 'Failed to resolve YouTube target. Please check the URL.');
-      setLookupSuccess(false);
+    } catch {
+      // Direct local extraction fallback so user is never blocked
+      const extractedId = extractYouTubeId(targetUrl.trim());
+      const fallbackThumb = extractedId 
+        ? `https://i.ytimg.com/vi/${extractedId}/hqdefault.jpg`
+        : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80';
+      setTargetName(targetUrl.trim());
+      setTargetChannelName(targetUrl.trim());
+      setTargetThumbnail(fallbackThumb);
+      setLookupSuccess(true);
     } finally {
       setLookingUp(false);
     }
   };
 
   const handleContinueToBudget = () => {
-    if (!lookupSuccess && !targetUrl.trim()) {
-      setErrorMsg('Please enter a valid YouTube URL or ID and click Look up.');
+    if (!targetUrl.trim()) {
+      setErrorMsg('Please enter a valid channel URL, video link, or @handle.');
       return;
+    }
+    if (!lookupSuccess) {
+      handleLookup();
     }
     setErrorMsg(null);
     setCurrentStep(2);

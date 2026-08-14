@@ -27,20 +27,27 @@ router.get('/', authenticateJWT, (req: AuthenticatedRequest, res: Response) => {
 // POST /api/wallet/daily-claim - Claim daily bonus coins
 router.post('/daily-claim', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
   const user = req.user!;
-
-  if (user.dailyRewardClaimedToday) {
-    return res.status(400).json({
-      success: false,
-      message: 'You have already claimed your daily bonus today! Check back tomorrow.',
-      errorCode: 'ALREADY_CLAIMED',
-    });
-  }
-
-  // Calculate bonus based on streak (base 25 + 5 per streak day, max 100)
   const streak = user.streakDays || 1;
   const bonusCoins = Math.min(25 + streak * 5, 100);
 
+  if (user.dailyRewardClaimedToday) {
+    return res.json({
+      success: true,
+      message: `Daily check-in reward already claimed for today! Current balance: ${user.credits} coins`,
+      data: {
+        user,
+        newBalance: user.credits,
+        bonusCoins: 0,
+        streakDays: user.streakDays,
+        dailyRewardClaimedToday: true,
+        alreadyClaimed: true,
+      },
+    });
+  }
+
   user.dailyRewardClaimedToday = true;
+  user.credits = (user.credits || 0) + bonusCoins;
+  user.totalCreditsEarned = (user.totalCreditsEarned || 0) + bonusCoins;
 
   db.recordTransaction(
     user.id,

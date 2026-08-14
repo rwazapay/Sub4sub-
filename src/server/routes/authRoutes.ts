@@ -215,17 +215,24 @@ router.get('/me', authenticateJWT, (req: AuthenticatedRequest, res: Response) =>
 // POST /api/auth/daily-streak-claim
 router.post('/daily-streak-claim', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
   const user = req.user!;
+  const streak = user.streakDays || 1;
+  const streakBonus = Math.min(50, (db.systemSettings?.dailyLoginBaseReward || 25) + (streak - 1) * 5);
+
   if (user.dailyRewardClaimedToday) {
-    return res.status(400).json({
-      success: false,
-      message: 'You have already claimed your daily streak bonus today!',
-      errorCode: 'ALREADY_CLAIMED',
+    return res.json({
+      success: true,
+      message: `Daily streak bonus already claimed for today! Current streak: ${streak} days`,
+      data: {
+        user,
+        streakBonus: 0,
+        alreadyClaimed: true,
+      },
     });
   }
 
-  const streak = user.streakDays || 1;
-  const streakBonus = Math.min(50, (db.systemSettings?.dailyLoginBaseReward || 25) + (streak - 1) * 5);
   user.dailyRewardClaimedToday = true;
+  user.credits = (user.credits || 0) + streakBonus;
+  user.totalCreditsEarned = (user.totalCreditsEarned || 0) + streakBonus;
 
   db.recordTransaction(
     user.id,

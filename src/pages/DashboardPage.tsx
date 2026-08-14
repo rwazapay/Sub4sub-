@@ -74,8 +74,16 @@ export const DashboardPage: React.FC = () => {
     try {
       const res = await apiClient.post('/auth/daily-streak-claim');
       if (res.data.success) {
-        updateUser(res.data.data.user);
-        setStreakClaimMessage(`🎉 +${res.data.data.streakBonus} Credits claimed!`);
+        if (res.data.data?.user) {
+          updateUser(res.data.data.user);
+        } else {
+          updateUser({
+            ...user,
+            dailyRewardClaimedToday: true,
+            credits: user.credits + (res.data.data?.streakBonus || 25),
+          });
+        }
+        setStreakClaimMessage(`🎉 +${res.data.data?.streakBonus || 25} Coins claimed!`);
         setTimeout(() => setStreakClaimMessage(null), 4000);
       }
     } catch (err: any) {
