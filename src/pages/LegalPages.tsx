@@ -79,6 +79,19 @@ export const RefundPage: React.FC = () => {
         <p className="text-xs text-stone-500 dark:text-slate-400 mt-1">Satisfaction Guarantee & Refund Eligibility</p>
       </div>
 
+      {/* Temporary Freeze Notice */}
+      <div className="p-5 rounded-2xl bg-blue-950/40 border border-blue-500/40 text-blue-300 space-y-2 shadow-sm">
+        <div className="flex items-center gap-2">
+          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-blue-500/20 text-blue-300 border border-blue-500/40">
+            System Notice: Refunds Temporarily Frozen
+          </span>
+          <span className="text-[10px] font-bold text-amber-400">Under Active Development</span>
+        </div>
+        <p className="text-xs text-stone-300 leading-relaxed">
+          We are currently integrating automated live payment gateways. Manual coin refunds and cashout processing are temporarily frozen during this phase and will reopen soon once live payment clearance is finalized. In the meantime, you can earn 100% free coins on the Discover page by subscribing to channels and watching video views.
+        </p>
+      </div>
+
       <div className="p-6 rounded-2xl bg-white dark:bg-[#161310] border border-stone-200 dark:border-[#262018] space-y-4 shadow-sm">
         <h2 className="text-base font-bold text-stone-900 dark:text-white">1. Unused Coin Package Refunds</h2>
         <p>
@@ -92,7 +105,7 @@ export const RefundPage: React.FC = () => {
 
         <h2 className="text-base font-bold text-stone-900 dark:text-white">3. Requesting a Refund</h2>
         <p>
-          To request a refund, please email <code className="text-red-600 dark:text-red-400 font-mono">support@sub4subpro.com</code> with your order ID, account email, and reason for request. Refunds are processed within 3–5 business days to the original payment method.
+          To request a refund once gateways reopen, please email <code className="text-red-600 dark:text-red-400 font-mono">support@sub4subpro.com</code> with your order ID, account email, and reason for request. Refunds are processed within 3–5 business days to the original payment method.
         </p>
       </div>
     </div>

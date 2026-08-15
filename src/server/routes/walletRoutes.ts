@@ -143,9 +143,8 @@ router.post('/transfer', authenticateJWT, (req: AuthenticatedRequest, res: Respo
   });
 });
 
-// POST /api/wallet/purchase - Purchase credit package
+// POST /api/wallet/purchase - Temporarily frozen while payment gateway is in active development
 router.post('/purchase', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
-  const user = req.user!;
   const { packageId } = req.body;
 
   const pkg = db.creditPackages.find((p) => p.id === packageId);
@@ -157,50 +156,27 @@ router.post('/purchase', authenticateJWT, async (req: AuthenticatedRequest, res:
     });
   }
 
-  try {
-    // 1. Create payment session via PaymentProvider abstraction
-    const payment = await paymentProvider.createPayment({
-      userId: user.id,
-      packageId: pkg.id,
-      amountUsd: pkg.priceUsd,
-      credits: pkg.credits,
-    });
+  // Payment gateway under development: Do not charge, do not fulfill coins
+  return res.status(200).json({
+    success: false,
+    frozen: true,
+    status: 'coming_soon',
+    message:
+      'Coin purchases via payment gateway are coming soon! While live payment integration is being finalized, coin packages are available to preview only. To get coins right now, please subscribe to channels and watch video views on Discover!',
+  });
+});
 
-    // 2. Simulate instant credit fulfillment for test mode
-    db.recordTransaction(
-      user.id,
-      'purchase',
-      pkg.credits,
-      `Purchased ${pkg.name} (${pkg.credits.toLocaleString()} Credits for $${pkg.priceUsd})`,
-      payment.paymentId
-    );
-
-    // Send notification
-    db.notifications.unshift({
-      id: `notif_${Date.now()}`,
-      userId: user.id,
-      title: '💳 Credits Purchased Successfully!',
-      message: `Added +${pkg.credits.toLocaleString()} Credits to your wallet. You can now boost your promotions!`,
-      type: 'credit',
-      isRead: false,
-      createdAt: new Date().toISOString(),
-    });
-
-    return res.json({
-      success: true,
-      message: `Successfully purchased ${pkg.credits.toLocaleString()} Credits! New balance: ${user.credits} Credits.`,
-      data: {
-        newBalance: user.credits,
-        payment,
-      },
-    });
-  } catch (err: any) {
-    return res.status(500).json({
-      success: false,
-      message: err.message || 'Payment processing failed.',
-      errorCode: 'PAYMENT_FAILED',
-    });
-  }
+// POST /api/wallet/refund-request - Blocked / Frozen while payment gateway integration is in progress
+router.post('/refund-request', authenticateJWT, (req: AuthenticatedRequest, res: Response) => {
+  return res.status(200).json({
+    success: false,
+    frozen: true,
+    status: 'refund_blocked_coming_soon',
+    message:
+      'Coin token refunds are unavailable and blocked. Refunds are frozen and under active development. You can get coins right now exclusively by subscribing to channels and watching video views on Discover!',
+    notice: 'Refund feature is blocked and coming soon.',
+  });
 });
 
 export default router;
+
