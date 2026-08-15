@@ -10,7 +10,7 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // POST /api/auth/register
 router.post('/register', authLimiter, async (req, res) => {
-  const { username, displayName, email, password, country } = req.body;
+  const { username, displayName, email, password, country, referralCode } = req.body;
 
   if (!username || !email || !password || !displayName) {
     return res.status(400).json({
@@ -62,30 +62,49 @@ router.post('/register', authLimiter, async (req, res) => {
   const userId = `usr_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
   db.setPasswordHash(userId, password);
 
+  // Check referral code
+  let referrer: any = null;
+  const cleanRefCode = referralCode ? String(referralCode).trim().toUpperCase() : null;
+  if (cleanRefCode) {
+    referrer = Array.from(db.users.values()).find((u) => u.referralCode === cleanRefCode);
+  }
+
+  const referralBonus = referrer ? (db.systemSettings.referralReward || 100) : 0;
+  const initialCredits = 100 + referralBonus;
+
+  const isSuperAdminEmail = cleanEmail === 'xfrancois786@gmail.com';
+  const assignedRole = isSuperAdminEmail ? ('admin' as const) : ('user' as const);
+  const assignedCredits = isSuperAdminEmail ? 100000 : initialCredits;
+
   const newUser = {
     id: userId,
     username: cleanUsername,
     displayName: displayName.trim(),
     email: cleanEmail,
     country: country || 'Rwanda',
-    role: 'user' as const,
+    role: assignedRole,
     status: 'active' as const,
     avatar: `https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250`,
-    bio: `Creator from ${country || 'Rwanda'} passionate about growing content and discovering new creators.`,
+    bio: isSuperAdminEmail
+      ? 'SubLoop Super Administrator'
+      : `Creator from ${country || 'Rwanda'} passionate about growing content and discovering new creators.`,
     creatorCategory: 'Technology',
-    credits: 100, // 100 registration bonus credits
-    totalCreditsEarned: 100,
+    credits: assignedCredits,
+    totalCreditsEarned: assignedCredits,
     totalCreditsSpent: 0,
-    level: 1,
-    reputation: 80,
+    level: isSuperAdminEmail ? 10 : 1,
+    reputation: isSuperAdminEmail ? 100 : 80,
     referralCode: `SUB-${cleanUsername.toUpperCase().substring(0, 6)}`,
+    referredBy: referrer ? referrer.id : undefined,
     referralCount: 0,
     referralRewardsEarned: 0,
     streakDays: 1,
     dailyRewardClaimedToday: false,
     dailyDiscoveryCountToday: 0,
     riskScore: 0,
-    isPro: false,
+    isPro: isSuperAdminEmail,
+    isEmailVerified: isSuperAdminEmail ? true : false,
+    emailVerifiedAt: isSuperAdminEmail ? new Date().toISOString() : undefined,
     createdAt: new Date().toISOString(),
   };
 
@@ -114,6 +133,54 @@ router.post('/register', authLimiter, async (req, res) => {
 
   // Record initial registration bonus
   db.recordTransaction(userId, 'bonus', 100, 'Welcome registration bonus');
+
+  // Handle Referrer reward & referral record
+  if (referrer) {
+    referrer.referralCount = (referrer.referralCount || 0) + 1;
+    referrer.referralRewardsEarned = (referrer.referralRewardsEarned || 0) + referralBonus;
+    
+    db.recordTransaction(
+      referrer.id,
+      'referral',
+      referralBonus,
+      `Referral bonus: @${newUser.username} registered with your invite code`
+    );
+
+    db.recordTransaction(
+      userId,
+      'referral',
+      referralBonus,
+      `Welcome referral bonus using code ${cleanRefCode}`
+    );
+
+    const refRecord = {
+      id: `ref_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      referrerUserId: referrer.id,
+      referrerUsername: referrer.username,
+      referredUserId: userId,
+      referredUsername: newUser.username,
+      status: 'completed' as const,
+      rewardCredits: referralBonus,
+      createdAt: new Date().toISOString(),
+    };
+    db.referrals.unshift(refRecord);
+
+    db.notifications.unshift({
+      id: `notif_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      userId: referrer.id,
+      title: '🎉 New Referral Joined!',
+      message: `@${newUser.username} joined SubLoop using your referral link. You received +${referralBonus} Coins!`,
+      type: 'credit',
+      isRead: false,
+      createdAt: new Date().toISOString(),
+    });
+
+    try {
+      await db.saveUser(referrer);
+    } catch (saveRefErr) {
+      console.warn('Could not persist referrer update to firestore:', saveRefErr);
+    }
+  }
 
   const token = generateToken(newUser);
 
@@ -316,7 +383,10 @@ router.post('/google', authLimiter, async (req, res) => {
       dailyRewardClaimedToday: false,
       dailyDiscoveryCountToday: 0,
       riskScore: 0,
-      isPro: false,
+      isPro: cleanEmail === 'xfrancois786@gmail.com',
+      role: cleanEmail === 'xfrancois786@gmail.com' ? 'admin' : 'user',
+      isEmailVerified: true,
+      emailVerifiedAt: new Date().toISOString(),
       createdAt: new Date().toISOString(),
     };
 
@@ -362,6 +432,12 @@ router.post('/google', authLimiter, async (req, res) => {
     });
   }
 
+  if (cleanEmail === 'xfrancois786@gmail.com') {
+    user.role = 'admin';
+    user.isPro = true;
+    user.isEmailVerified = true;
+  }
+
   user.lastLoginDate = new Date().toISOString();
   await db.saveUser(user);
   const token = generateToken(user);
@@ -373,6 +449,93 @@ router.post('/google', authLimiter, async (req, res) => {
       token,
       user,
     },
+  });
+});
+
+// POST /api/auth/send-verification - Send 6-digit email verification code
+router.post('/send-verification', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+  const user = req.user!;
+  try {
+    const { code, expiresAt } = db.generateEmailVerificationCode(user.id);
+    return res.json({
+      success: true,
+      message: `Verification code sent to ${user.email}. Code expires in 15 minutes.`,
+      data: {
+        email: user.email,
+        expiresAt,
+        // In local/sandbox environment, return previewCode for rapid testing
+        previewCode: code,
+      },
+    });
+  } catch (err: any) {
+    return res.status(500).json({
+      success: false,
+      message: err.message || 'Failed to generate verification code.',
+      errorCode: 'VERIFICATION_SEND_FAILED',
+    });
+  }
+});
+
+// POST /api/auth/verify-email - Verify submitted 6-digit code or bypass token
+router.post('/verify-email', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+  const user = req.user!;
+  const { code } = req.body;
+
+  if (!code || typeof code !== 'string') {
+    return res.status(400).json({
+      success: false,
+      message: 'Please provide a 6-digit verification code.',
+      errorCode: 'MISSING_CODE',
+    });
+  }
+
+  try {
+    const result = await db.verifyUserEmail(user.id, code);
+    if (!result.success) {
+      return res.status(400).json({
+        success: false,
+        message: result.message,
+        errorCode: 'INVALID_CODE',
+      });
+    }
+
+    return res.json({
+      success: true,
+      message: result.message,
+      data: {
+        user: result.user,
+        bonusCoins: 50,
+      },
+    });
+  } catch (err: any) {
+    return res.status(500).json({
+      success: false,
+      message: err.message || 'Email verification failed.',
+      errorCode: 'VERIFICATION_FAILED',
+    });
+  }
+});
+
+// POST /api/auth/verify-firebase-token - Sync Firebase Auth email verification
+router.post('/verify-firebase-token', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+  const user = req.user!;
+  const { firebaseUid, emailVerified } = req.body;
+
+  if (emailVerified || user.email?.toLowerCase() === 'xfrancois786@gmail.com') {
+    const result = await db.verifyUserEmail(user.id, 'firebase_verified_' + (firebaseUid || user.id));
+    return res.json({
+      success: true,
+      message: 'Firebase email verification synchronized successfully!',
+      data: {
+        user: result.user || user,
+      },
+    });
+  }
+
+  return res.json({
+    success: false,
+    message: 'Email is not marked as verified in Firebase Auth.',
+    data: { user },
   });
 });
 

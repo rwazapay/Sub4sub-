@@ -195,6 +195,48 @@
         "createdAt": { "type": "string" }
       },
       "required": ["id", "reporterUserId", "targetType", "targetId", "reason", "status", "createdAt"]
+    },
+    "SpamIncident": {
+      "title": "Spam Incident",
+      "description": "Anti-spam and abuse detection incident log",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "username": { "type": "string" },
+        "actionType": { "type": "string" },
+        "severity": { "type": "string", "enum": ["low", "medium", "high", "critical"] },
+        "details": { "type": "string" },
+        "riskScoreBefore": { "type": "number" },
+        "riskScoreAfter": { "type": "number" },
+        "accountLocked": { "type": "boolean" },
+        "status": { "type": "string", "enum": ["flagged", "reviewed", "cleared", "banned"] },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "userId", "username", "actionType", "severity", "details", "status", "createdAt"]
+    },
+    "SystemSettings": {
+      "title": "System Settings",
+      "description": "Global website configuration, feature toggles and spam parameters",
+      "type": "object",
+      "properties": {
+        "enableSub4Sub": { "type": "boolean" },
+        "enableVideoEarn": { "type": "boolean" },
+        "enableReferralProgram": { "type": "boolean" },
+        "enableComboPurchases": { "type": "boolean" },
+        "enableRegistration": { "type": "boolean" },
+        "maintenanceMode": { "type": "boolean" },
+        "maxDailyDiscoveryRewards": { "type": "number" },
+        "dailyLoginBaseReward": { "type": "number" },
+        "referralReward": { "type": "number" },
+        "sub4subBaseReward": { "type": "number" },
+        "sub4subMutualBonus": { "type": "number" },
+        "videoWatchReward": { "type": "number" },
+        "minWatchStaySeconds": { "type": "number" },
+        "autoLockoutRiskThreshold": { "type": "number" },
+        "autoLockoutDurationHours": { "type": "number" },
+        "maxClaimsPerMinute": { "type": "number" }
+      }
     }
   },
   "firestore": {
@@ -233,6 +275,14 @@
     "/reports/{reportId}": {
       "schema": { "$ref": "#/entities/ReportItem" },
       "description": "Moderation report tickets"
+    },
+    "/spamIncidents/{incidentId}": {
+      "schema": { "$ref": "#/entities/SpamIncident" },
+      "description": "Spam and abuse detection incident records"
+    },
+    "/systemSettings/{settingId}": {
+      "schema": { "$ref": "#/entities/SystemSettings" },
+      "description": "Global website configuration"
     }
   }
 }

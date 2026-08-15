@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { apiClient } from '../services/api';
 import { YouTubeEmbedPlayer } from '../components/YouTubeEmbedPlayer';
+import { ReferralHub } from '../components/ReferralHub';
+import { EmailVerificationBanner } from '../components/EmailVerificationBanner';
 import {
   Coins,
   Users,
@@ -21,6 +24,7 @@ import {
   Globe,
   RefreshCw,
   AlertCircle,
+  Gift,
 } from 'lucide-react';
 
 export interface ChannelCampaign {
@@ -146,9 +150,24 @@ const MOCK_VIDEO_CAMPAIGNS: VideoCampaign[] = [
 
 export const EarnPage: React.FC = () => {
   const { user, updateUser } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  // Tab state: 'subscribe' | 'watch' | 'lookup'
-  const [activeTab, setActiveTab] = useState<'subscribe' | 'watch' | 'lookup'>('subscribe');
+  // Tab state: 'subscribe' | 'watch' | 'referral' | 'lookup'
+  const initialTab = (searchParams.get('tab') as 'subscribe' | 'watch' | 'referral' | 'lookup') || 'subscribe';
+  const [activeTab, setActiveTab] = useState<'subscribe' | 'watch' | 'referral' | 'lookup'>(initialTab);
+
+  // Sync tab change from URL params
+  useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam === 'referral' || tabParam === 'subscribe' || tabParam === 'watch' || tabParam === 'lookup') {
+      setActiveTab(tabParam);
+    }
+  }, [searchParams]);
+
+  const handleTabChange = (tab: 'subscribe' | 'watch' | 'referral' | 'lookup') => {
+    setActiveTab(tab);
+    setSearchParams({ tab });
+  };
 
   // Channel campaigns list state
   const [channelCampaigns, setChannelCampaigns] = useState<ChannelCampaign[]>(MOCK_CHANNEL_CAMPAIGNS);
@@ -433,7 +452,9 @@ export const EarnPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-xl mx-auto space-y-6 pb-12 text-stone-900 dark:text-stone-100">
+    <div className="max-w-4xl mx-auto space-y-6 pb-12 text-stone-900 dark:text-stone-100 w-full min-w-0">
+      <EmailVerificationBanner />
+
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-red-600 text-stone-950 font-bold px-4 py-2.5 rounded-full shadow-2xl flex items-center gap-2 text-xs animate-in fade-in slide-in-from-top-4">
@@ -445,16 +466,16 @@ export const EarnPage: React.FC = () => {
       {/* Page Title & Subtitle */}
       {!activeVideo && (
         <div className="space-y-3 pt-2">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-stone-900 dark:text-white">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-stone-900 dark:text-white truncate">
                 Earn Coins & Look Up
               </h1>
               <p className="text-xs sm:text-sm text-stone-600 dark:text-stone-400">
-                Subscribe, watch videos, or look up any promoted campaign & channel in one place.
+                Subscribe, watch videos, invite friends, or look up campaigns to earn free coins.
               </p>
             </div>
-            <div className="px-3 py-1.5 rounded-2xl bg-red-600/10 border border-red-500/30 flex items-center gap-1.5 text-red-600 dark:text-red-400 text-xs font-bold shrink-0">
+            <div className="px-3.5 py-1.5 rounded-2xl bg-red-600/10 border border-red-500/30 flex items-center gap-1.5 text-red-600 dark:text-red-400 text-xs font-bold shrink-0 self-start sm:self-auto">
               <Coins className="w-4 h-4 fill-red-500/20" />
               <span>{user.credits} Coins</span>
             </div>
@@ -482,12 +503,12 @@ export const EarnPage: React.FC = () => {
         </div>
       )}
 
-      {/* Tab Segmented Bar (Subscribe | Watch & Earn | Look Up) */}
+      {/* Tab Segmented Bar (Subscribe | Watch & Earn | Referrals | Look Up) */}
       {!activeVideo && (
-        <div className="p-1 rounded-2xl bg-stone-100 dark:bg-[#1a1612] border border-stone-200/80 dark:border-[#262018] flex items-center text-xs font-bold">
+        <div className="p-1 rounded-2xl bg-stone-100 dark:bg-[#1a1612] border border-stone-200/80 dark:border-[#262018] flex flex-wrap sm:flex-nowrap items-center text-xs font-bold gap-1">
           <button
-            onClick={() => setActiveTab('subscribe')}
-            className={`flex-1 py-2.5 px-3 rounded-xl transition-all text-center ${
+            onClick={() => handleTabChange('subscribe')}
+            className={`flex-1 min-w-[80px] py-2.5 px-3 rounded-xl transition-all text-center whitespace-nowrap ${
               activeTab === 'subscribe'
                 ? 'bg-white dark:bg-[#262018] text-stone-900 dark:text-white shadow-sm'
                 : 'text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
@@ -496,8 +517,8 @@ export const EarnPage: React.FC = () => {
             Subscribe
           </button>
           <button
-            onClick={() => setActiveTab('watch')}
-            className={`flex-1 py-2.5 px-3 rounded-xl transition-all text-center ${
+            onClick={() => handleTabChange('watch')}
+            className={`flex-1 min-w-[100px] py-2.5 px-3 rounded-xl transition-all text-center whitespace-nowrap ${
               activeTab === 'watch'
                 ? 'bg-white dark:bg-[#262018] text-stone-900 dark:text-white shadow-sm'
                 : 'text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
@@ -506,11 +527,25 @@ export const EarnPage: React.FC = () => {
             Watch & Earn
           </button>
           <button
+            onClick={() => handleTabChange('referral')}
+            className={`flex-1 min-w-[110px] py-2.5 px-3 rounded-xl transition-all text-center flex items-center justify-center gap-1.5 whitespace-nowrap ${
+              activeTab === 'referral'
+                ? 'bg-white dark:bg-[#262018] text-stone-900 dark:text-white shadow-sm text-red-500 font-extrabold'
+                : 'text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
+            }`}
+          >
+            <Gift className="w-3.5 h-3.5 text-red-500" />
+            <span>Referrals</span>
+            <span className="px-1.5 py-0.5 rounded-full bg-red-600/10 text-red-600 dark:text-red-400 text-[9px] font-black">
+              +100
+            </span>
+          </button>
+          <button
             onClick={() => {
-              setActiveTab('lookup');
+              handleTabChange('lookup');
               fetchLookupData(searchQuery, lookupFilterType);
             }}
-            className={`flex-1 py-2.5 px-3 rounded-xl transition-all text-center flex items-center justify-center gap-1 ${
+            className={`flex-1 min-w-[80px] py-2.5 px-3 rounded-xl transition-all text-center flex items-center justify-center gap-1 whitespace-nowrap ${
               activeTab === 'lookup'
                 ? 'bg-white dark:bg-[#262018] text-stone-900 dark:text-white shadow-sm text-red-500 font-extrabold'
                 : 'text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white'
@@ -852,6 +887,9 @@ export const EarnPage: React.FC = () => {
               )}
             </div>
           )}
+
+          {/* TAB 4: REFERRAL HUB */}
+          {activeTab === 'referral' && <ReferralHub />}
         </>
       ) : (
         /* ACTIVE VIDEO WATCHING MODE */

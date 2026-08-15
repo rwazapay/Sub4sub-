@@ -1,6 +1,6 @@
 import { Router, Response } from 'express';
 import { db } from '../db';
-import { authenticateJWT, AuthenticatedRequest } from '../middleware/auth';
+import { authenticateJWT, requireVerifiedEmail, AuthenticatedRequest } from '../middleware/auth';
 import { antiFraudEngine } from '../services/antiFraudEngine';
 import { rateLimiterService } from '../services/rateLimiterService';
 import {
@@ -40,21 +40,44 @@ router.post('/claim-daily-bonus', authenticateJWT, async (req: AuthenticatedRequ
   }
 });
 
-// POST /api/sub4sub/watch-video - Verify watched video and credit coins (Rate-limited)
-router.post('/watch-video', authenticateJWT, watchActionRateLimiter, async (req: AuthenticatedRequest, res: Response) => {
+// POST /api/sub4sub/watch-video - Verify watched video and credit coins (Rate-limited, Requires Verified Email)
+router.post('/watch-video', authenticateJWT, requireVerifiedEmail, watchActionRateLimiter, async (req: AuthenticatedRequest, res: Response) => {
   const user = req.user!;
-  const { videoId, watchDurationSeconds } = req.body;
+  const { videoId, watchDurationSeconds, verificationToken } = req.body;
 
+  if (db.systemSettings.enableVideoEarn === false) {
+    return res.status(403).json({
+      success: false,
+      message: 'Video watch & earn is temporarily disabled for scheduled maintenance.',
+      errorCode: 'FEATURE_DISABLED',
+    });
+  }
+
+  const clientIp = (req.headers['x-forwarded-for'] as string) || req.ip || '127.0.0.1';
   const duration = parseInt(watchDurationSeconds, 10) || 10;
-  if (duration < 5) {
+  const minRequired = db.systemSettings.minWatchStaySeconds || 10;
+
+  if (duration < Math.min(5, minRequired)) {
     return res.status(400).json({
       success: false,
-      message: 'Video must be watched for at least 5 seconds to earn coins.',
+      message: `Video must be watched for at least ${minRequired} seconds to earn coins.`,
       errorCode: 'WATCH_TIME_TOO_SHORT',
     });
   }
 
-  const rewardCoins = 10;
+  if (videoId && verificationToken) {
+    const watchCheck = antiFraudEngine.verifyVideoWatchTask(user.id, videoId, duration, verificationToken, clientIp);
+    if (!watchCheck.passed) {
+      return res.status(422).json({
+        success: false,
+        message: watchCheck.message,
+        errorCode: watchCheck.errorCode,
+        isLocked: watchCheck.isLocked,
+      });
+    }
+  }
+
+  const rewardCoins = db.systemSettings.videoWatchReward || 10;
   db.recordTransaction(
     user.id,
     'earning',
@@ -228,8 +251,8 @@ router.post('/buy-combo', authenticateJWT, campaignRateLimiter, (req: Authentica
   });
 });
 
-// POST /api/sub4sub/start-challenge - Issue anti-cheat verification token & countdown timer (Rate-limited)
-router.post('/start-challenge', authenticateJWT, challengeStartRateLimiter, (req: AuthenticatedRequest, res: Response) => {
+// POST /api/sub4sub/start-challenge - Issue anti-cheat verification token & countdown timer (Rate-limited, Requires Verified Email)
+router.post('/start-challenge', authenticateJWT, requireVerifiedEmail, challengeStartRateLimiter, (req: AuthenticatedRequest, res: Response) => {
   const user = req.user!;
   const { targetUserId, promotionId, platform, channelUrl } = req.body;
 
@@ -258,10 +281,18 @@ router.post('/start-challenge', authenticateJWT, challengeStartRateLimiter, (req
   });
 });
 
-// POST /api/sub4sub/verify-claim - Execute anti-fraud algorithm and credit user (Rate-limited)
-router.post('/verify-claim', authenticateJWT, exchangeActionRateLimiter, (req: AuthenticatedRequest, res: Response) => {
+// POST /api/sub4sub/verify-claim - Execute anti-fraud algorithm and credit user (Rate-limited, Requires Verified Email)
+router.post('/verify-claim', authenticateJWT, requireVerifiedEmail, exchangeActionRateLimiter, (req: AuthenticatedRequest, res: Response) => {
   const user = req.user!;
   const { verificationToken, challengeCode, targetUserId, platform, channelUrl } = req.body;
+
+  if (db.systemSettings.enableSub4Sub === false) {
+    return res.status(403).json({
+      success: false,
+      message: 'Sub4Sub exchange is temporarily paused for maintenance.',
+      errorCode: 'FEATURE_DISABLED',
+    });
+  }
 
   if (!verificationToken || !challengeCode) {
     return res.status(400).json({
@@ -271,8 +302,17 @@ router.post('/verify-claim', authenticateJWT, exchangeActionRateLimiter, (req: A
     });
   }
 
+  const clientIp = (req.headers['x-forwarded-for'] as string) || req.ip || '127.0.0.1';
+  const userAgent = req.headers['user-agent'] || '';
+
   // Run Anti-Fraud Algorithm
-  const auditResult = antiFraudEngine.verifyAndClaim(user.id, verificationToken, Number(challengeCode));
+  const auditResult = antiFraudEngine.verifyAndClaim(
+    user.id,
+    verificationToken,
+    Number(challengeCode),
+    clientIp,
+    userAgent
+  );
 
   if (!auditResult.passed) {
     return res.status(422).json({
@@ -280,6 +320,8 @@ router.post('/verify-claim', authenticateJWT, exchangeActionRateLimiter, (req: A
       message: auditResult.message,
       errorCode: auditResult.errorCode,
       riskScore: auditResult.riskScore,
+      isLocked: auditResult.isLocked,
+      lockoutReason: auditResult.lockoutReason,
     });
   }
 
@@ -287,7 +329,7 @@ router.post('/verify-claim', authenticateJWT, exchangeActionRateLimiter, (req: A
   const effectiveTargetUserId = auditResult.targetUserId || targetUserId;
   const targetUser = effectiveTargetUserId ? db.users.get(effectiveTargetUserId) : null;
 
-  const rewardCredits = 25; // Clean task completion reward
+  const rewardCredits = db.systemSettings.sub4subBaseReward || 25; // Clean task completion reward
 
   db.recordTransaction(
     user.id,

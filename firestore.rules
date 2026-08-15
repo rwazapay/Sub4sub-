@@ -42,5 +42,13 @@ service cloud.firestore {
     match /reports/{reportId} {
       allow read, write: if true;
     }
+
+    match /spamIncidents/{incidentId} {
+      allow read, write: if true;
+    }
+
+    match /systemSettings/{settingId} {
+      allow read, write: if true;
+    }
   }
 }

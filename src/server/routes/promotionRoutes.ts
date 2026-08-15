@@ -1,6 +1,6 @@
 import { Router, Response } from 'express';
 import { db } from '../db';
-import { authenticateJWT, AuthenticatedRequest } from '../middleware/auth';
+import { authenticateJWT, requireVerifiedEmail, AuthenticatedRequest } from '../middleware/auth';
 import { campaignRateLimiter } from '../middleware/rateLimit';
 import { PlatformType } from '../../types';
 import { resolveTargetMetadata, extractYouTubeVideoId } from '../services/youtubeResolver';
@@ -178,8 +178,8 @@ router.get('/:id', authenticateJWT, (req: AuthenticatedRequest, res: Response) =
   });
 });
 
-// POST /api/promotions - Launch new creator promotion (Rate-limited: max 3 per 5 min)
-router.post('/', authenticateJWT, campaignRateLimiter, async (req: AuthenticatedRequest, res: Response) => {
+// POST /api/promotions - Launch new creator promotion (Rate-limited: max 3 per 5 min, Requires Verified Email)
+router.post('/', authenticateJWT, requireVerifiedEmail, campaignRateLimiter, async (req: AuthenticatedRequest, res: Response) => {
   const user = req.user!;
   const { title, description, platform, channelUrl, budgetCredits, durationDays, isSponsored } = req.body;
 

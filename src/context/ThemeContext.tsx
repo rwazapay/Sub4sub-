@@ -9,11 +9,25 @@ interface ThemeContextType {
   isDark: boolean;
 }
 
+const THEME_STORAGE_KEY = 'sub4subpro_theme';
+
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [theme, setThemeState] = useState<Theme>(() => {
-    return (localStorage.getItem('sub4subpro_theme') as Theme) || 'dark';
+    try {
+      const stored = localStorage.getItem(THEME_STORAGE_KEY);
+      if (stored === 'light' || stored === 'dark') {
+        return stored;
+      }
+      if (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        // Even if system prefers dark, default to light as requested
+        return 'light';
+      }
+    } catch {
+      // Ignore local storage error
+    }
+    return 'light';
   });
 
   const isDark = theme === 'dark';
@@ -22,10 +36,23 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const root = document.documentElement;
     if (isDark) {
       root.classList.add('dark');
+      root.classList.remove('light');
     } else {
       root.classList.remove('dark');
+      root.classList.add('light');
     }
-    localStorage.setItem('sub4subpro_theme', theme);
+
+    try {
+      localStorage.setItem(THEME_STORAGE_KEY, theme);
+    } catch {
+      // Ignore local storage error
+    }
+
+    // Update meta theme-color if present
+    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    if (metaThemeColor) {
+      metaThemeColor.setAttribute('content', isDark ? '#0d0b09' : '#ffffff');
+    }
   }, [theme, isDark]);
 
   const setTheme = (newTheme: Theme) => {
@@ -50,4 +77,5 @@ export const useTheme = () => {
   }
   return context;
 };
+
 

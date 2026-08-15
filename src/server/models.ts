@@ -1,4 +1,4 @@
-import { UserRole, AccountStatus, PlatformType, PromotionStatus, Sub4SubStatus } from '../types';
+import { UserRole, AccountStatus, PlatformType, PromotionStatus, Sub4SubStatus, UserFeaturePermissions, SpamIncident, SystemSettings } from '../types';
 
 // TypeScript Entity Interfaces for Firebase Firestore Data Models
 
@@ -33,8 +33,23 @@ export interface IUserDocument {
   isAiVerified?: boolean;
   aiVerificationData?: any;
   passwordHash?: string;
+  // Anti-Spam and Lockout attributes
+  isLocked?: boolean;
+  lockoutReason?: string;
+  lockedAt?: string;
+  lockoutExpiresAt?: string;
+  spamStrikes?: number;
+  canEarn?: boolean;
+  canPromote?: boolean;
+  canRefer?: boolean;
+  permissionsOverride?: Partial<UserFeaturePermissions>;
+  recentAbuseFlags?: string[];
   createdAt: string;
 }
+
+export interface ISpamIncidentDocument extends SpamIncident {}
+
+export interface ISystemSettingsDocument extends SystemSettings {}
 
 export interface ICreatorProfileDocument {
   id: string;

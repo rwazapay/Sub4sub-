@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { apiClient } from '../services/api';
 import { extractYouTubeId } from '../components/YouTubeEmbedPlayer';
+import { EmailVerificationBanner } from '../components/EmailVerificationBanner';
 import {
   Rocket,
   Video,
@@ -129,6 +130,7 @@ export const PromotePage: React.FC = () => {
 
   return (
     <div className="max-w-xl mx-auto space-y-6 pb-12 text-stone-900 dark:text-stone-100">
+      <EmailVerificationBanner />
       
       {/* Title & Subtitle */}
       <div className="space-y-1 pt-2">

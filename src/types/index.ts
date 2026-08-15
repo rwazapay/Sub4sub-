@@ -1,6 +1,13 @@
 export type UserRole = 'user' | 'moderator' | 'admin' | 'superadmin';
 export type AccountStatus = 'active' | 'restricted' | 'suspended' | 'banned';
 
+export interface UserFeaturePermissions {
+  canEarn: boolean;
+  canPromote: boolean;
+  canRefer: boolean;
+  canTransfer: boolean;
+}
+
 export interface AiVerificationData {
   status: 'verified' | 'pending' | 'flagged';
   authenticityScore: number;
@@ -48,8 +55,23 @@ export interface User {
   riskScore: number;
   isPro: boolean;
   proExpiresAt?: string;
+  isEmailVerified?: boolean;
+  emailVerifiedAt?: string;
+  emailVerificationCode?: string;
+  emailVerificationCodeExpiresAt?: string;
   isAiVerified?: boolean;
   aiVerificationData?: AiVerificationData;
+  // Anti-Spam & Lockout attributes
+  isLocked?: boolean;
+  lockoutReason?: string;
+  lockedAt?: string;
+  lockoutExpiresAt?: string;
+  spamStrikes?: number;
+  canEarn?: boolean;
+  canPromote?: boolean;
+  canRefer?: boolean;
+  permissionsOverride?: Partial<UserFeaturePermissions>;
+  recentAbuseFlags?: string[];
   createdAt: string;
 }
 
@@ -201,11 +223,53 @@ export interface ReportItem {
   id: string;
   reporterUserId: string;
   reporterUsername: string;
-  targetType: 'creator' | 'promotion' | 'activity';
+  targetType: 'creator' | 'promotion' | 'activity' | 'spam';
   targetId: string;
   reason: string;
   status: 'pending' | 'reviewed' | 'dismissed' | 'action_taken';
   createdAt: string;
+}
+
+export interface SpamIncident {
+  id: string;
+  userId: string;
+  username: string;
+  actionType: 'subscribe_spam' | 'view_botting' | 'referral_fraud' | 'velocity_abuse' | 'token_tampering' | 'multiple_accounts';
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  details: string;
+  ipAddress?: string;
+  riskScoreBefore: number;
+  riskScoreAfter: number;
+  accountLocked: boolean;
+  status: 'flagged' | 'reviewed' | 'cleared' | 'banned';
+  createdAt: string;
+}
+
+export interface SystemSettings {
+  // Feature toggles
+  enableSub4Sub: boolean;
+  enableVideoEarn: boolean;
+  enableReferralProgram: boolean;
+  enableComboPurchases: boolean;
+  enableRegistration: boolean;
+  maintenanceMode: boolean;
+  
+  // Economy and rewards
+  maxDailyDiscoveryRewards: number;
+  dailyLoginBaseReward: number;
+  referralReward: number;
+  sub4subBaseReward: number;
+  sub4subMutualBonus: number;
+  videoWatchReward: number;
+  minWatchStaySeconds: number;
+  profileCompletionReward: number;
+  
+  // Spam detection & Lockout thresholds
+  autoLockoutRiskThreshold: number;
+  autoLockoutDurationHours: number;
+  maxClaimsPerMinute: number;
+  maxSubscribesPerHour: number;
+  minChallengeWaitSeconds: number;
 }
 
 export interface AdminAuditLog {
@@ -223,6 +287,7 @@ export interface AdminAuditLog {
 export interface AdminStats {
   totalUsers: number;
   activeUsersToday: number;
+  lockedUsersCount: number;
   totalPromotions: number;
   activePromotions: number;
   totalCreditsCirculating: number;
@@ -230,4 +295,6 @@ export interface AdminStats {
   totalCreditsSpent: number;
   estimatedRevenueUsd: number;
   totalDiscoveriesCount: number;
+  totalSpamIncidents: number;
+  unresolvedSpamCount: number;
 }

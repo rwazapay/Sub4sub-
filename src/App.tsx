@@ -95,13 +95,34 @@ const AppLayout: React.FC = () => {
   // Non-intrusive onboarding tour hook for new users
   useOnboardingTour();
 
+  const isAccountLocked = user && (user.isLocked || user.status === 'restricted' || user.status === 'suspended');
+
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans selection:bg-red-500 selection:text-white">
+    <div className="min-h-screen bg-stone-50 dark:bg-[#0d0b09] text-stone-900 dark:text-[#f3f0ec] flex flex-col font-sans selection:bg-red-500 selection:text-white w-full max-w-full overflow-x-hidden">
       {/* Top Navbar */}
       <Navbar onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
+      {/* Account Lockout / Suspension Banner */}
+      {isAccountLocked && (
+        <div className="bg-red-600 text-white px-4 py-2.5 text-xs font-bold flex flex-col sm:flex-row items-center justify-between gap-2 shadow-lg z-40">
+          <div className="flex items-center gap-2 text-center sm:text-left">
+            <span className="p-1 rounded-md bg-black/20 text-white uppercase text-[10px]">Security Notice</span>
+            <span>
+              Your account is currently restricted: <strong>{user.lockoutReason || 'Abnormal activity flagged by anti-spam engine'}</strong>.
+              {user.lockoutExpiresAt ? ` (Expires ${new Date(user.lockoutExpiresAt).toLocaleString()})` : ''}
+            </span>
+          </div>
+          <a
+            href="/contact"
+            className="px-3 py-1 rounded-lg bg-black/30 hover:bg-black/40 text-white text-[11px] font-bold whitespace-nowrap transition-colors"
+          >
+            Submit Appeal
+          </a>
+        </div>
+      )}
+
       {/* Main Container */}
-      <div className="flex flex-1 relative">
+      <div className="flex flex-1 relative w-full max-w-full min-w-0">
         {/* Sidebar for authenticated creators */}
         {user && (
           <Sidebar
@@ -112,11 +133,11 @@ const AppLayout: React.FC = () => {
 
         {/* Dynamic Page Content */}
         <main
-          className={`flex-1 w-full px-4 sm:px-6 lg:px-8 py-6 transition-all ${
+          className={`flex-1 w-full max-w-full min-w-0 px-3 sm:px-6 lg:px-8 py-6 transition-all ${
             user ? 'lg:pl-72 pb-24 lg:pb-12' : 'pb-12'
           }`}
         >
-          <div className="mx-auto max-w-7xl">
+          <div className="mx-auto max-w-7xl w-full min-w-0">
             <Outlet />
           </div>
         </main>

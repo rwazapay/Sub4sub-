@@ -80,7 +80,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
       {/* Sidebar Container */}
       <aside
-        className={`fixed top-16 bottom-0 left-0 z-30 w-64 bg-[#0d0b09] border-r border-[#262018] p-4 transition-transform duration-300 lg:translate-x-0 ${
+        className={`fixed top-16 bottom-0 left-0 z-30 w-64 bg-white dark:bg-[#0d0b09] border-r border-stone-200 dark:border-[#262018] p-4 transition-transform duration-300 lg:translate-x-0 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -88,7 +88,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           
           <div className="space-y-6">
             <div>
-              <p className="px-3 text-[10px] font-extrabold uppercase tracking-wider text-red-500">
+              <p className="px-3 text-[10px] font-extrabold uppercase tracking-wider text-red-600 dark:text-red-500">
                 Menu
               </p>
               <nav className="mt-2 space-y-1">
@@ -103,7 +103,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                         `flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all ${
                           isActive
                             ? 'bg-red-600 text-white shadow-md shadow-red-600/25'
-                            : 'text-stone-300 hover:text-white hover:bg-[#1a1612]'
+                            : 'text-stone-700 dark:text-stone-300 hover:text-stone-950 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-[#1a1612]'
                         }`
                       }
                     >
@@ -116,7 +116,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                       role="tooltip"
                       className="hidden lg:group-hover:flex absolute left-full top-1/2 -translate-y-1/2 ml-3 z-50 items-center pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-200"
                     >
-                      <div className="bg-[#1a1612] text-stone-200 text-[11px] font-medium py-1.5 px-3 rounded-xl border border-[#382f24] shadow-2xl shadow-black/80 whitespace-nowrap flex items-center gap-2">
+                      <div className="bg-stone-900 dark:bg-[#1a1612] text-white dark:text-stone-200 text-[11px] font-medium py-1.5 px-3 rounded-xl border border-stone-700 dark:border-[#382f24] shadow-2xl shadow-black/80 whitespace-nowrap flex items-center gap-2">
                         <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
                         <span>{item.tooltip}</span>
                       </div>
@@ -134,7 +134,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                         `flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all ${
                           isActive
                             ? 'bg-red-600 text-white'
-                            : 'text-red-400 hover:bg-red-500/10'
+                            : 'text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10'
                         }`
                       }
                     >
@@ -146,7 +146,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                       role="tooltip"
                       className="hidden lg:group-hover:flex absolute left-full top-1/2 -translate-y-1/2 ml-3 z-50 items-center pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-200"
                     >
-                      <div className="bg-[#1a1612] text-red-300 text-[11px] font-medium py-1.5 px-3 rounded-xl border border-red-500/30 shadow-2xl shadow-black/80 whitespace-nowrap flex items-center gap-2">
+                      <div className="bg-stone-900 dark:bg-[#1a1612] text-red-300 text-[11px] font-medium py-1.5 px-3 rounded-xl border border-red-500/30 shadow-2xl shadow-black/80 whitespace-nowrap flex items-center gap-2">
                         <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
                         <span>System moderation, user management & platform logs</span>
                       </div>
@@ -160,12 +160,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           <div className="space-y-3">
             <TourTriggerButton className="w-full justify-center py-2" />
 
-            <div className="p-3.5 rounded-2xl bg-[#161310] border border-[#262018] space-y-2 text-xs">
-              <div className="flex items-center gap-1.5 font-bold text-red-400">
+            <div className="p-3.5 rounded-2xl bg-stone-50 dark:bg-[#161310] border border-stone-200 dark:border-[#262018] space-y-2 text-xs">
+              <div className="flex items-center gap-1.5 font-bold text-red-600 dark:text-red-400">
                 <HelpCircle className="w-4 h-4" />
                 <span>Zero Anti-Cheat Tolerance</span>
               </div>
-              <p className="text-[11px] text-stone-400 leading-relaxed">
+              <p className="text-[11px] text-stone-600 dark:text-stone-400 leading-relaxed">
                 Real YouTube accounts only. Accounts faking subscriptions or unsubscribing will be permanently banned.
               </p>
             </div>

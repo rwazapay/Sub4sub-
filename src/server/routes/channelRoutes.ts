@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { db } from '../db';
-import { authenticateJWT, AuthenticatedRequest } from '../middleware/auth';
+import { authenticateJWT, requireVerifiedEmail, AuthenticatedRequest } from '../middleware/auth';
 import { PlatformType } from '../../types';
 import { resolveTargetMetadata } from '../services/youtubeResolver';
 
@@ -74,8 +74,8 @@ router.get('/', authenticateJWT, async (req: AuthenticatedRequest, res: Response
   });
 });
 
-// POST /api/channels - Add a social profile channel
-router.post('/', authenticateJWT, async (req: AuthenticatedRequest, res: Response) => {
+// POST /api/channels - Add a social profile channel (Requires Verified Email)
+router.post('/', authenticateJWT, requireVerifiedEmail, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const user = req.user!;
     let { platform, channelName, url, category, description, thumbnail } = req.body;

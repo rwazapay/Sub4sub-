@@ -24,9 +24,13 @@ import {
   ShieldCheck,
   PlayCircle,
   ArrowUpRight,
+  Copy,
+  Check,
+  Share2,
 } from 'lucide-react';
 import { TourTriggerButton, useOnboardingTour } from '../components/OnboardingWalkthrough';
 import { DailyRewardCard } from '../components/DailyRewardCard';
+import { EmailVerificationBanner } from '../components/EmailVerificationBanner';
 
 export const DashboardPage: React.FC = () => {
   const { user, updateUser } = useAuth();
@@ -35,6 +39,23 @@ export const DashboardPage: React.FC = () => {
   const [isClaimingStreak, setIsClaimingStreak] = useState(false);
   const [streakClaimMessage, setStreakClaimMessage] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [copiedCode, setCopiedCode] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
+
+  const handleCopyCode = () => {
+    if (!user?.referralCode) return;
+    navigator.clipboard.writeText(user.referralCode);
+    setCopiedCode(true);
+    setTimeout(() => setCopiedCode(false), 2000);
+  };
+
+  const handleCopyLink = () => {
+    if (!user?.referralCode) return;
+    const shareUrl = `${window.location.origin}/register?ref=${user.referralCode}`;
+    navigator.clipboard.writeText(shareUrl);
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2000);
+  };
 
   const fetchDashboardData = async (showLoadingState = true) => {
     if (showLoadingState) {
@@ -106,6 +127,7 @@ export const DashboardPage: React.FC = () => {
 
   return (
     <div className="space-y-8 animate-fade-in pb-12">
+      <EmailVerificationBanner />
       
       {/* Header Banner */}
       <div className="bg-gradient-to-r from-stone-900 via-[#1c1813] to-stone-900 border border-stone-800 dark:border-[#262018] rounded-3xl p-6 sm:p-8 space-y-4 shadow-xl relative overflow-hidden">
@@ -319,16 +341,18 @@ export const DashboardPage: React.FC = () => {
                 const percentSpent = Math.min(100, Math.round((promo.spentCredits / promo.budgetCredits) * 100));
 
                 return (
-                  <div key={promo.id} className="p-4 rounded-2xl bg-stone-50 dark:bg-[#0d0b09] border border-stone-200 dark:border-[#262018] space-y-3">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-red-600/15 text-red-600 dark:text-red-400 uppercase">
+                  <div key={promo.id} className="p-4 rounded-2xl bg-stone-50 dark:bg-[#0d0b09] border border-stone-200 dark:border-[#262018] space-y-3 min-w-0">
+                    <div className="flex items-start justify-between gap-3 min-w-0">
+                      <div className="min-w-0 flex-1 space-y-1">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-red-600/15 text-red-600 dark:text-red-400 uppercase shrink-0">
                             {promo.platform}
                           </span>
-                          <h3 className="font-bold text-stone-900 dark:text-white text-sm truncate max-w-xs">{promo.title}</h3>
+                          <h3 className="font-bold text-stone-900 dark:text-white text-sm truncate min-w-0 flex-1" title={promo.title}>
+                            {promo.title}
+                          </h3>
                         </div>
-                        <p className="text-xs text-stone-500 dark:text-stone-400 mt-1 line-clamp-1">{promo.description}</p>
+                        <p className="text-xs text-stone-500 dark:text-stone-400 mt-1 line-clamp-1 break-words">{promo.description}</p>
                       </div>
 
                       <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shrink-0">
@@ -349,7 +373,7 @@ export const DashboardPage: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between text-[11px] text-stone-500 dark:text-stone-400 pt-1 border-t border-stone-200 dark:border-[#201b16]">
+                    <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-stone-500 dark:text-stone-400 pt-1 border-t border-stone-200 dark:border-[#201b16]">
                       <span>Impressions: <strong>{promo.impressions}</strong></span>
                       <span>Discoveries: <strong>{promo.uniqueDiscoveries}</strong></span>
                       <Link to={`/promotions/${promo.id}`} className="text-red-600 dark:text-red-400 font-bold hover:underline">
@@ -411,18 +435,62 @@ export const DashboardPage: React.FC = () => {
                 </Link>
               </div>
 
-              <div className="p-6 rounded-3xl bg-white dark:bg-[#161310] border border-stone-200 dark:border-[#262018] space-y-3 shadow-sm">
-                <div className="flex items-center gap-2 text-red-600 dark:text-red-400 font-bold text-xs">
-                  <Gift className="w-4 h-4" />
-                  <span>Your Referral Code</span>
+              <div className="p-6 rounded-3xl bg-white dark:bg-[#161310] border border-stone-200 dark:border-[#262018] space-y-3 shadow-sm min-w-0">
+                <div className="flex items-center justify-between gap-2 text-red-600 dark:text-red-400 font-bold text-xs">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <Gift className="w-4 h-4 shrink-0" />
+                    <span className="truncate">Creator Referral Program</span>
+                  </div>
+                  <span className="px-2 py-0.5 rounded-full bg-red-600/10 text-red-600 dark:text-red-400 text-[10px] font-extrabold shrink-0">
+                    +100 Coins
+                  </span>
                 </div>
-                <div className="p-3 bg-stone-50 dark:bg-[#0d0b09] rounded-xl border border-stone-200 dark:border-[#262018] flex items-center justify-between font-mono font-bold text-red-600 dark:text-red-400 text-sm">
-                  <span>{user.referralCode}</span>
-                  <span className="text-[10px] text-stone-500 dark:text-stone-400 font-sans font-normal">+100 Coins per invite</span>
+
+                <div className="p-3 bg-stone-50 dark:bg-[#0d0b09] rounded-2xl border border-stone-200 dark:border-[#262018] space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[11px] text-stone-500 dark:text-stone-400 font-medium">Your Invite Code:</span>
+                    <button
+                      onClick={handleCopyCode}
+                      className="px-2.5 py-1 rounded-lg bg-stone-200 dark:bg-[#1c1813] hover:bg-red-600 hover:text-white text-stone-900 dark:text-white text-xs font-mono font-black flex items-center gap-1.5 transition-all"
+                      title="Copy referral code"
+                    >
+                      {copiedCode ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                      <span>{user.referralCode}</span>
+                    </button>
+                  </div>
+
+                  <div className="flex items-center gap-2 pt-1">
+                    <button
+                      onClick={handleCopyLink}
+                      className="flex-1 py-2 px-3 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs transition-all active:scale-95"
+                    >
+                      {copiedLink ? (
+                        <>
+                          <Check className="w-3.5 h-3.5 text-white" />
+                          <span>Link Copied!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Share2 className="w-3.5 h-3.5 text-white" />
+                          <span>Copy Referral Link</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
-                <Link to="/earn" className="text-xs text-red-600 dark:text-red-400 hover:underline font-semibold block text-right">
-                  View Referral Details →
-                </Link>
+
+                <div className="flex items-center justify-between text-xs pt-1">
+                  <span className="text-stone-500 dark:text-stone-400 text-[11px]">
+                    Invited: <strong className="text-stone-900 dark:text-white">{user.referralCount || 0} creators</strong>
+                  </span>
+                  <Link
+                    to="/earn?tab=referral"
+                    className="text-xs text-red-600 dark:text-red-400 hover:underline font-bold flex items-center gap-0.5"
+                  >
+                    <span>Open Referral Hub</span>
+                    <ArrowUpRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
               </div>
             </>
           )}

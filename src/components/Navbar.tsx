@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { Logo } from './Logo';
 import {
   Coins,
   Plus,
@@ -44,23 +45,33 @@ export const Navbar: React.FC<NavbarProps> = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full border-b border-[#262018] dark:border-[#262018] bg-white dark:bg-[#0d0b09]/95 text-stone-900 dark:text-stone-100 backdrop-blur-md transition-colors">
+      <header className="sticky top-0 z-40 w-full border-b border-stone-200 dark:border-[#262018] bg-white dark:bg-[#0d0b09]/95 text-stone-900 dark:text-stone-100 backdrop-blur-md transition-colors shadow-xs">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-3 sm:px-6">
           
-          {/* Left: Sub4Sub Pro Brand Logo */}
+          {/* Left: YouTube Inspired SubLoop Brand Logo */}
           <div className="flex items-center gap-2 sm:gap-3">
             <Link to={user ? "/dashboard" : "/"} className="flex items-center gap-2 group">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-red-600 text-white font-black shadow-md shadow-red-600/25 group-hover:scale-105 transition-transform">
-                <Coins className="h-5 w-5 text-white fill-white" />
-              </div>
-              <span className="text-lg sm:text-xl font-extrabold tracking-tight text-stone-900 dark:text-white font-sans">
-                Sub4Sub <span className="text-red-600 dark:text-red-500">Pro</span>
-              </span>
+              <Logo size="sm" />
             </Link>
           </div>
 
           {/* Right Actions */}
           <div className="flex items-center gap-2 sm:gap-3">
+            {/* Top Navbar Theme Toggle Button */}
+            <button
+              id="theme-toggle-top-navbar"
+              onClick={toggleTheme}
+              className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-stone-100 dark:bg-[#1c1813] border border-stone-200 dark:border-[#332b21] text-stone-700 dark:text-stone-300 hover:text-red-500 dark:hover:text-red-400 hover:border-red-500/50 transition-all shadow-xs"
+              aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
+              title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              {isDark ? (
+                <Sun className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-amber-400 hover:rotate-45 transition-transform" />
+              ) : (
+                <Moon className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-stone-700 hover:-rotate-12 transition-transform" />
+              )}
+            </button>
+
             {user ? (
               <>
                 {/* Plus Button - Create Campaign */}
