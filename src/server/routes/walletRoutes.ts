@@ -166,17 +166,21 @@ router.post('/purchase', authenticateJWT, async (req: AuthenticatedRequest, res:
   });
 });
 
-// POST /api/wallet/refund-request - Blocked / Frozen while payment gateway integration is in progress
-router.post('/refund-request', authenticateJWT, (req: AuthenticatedRequest, res: Response) => {
-  return res.status(200).json({
+// POST /api/wallet/refund-request & /api/wallet/refund - Strictly blocked with 503/403 while payment gateway is in progress
+const handleBlockedRefund = (req: AuthenticatedRequest, res: Response) => {
+  return res.status(503).json({
     success: false,
     frozen: true,
-    status: 'refund_blocked_coming_soon',
+    status: 'refund_blocked_under_development',
+    errorCode: 'REFUND_SERVICE_UNAVAILABLE',
     message:
-      'Coin token refunds are unavailable and blocked. Refunds are frozen and under active development. You can get coins right now exclusively by subscribing to channels and watching video views on Discover!',
-    notice: 'Refund feature is blocked and coming soon.',
+      'Coin token refunds are strictly frozen and unavailable while live payment gateway integration is in progress. Refund requests cannot be processed at this time. To get coins right now, please subscribe to channels and watch video views on Discover!',
+    notice: 'Refund processing is blocked with HTTP 503 (Service Unavailable) - Coming Soon.',
   });
-});
+};
+
+router.post('/refund-request', authenticateJWT, handleBlockedRefund);
+router.post('/refund', authenticateJWT, handleBlockedRefund);
 
 export default router;
 

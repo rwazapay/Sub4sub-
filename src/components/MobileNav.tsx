@@ -16,32 +16,74 @@ export const MobileNav: React.FC = () => {
   if (!user) return null;
 
   const tabs = [
-    { label: 'Home', path: '/dashboard', icon: LayoutGrid, id: 'tour-mobile-home' },
-    { label: 'Earn', path: '/earn', icon: Compass, id: 'tour-mobile-earn' },
-    { label: 'Campaigns', path: '/campaigns', icon: Rocket, id: 'tour-mobile-promote' },
-    { label: 'Wallet', path: '/wallet', icon: Wallet, id: 'tour-mobile-wallet' },
-    { label: 'Settings', path: '/settings', icon: Settings, id: 'tour-mobile-settings' },
+    {
+      label: 'Home',
+      path: '/dashboard',
+      icon: LayoutGrid,
+      id: 'tour-mobile-home',
+      tooltip: 'Dashboard overview & analytics',
+    },
+    {
+      label: 'Earn',
+      path: '/earn',
+      icon: Compass,
+      id: 'tour-mobile-earn',
+      tooltip: 'Subscribe & watch to earn coins',
+    },
+    {
+      label: 'Campaigns',
+      path: '/campaigns',
+      icon: Rocket,
+      id: 'tour-mobile-promote',
+      tooltip: 'Create & manage promotional campaigns',
+    },
+    {
+      label: 'Wallet',
+      path: '/wallet',
+      icon: Wallet,
+      id: 'tour-mobile-wallet',
+      tooltip: 'Coin balance, packages & daily bonus',
+    },
+    {
+      label: 'Settings',
+      path: '/settings',
+      icon: Settings,
+      id: 'tour-mobile-settings',
+      tooltip: 'Account settings & channel links',
+    },
   ];
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#0d0b09]/95 border-t border-stone-200 dark:border-[#262018] backdrop-blur-lg transition-colors">
       <div className="flex items-center justify-around h-16 max-w-2xl mx-auto px-1">
         {tabs.map((tab) => (
-          <NavLink
-            key={tab.path}
-            id={tab.id}
-            to={tab.path}
-            className={({ isActive }) =>
-              `flex flex-col items-center justify-center flex-1 py-1 text-[10px] font-semibold transition-all ${
-                isActive
-                  ? 'text-red-600 dark:text-red-500 font-bold scale-105'
-                  : 'text-stone-500 dark:text-[#9c8e80] hover:text-stone-900 dark:hover:text-stone-200'
-              }`
-            }
-          >
-            <tab.icon className="w-5 h-5 mb-0.5" />
-            <span className="truncate text-center">{tab.label}</span>
-          </NavLink>
+          <div key={tab.path} className="relative group flex-1 flex justify-center">
+            <NavLink
+              id={tab.id}
+              to={tab.path}
+              title={tab.tooltip}
+              className={({ isActive }) =>
+                `flex flex-col items-center justify-center w-full py-1 text-[10px] font-semibold transition-all ${
+                  isActive
+                    ? 'text-red-600 dark:text-red-500 font-bold scale-105'
+                    : 'text-stone-500 dark:text-[#9c8e80] hover:text-stone-900 dark:hover:text-stone-200'
+                }`
+              }
+            >
+              <tab.icon className="w-5 h-5 mb-0.5" />
+              <span className="truncate text-center">{tab.label}</span>
+            </NavLink>
+
+            {/* Hover Tooltip for tablets / pointer devices */}
+            <div
+              role="tooltip"
+              className="hidden sm:group-hover:flex absolute bottom-full mb-2 z-50 items-center pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-150"
+            >
+              <div className="bg-[#1a1612] text-stone-200 text-[10px] font-medium py-1 px-2.5 rounded-lg border border-[#382f24] shadow-xl whitespace-nowrap">
+                {tab.tooltip}
+              </div>
+            </div>
+          </div>
         ))}
       </div>
     </nav>

@@ -24,12 +24,48 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   if (!user) return null;
 
   const navItems = [
-    { label: 'Home', path: '/dashboard', icon: LayoutGrid, id: 'tour-sidebar-home' },
-    { label: 'Earn Coins', path: '/earn', icon: Compass, id: 'tour-sidebar-earn' },
-    { label: 'Campaigns', path: '/campaigns', icon: Rocket, id: 'tour-sidebar-promote' },
-    { label: 'Offers', path: '/offers', icon: Gift, id: 'tour-sidebar-offers' },
-    { label: 'Wallet & Top-up', path: '/wallet', icon: Wallet, id: 'tour-sidebar-wallet' },
-    { label: 'Settings', path: '/settings', icon: Settings, id: 'tour-sidebar-settings' },
+    {
+      label: 'Home',
+      path: '/dashboard',
+      icon: LayoutGrid,
+      id: 'tour-sidebar-home',
+      tooltip: 'Dashboard overview, analytics & quick actions',
+    },
+    {
+      label: 'Earn Coins',
+      path: '/earn',
+      icon: Compass,
+      id: 'tour-sidebar-earn',
+      tooltip: 'Subscribe to channels & watch videos to earn free coins',
+    },
+    {
+      label: 'Campaigns',
+      path: '/campaigns',
+      icon: Rocket,
+      id: 'tour-sidebar-promote',
+      tooltip: 'Create and track channel growth & promotion campaigns',
+    },
+    {
+      label: 'Offers',
+      path: '/offers',
+      icon: Gift,
+      id: 'tour-sidebar-offers',
+      tooltip: 'Bonus tasks, video watching & high-reward coin offers',
+    },
+    {
+      label: 'Wallet & Top-up',
+      path: '/wallet',
+      icon: Wallet,
+      id: 'tour-sidebar-wallet',
+      tooltip: 'Manage balance, coin packages, transactions & daily rewards',
+    },
+    {
+      label: 'Settings',
+      path: '/settings',
+      icon: Settings,
+      id: 'tour-sidebar-settings',
+      tooltip: 'Manage YouTube links, preferences & security',
+    },
   ];
 
   return (
@@ -57,39 +93,65 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
               </p>
               <nav className="mt-2 space-y-1">
                 {navItems.map((item) => (
-                  <NavLink
-                    key={item.path}
-                    id={item.id}
-                    to={item.path}
-                    onClick={onClose}
-                    className={({ isActive }) =>
-                      `flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all ${
-                        isActive
-                          ? 'bg-red-600 text-white shadow-md shadow-red-600/25'
-                          : 'text-stone-300 hover:text-white hover:bg-[#1a1612]'
-                      }`
-                    }
-                  >
-                    <item.icon className="w-4 h-4" />
-                    <span>{item.label}</span>
-                  </NavLink>
+                  <div key={item.path} className="relative group">
+                    <NavLink
+                      id={item.id}
+                      to={item.path}
+                      title={item.tooltip}
+                      onClick={onClose}
+                      className={({ isActive }) =>
+                        `flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all ${
+                          isActive
+                            ? 'bg-red-600 text-white shadow-md shadow-red-600/25'
+                            : 'text-stone-300 hover:text-white hover:bg-[#1a1612]'
+                        }`
+                      }
+                    >
+                      <item.icon className="w-4 h-4 shrink-0" />
+                      <span className="truncate">{item.label}</span>
+                    </NavLink>
+
+                    {/* Desktop Hover Tooltip */}
+                    <div
+                      role="tooltip"
+                      className="hidden lg:group-hover:flex absolute left-full top-1/2 -translate-y-1/2 ml-3 z-50 items-center pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-200"
+                    >
+                      <div className="bg-[#1a1612] text-stone-200 text-[11px] font-medium py-1.5 px-3 rounded-xl border border-[#382f24] shadow-2xl shadow-black/80 whitespace-nowrap flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
+                        <span>{item.tooltip}</span>
+                      </div>
+                    </div>
+                  </div>
                 ))}
 
                 {user.role === 'admin' && (
-                  <NavLink
-                    to="/admin"
-                    onClick={onClose}
-                    className={({ isActive }) =>
-                      `flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all mt-4 ${
-                        isActive
-                          ? 'bg-red-600 text-white'
-                          : 'text-red-400 hover:bg-red-500/10'
-                      }`
-                    }
-                  >
-                    <Shield className="w-4 h-4" />
-                    <span>Admin Panel</span>
-                  </NavLink>
+                  <div className="relative group mt-4">
+                    <NavLink
+                      to="/admin"
+                      title="System moderation, user management & platform logs"
+                      onClick={onClose}
+                      className={({ isActive }) =>
+                        `flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all ${
+                          isActive
+                            ? 'bg-red-600 text-white'
+                            : 'text-red-400 hover:bg-red-500/10'
+                        }`
+                      }
+                    >
+                      <Shield className="w-4 h-4 shrink-0" />
+                      <span>Admin Panel</span>
+                    </NavLink>
+
+                    <div
+                      role="tooltip"
+                      className="hidden lg:group-hover:flex absolute left-full top-1/2 -translate-y-1/2 ml-3 z-50 items-center pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-200"
+                    >
+                      <div className="bg-[#1a1612] text-red-300 text-[11px] font-medium py-1.5 px-3 rounded-xl border border-red-500/30 shadow-2xl shadow-black/80 whitespace-nowrap flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
+                        <span>System moderation, user management & platform logs</span>
+                      </div>
+                    </div>
+                  </div>
                 )}
               </nav>
             </div>
