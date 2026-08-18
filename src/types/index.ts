@@ -298,3 +298,56 @@ export interface AdminStats {
   totalSpamIncidents: number;
   unresolvedSpamCount: number;
 }
+
+export interface ApiServiceHealth {
+  name: string;
+  category: 'core' | 'database' | 'security' | 'economy';
+  status: 'operational' | 'degraded' | 'maintenance' | 'down';
+  latencyMs: number;
+  endpoint: string;
+  description: string;
+}
+
+export interface DatabaseHealthInfo {
+  connected: boolean;
+  status: 'connected' | 'reconnecting' | 'degraded' | 'in_memory_fallback';
+  provider: string;
+  databaseId: string;
+  pingLatencyMs: number;
+  lastSyncTimestamp: string;
+  collections: {
+    usersCount: number;
+    channelsCount: number;
+    promotionsCount: number;
+    sub4subRequestsCount: number;
+    transactionsCount: number;
+    auditLogsCount: number;
+    spamIncidentsCount: number;
+  };
+}
+
+export interface ServerHealthInfo {
+  uptimeSeconds: number;
+  uptimeFormatted: string;
+  environment: string;
+  nodeVersion: string;
+  platform: string;
+  memoryUsage: {
+    heapUsedMB: number;
+    heapTotalMB: number;
+    rssMB: number;
+    memoryUsagePercent: number;
+  };
+}
+
+export interface SystemHealthReport {
+  success: boolean;
+  status: 'healthy' | 'degraded' | 'unhealthy';
+  overallAvailabilityPercent: number;
+  timestamp: string;
+  responseTimeMs: number;
+  database: DatabaseHealthInfo;
+  server: ServerHealthInfo;
+  services: ApiServiceHealth[];
+  maintenanceMode: boolean;
+}

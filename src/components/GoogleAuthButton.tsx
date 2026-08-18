@@ -5,15 +5,18 @@ import { apiClient } from '../services/api';
 import { auth } from '../lib/firebase';
 import { GoogleAuthProvider, signInWithPopup, signInWithRedirect } from 'firebase/auth';
 import { User } from '../types';
+import { ShieldCheck, Sparkles, CheckCircle2 } from 'lucide-react';
 
 interface GoogleAuthButtonProps {
   buttonText?: string;
+  referralCode?: string;
   onSuccess?: () => void;
   onError?: (msg: string) => void;
 }
 
 export const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
   buttonText = 'Sign in with Google',
+  referralCode,
   onSuccess,
   onError,
 }) => {
@@ -36,7 +39,7 @@ export const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
 
     try {
       const provider = new GoogleAuthProvider();
-      // Forces Google to show the authentic "Choose an account" screen (Screenshot 1)
+      // Forces Google to show the authentic "Choose an account" screen
       provider.setCustomParameters({ prompt: 'select_account' });
 
       const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -55,6 +58,7 @@ export const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
         if (user && user.email) {
           const displayName = user.displayName || user.email.split('@')[0];
           const cleanUsername = displayName.toLowerCase().replace(/[^a-z0-9_]/g, '');
+          const isSuperAdminEmail = user.email.toLowerCase() === 'xfrancois786@gmail.com';
 
           const authenticatedUser: User = {
             id: `usr_${user.uid}`,
@@ -62,16 +66,16 @@ export const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
             displayName: displayName,
             email: user.email,
             country: 'Rwanda',
-            role: 'user',
+            role: isSuperAdminEmail ? 'admin' : 'user',
             status: 'active',
             avatar: user.photoURL || `https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80`,
-            bio: `Creator on SubLoop`,
+            bio: isSuperAdminEmail ? 'SubLoop Platform Super Administrator' : `Creator on SubLoop`,
             creatorCategory: 'Technology',
-            credits: 100,
-            totalCreditsEarned: 100,
+            credits: isSuperAdminEmail ? 100000 : 100,
+            totalCreditsEarned: isSuperAdminEmail ? 100000 : 100,
             totalCreditsSpent: 0,
-            level: 1,
-            reputation: 80,
+            level: isSuperAdminEmail ? 10 : 1,
+            reputation: isSuperAdminEmail ? 100 : 90,
             referralCode: `SUB-${(cleanUsername || 'CREATOR').toUpperCase().slice(0, 6)}`,
             referralCount: 0,
             referralRewardsEarned: 0,
@@ -79,20 +83,23 @@ export const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
             dailyRewardClaimedToday: false,
             dailyDiscoveryCountToday: 0,
             riskScore: 0,
-            isPro: false,
+            isPro: isSuperAdminEmail,
+            isEmailVerified: true,
+            emailVerifiedAt: new Date().toISOString(),
             createdAt: new Date().toISOString(),
           };
 
           const token = `g_token_${Date.now()}_${user.uid}`;
           login(token, authenticatedUser);
 
-          // Background server database synchronization
+          // Backend server database synchronization
           try {
             const res = await apiClient.post('/auth/google', {
               email: user.email,
               name: displayName,
               picture: user.photoURL || authenticatedUser.avatar,
               googleId: user.uid,
+              referralCode,
             });
             if (res.data?.success && res.data?.data?.user) {
               login(res.data.data.token || token, res.data.data.user);
@@ -121,7 +128,7 @@ export const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
         if (err?.code === 'auth/unauthorized-domain') {
           const currentHostname = window.location.hostname;
           onError(
-            `This domain (${currentHostname}) is not authorized in your Firebase Authentication settings. To authorize it: Go to Firebase Console > Authentication > Settings > Authorized domains > Add domain "${currentHostname}". In the meantime, you can sign in directly below with your email & password.`
+            `Domain (${currentHostname}) is pending whitelist in Firebase Auth. To authorize: Go to Firebase Console > Authentication > Settings > Authorized domains > Add "${currentHostname}".`
           );
         } else {
           onError(err?.message || 'Google sign-in could not be completed. Please try again.');
@@ -137,7 +144,7 @@ export const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
       type="button"
       onClick={handleGoogleSignInClick}
       disabled={isAuthenticating}
-      className="w-full py-3.5 px-4 rounded-2xl bg-white dark:bg-[#1c1813] hover:bg-stone-50 dark:hover:bg-[#262018] text-stone-800 dark:text-stone-100 font-bold text-xs sm:text-sm border-2 border-stone-200 dark:border-[#332b21] hover:border-red-500 shadow-sm transition-all flex items-center justify-center gap-3 active:scale-98 relative group cursor-pointer"
+      className="w-full py-4 px-5 rounded-2xl bg-white dark:bg-[#1c1813] hover:bg-stone-50 dark:hover:bg-[#262018] text-stone-800 dark:text-stone-100 font-bold text-sm border-2 border-stone-200 dark:border-[#332b21] hover:border-red-500 shadow-md transition-all flex items-center justify-center gap-3 active:scale-98 relative group cursor-pointer"
     >
       {/* Official Google Vector Logo */}
       <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
@@ -159,10 +166,10 @@ export const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
         />
       </svg>
 
-      <span>{isAuthenticating ? 'Connecting to Google Accounts...' : buttonText}</span>
+      <span className="truncate">{isAuthenticating ? 'Connecting to Google Accounts...' : buttonText}</span>
 
-      <span className="ml-auto px-2 py-0.5 rounded text-[10px] font-black bg-red-500/15 text-red-600 dark:text-red-400 uppercase tracking-wide">
-        Google Auth
+      <span className="ml-auto shrink-0 px-2 py-0.5 rounded text-[10px] font-black bg-red-500/15 text-red-600 dark:text-red-400 uppercase tracking-wide">
+        Google OAuth
       </span>
     </button>
   );

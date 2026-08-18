@@ -8,250 +8,21 @@ const router = Router();
 // Helper email regex
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-// POST /api/auth/register
+// POST /api/auth/register (Deprecated - Google OAuth Only)
 router.post('/register', authLimiter, async (req, res) => {
-  const { username, displayName, email, password, country, referralCode } = req.body;
-
-  if (!username || !email || !password || !displayName) {
-    return res.status(400).json({
-      success: false,
-      message: 'Username, display name, email, and password are required.',
-      errorCode: 'MISSING_FIELDS',
-    });
-  }
-
-  const cleanEmail = email.trim().toLowerCase();
-  if (!EMAIL_REGEX.test(cleanEmail)) {
-    return res.status(400).json({
-      success: false,
-      message: 'Please provide a valid email address.',
-      errorCode: 'INVALID_EMAIL',
-    });
-  }
-
-  if (password.length < 6) {
-    return res.status(400).json({
-      success: false,
-      message: 'Password must be at least 6 characters long.',
-      errorCode: 'PASSWORD_TOO_SHORT',
-    });
-  }
-
-  const cleanUsername = username.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
-  if (cleanUsername.length < 3) {
-    return res.status(400).json({
-      success: false,
-      message: 'Username must be at least 3 alphanumeric characters or underscores.',
-      errorCode: 'INVALID_USERNAME',
-    });
-  }
-
-  // Check duplicate username or email in database
-  let existingUser = Array.from(db.users.values()).find(
-    (u) => u.username.toLowerCase() === cleanUsername || u.email.toLowerCase() === cleanEmail
-  );
-
-  if (existingUser) {
-    return res.status(409).json({
-      success: false,
-      message: 'Username or email address is already registered.',
-      errorCode: 'DUPLICATE_USER',
-    });
-  }
-
-  const userId = `usr_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
-  db.setPasswordHash(userId, password);
-
-  // Check referral code
-  let referrer: any = null;
-  const cleanRefCode = referralCode ? String(referralCode).trim().toUpperCase() : null;
-  if (cleanRefCode) {
-    referrer = Array.from(db.users.values()).find((u) => u.referralCode === cleanRefCode);
-  }
-
-  const referralBonus = referrer ? (db.systemSettings.referralReward || 100) : 0;
-  const initialCredits = 100 + referralBonus;
-
-  const isSuperAdminEmail = cleanEmail === 'xfrancois786@gmail.com';
-  const assignedRole = isSuperAdminEmail ? ('admin' as const) : ('user' as const);
-  const assignedCredits = isSuperAdminEmail ? 100000 : initialCredits;
-
-  const newUser = {
-    id: userId,
-    username: cleanUsername,
-    displayName: displayName.trim(),
-    email: cleanEmail,
-    country: country || 'Rwanda',
-    role: assignedRole,
-    status: 'active' as const,
-    avatar: `https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250`,
-    bio: isSuperAdminEmail
-      ? 'SubLoop Super Administrator'
-      : `Creator from ${country || 'Rwanda'} passionate about growing content and discovering new creators.`,
-    creatorCategory: 'Technology',
-    credits: assignedCredits,
-    totalCreditsEarned: assignedCredits,
-    totalCreditsSpent: 0,
-    level: isSuperAdminEmail ? 10 : 1,
-    reputation: isSuperAdminEmail ? 100 : 80,
-    referralCode: `SUB-${cleanUsername.toUpperCase().substring(0, 6)}`,
-    referredBy: referrer ? referrer.id : undefined,
-    referralCount: 0,
-    referralRewardsEarned: 0,
-    streakDays: 1,
-    dailyRewardClaimedToday: false,
-    dailyDiscoveryCountToday: 0,
-    riskScore: 0,
-    isPro: isSuperAdminEmail,
-    isEmailVerified: isSuperAdminEmail ? true : false,
-    emailVerifiedAt: isSuperAdminEmail ? new Date().toISOString() : undefined,
-    createdAt: new Date().toISOString(),
-  };
-
-  // Create corresponding Creator Profile
-  const creatorProfile = {
-    id: `prof_${userId}`,
-    userId,
-    username: newUser.username,
-    displayName: newUser.displayName,
-    avatar: newUser.avatar,
-    bio: newUser.bio,
-    country: newUser.country,
-    category: newUser.creatorCategory,
-    reputation: newUser.reputation,
-    level: newUser.level,
-    profileViews: 1,
-    totalDiscoveries: 0,
-    isPro: newUser.isPro,
-    socialChannelsCount: 0,
-    createdAt: newUser.createdAt,
-  };
-
-  // Save user & creator profile to Firestore
-  await db.saveUser(newUser, password);
-  await db.saveCreatorProfile(creatorProfile);
-
-  // Record initial registration bonus
-  db.recordTransaction(userId, 'bonus', 100, 'Welcome registration bonus');
-
-  // Handle Referrer reward & referral record
-  if (referrer) {
-    referrer.referralCount = (referrer.referralCount || 0) + 1;
-    referrer.referralRewardsEarned = (referrer.referralRewardsEarned || 0) + referralBonus;
-    
-    db.recordTransaction(
-      referrer.id,
-      'referral',
-      referralBonus,
-      `Referral bonus: @${newUser.username} registered with your invite code`
-    );
-
-    db.recordTransaction(
-      userId,
-      'referral',
-      referralBonus,
-      `Welcome referral bonus using code ${cleanRefCode}`
-    );
-
-    const refRecord = {
-      id: `ref_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-      referrerUserId: referrer.id,
-      referrerUsername: referrer.username,
-      referredUserId: userId,
-      referredUsername: newUser.username,
-      status: 'completed' as const,
-      rewardCredits: referralBonus,
-      createdAt: new Date().toISOString(),
-    };
-    db.referrals.unshift(refRecord);
-
-    db.notifications.unshift({
-      id: `notif_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-      userId: referrer.id,
-      title: '🎉 New Referral Joined!',
-      message: `@${newUser.username} joined SubLoop using your referral link. You received +${referralBonus} Coins!`,
-      type: 'credit',
-      isRead: false,
-      createdAt: new Date().toISOString(),
-    });
-
-    try {
-      await db.saveUser(referrer);
-    } catch (saveRefErr) {
-      console.warn('Could not persist referrer update to firestore:', saveRefErr);
-    }
-  }
-
-  const token = generateToken(newUser);
-
-  return res.status(201).json({
-    success: true,
-    message: 'Welcome to SubLoop! Registration successful (+100 Bonus Credits).',
-    data: {
-      token,
-      user: newUser,
-    },
+  return res.status(400).json({
+    success: false,
+    message: 'Direct email/password registration is disabled. Please authenticate with Google Single Sign-On.',
+    errorCode: 'GOOGLE_AUTH_ONLY',
   });
 });
 
-// POST /api/auth/login
+// POST /api/auth/login (Deprecated - Google OAuth Only)
 router.post('/login', authLimiter, async (req, res) => {
-  const { loginIdentifier, password } = req.body;
-
-  if (!loginIdentifier || !password) {
-    return res.status(400).json({
-      success: false,
-      message: 'Username/email and password are required.',
-      errorCode: 'MISSING_FIELDS',
-    });
-  }
-
-  const cleanIdentifier = loginIdentifier.trim().toLowerCase();
-  let user = Array.from(db.users.values()).find(
-    (u) => u.username.toLowerCase() === cleanIdentifier || u.email.toLowerCase() === cleanIdentifier
-  );
-
-  if (!user) {
-    return res.status(401).json({
-      success: false,
-      message: 'Invalid username/email or password.',
-      errorCode: 'INVALID_CREDENTIALS',
-    });
-  }
-
-  const isValidPassword = db.verifyPassword(user.id, password);
-  if (!isValidPassword) {
-    return res.status(401).json({
-      success: false,
-      message: 'Invalid username/email or password.',
-      errorCode: 'INVALID_CREDENTIALS',
-    });
-  }
-
-  if (user.status === 'suspended' || user.status === 'banned') {
-    return res.status(403).json({
-      success: false,
-      message: 'Your account has been suspended or banned.',
-      errorCode: 'ACCOUNT_SUSPENDED',
-    });
-  }
-
-  // Sync daily state & update last login date
-  db.syncUserDailyState(user);
-  user.lastLoginDate = new Date().toISOString();
-
-  // Save updated user to Firestore
-  await db.saveUser(user);
-
-  const token = generateToken(user);
-
-  return res.json({
-    success: true,
-    message: 'Logged in successfully.',
-    data: {
-      token,
-      user,
-    },
+  return res.status(400).json({
+    success: false,
+    message: 'Direct email/password login is disabled. Please authenticate with Google Single Sign-On.',
+    errorCode: 'GOOGLE_AUTH_ONLY',
   });
 });
 
@@ -311,9 +82,9 @@ router.post('/forgot-password', authLimiter, (req, res) => {
   });
 });
 
-// POST /api/auth/google
+// POST /api/auth/google - Single Source of Truth for Authentication
 router.post('/google', authLimiter, async (req, res) => {
-  const { credential, email, name, picture, googleId } = req.body;
+  const { credential, email, name, picture, googleId, referralCode } = req.body;
 
   let userEmail = email;
   let userName = name;
@@ -340,16 +111,26 @@ router.post('/google', authLimiter, async (req, res) => {
   if (!userEmail) {
     return res.status(400).json({
       success: false,
-      message: 'Google Authentication failed: Email could not be retrieved.',
+      message: 'Google Authentication failed: Verified email could not be retrieved from Google.',
       errorCode: 'GOOGLE_AUTH_FAILED',
     });
   }
 
   const cleanEmail = userEmail.trim().toLowerCase();
+  const isSuperAdminEmail = cleanEmail === 'xfrancois786@gmail.com';
   let user = Array.from(db.users.values()).find((u) => u.email.toLowerCase() === cleanEmail);
 
   if (!user) {
-    // Register new user via Google
+    // Check if new registration is disabled in platform settings
+    if (!db.systemSettings.enableRegistration && !isSuperAdminEmail) {
+      return res.status(403).json({
+        success: false,
+        message: 'New user registrations are temporarily closed by platform administrators.',
+        errorCode: 'REGISTRATION_DISABLED',
+      });
+    }
+
+    // Register new user via Google Identity
     const baseUsername = cleanEmail.split('@')[0].replace(/[^a-z0-9_]/g, '');
     let username = baseUsername.length >= 3 ? baseUsername : `creator_${baseUsername}`;
     let counter = 1;
@@ -357,8 +138,18 @@ router.post('/google', authLimiter, async (req, res) => {
       username = `${baseUsername}${counter++}`;
     }
 
-    const userId = `usr_google_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
-    db.setPasswordHash(userId, `google_secret_${Date.now()}`);
+    const userId = userGId ? `usr_${userGId}` : `usr_g_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+    db.setPasswordHash(userId, `google_oauth_verified_${Date.now()}`);
+
+    // Check referral code
+    let referrer: any = null;
+    const cleanRefCode = referralCode ? String(referralCode).trim().toUpperCase() : null;
+    if (cleanRefCode) {
+      referrer = Array.from(db.users.values()).find((u) => u.referralCode === cleanRefCode);
+    }
+
+    const referralBonus = referrer ? (db.systemSettings.referralReward || 100) : 0;
+    const initialCredits = isSuperAdminEmail ? 100000 : (100 + referralBonus);
 
     user = {
       id: userId,
@@ -366,25 +157,25 @@ router.post('/google', authLimiter, async (req, res) => {
       displayName: userName || baseUsername,
       email: cleanEmail,
       country: 'Rwanda',
-      role: 'user',
+      role: isSuperAdminEmail ? ('admin' as const) : ('user' as const),
       status: 'active',
       avatar: userAvatar || `https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250`,
-      bio: `Verified Google Creator account`,
+      bio: isSuperAdminEmail ? 'SubLoop Platform Super Administrator' : `Verified Creator on SubLoop`,
       creatorCategory: 'Technology',
-      credits: 100, // 100 welcome credits
-      totalCreditsEarned: 100,
+      credits: initialCredits,
+      totalCreditsEarned: initialCredits,
       totalCreditsSpent: 0,
-      level: 1,
-      reputation: 90,
+      level: isSuperAdminEmail ? 10 : 1,
+      reputation: isSuperAdminEmail ? 100 : 90,
       referralCode: `SUB-${username.toUpperCase().substring(0, 6)}`,
+      referredBy: referrer ? referrer.id : undefined,
       referralCount: 0,
       referralRewardsEarned: 0,
       streakDays: 1,
       dailyRewardClaimedToday: false,
       dailyDiscoveryCountToday: 0,
       riskScore: 0,
-      isPro: cleanEmail === 'xfrancois786@gmail.com',
-      role: cleanEmail === 'xfrancois786@gmail.com' ? 'admin' : 'user',
+      isPro: isSuperAdminEmail,
       isEmailVerified: true,
       emailVerifiedAt: new Date().toISOString(),
       createdAt: new Date().toISOString(),
@@ -412,11 +203,23 @@ router.post('/google', authLimiter, async (req, res) => {
     await db.saveCreatorProfile(creatorProfile);
     db.recordTransaction(userId, 'bonus', 100, 'Welcome Google Account Registration Bonus');
 
+    if (referrer) {
+      referrer.referralCount = (referrer.referralCount || 0) + 1;
+      referrer.referralRewardsEarned = (referrer.referralRewardsEarned || 0) + referralBonus;
+      db.recordTransaction(
+        referrer.id,
+        'referral',
+        referralBonus,
+        `Referral bonus: @${user.username} registered with your Google invite link`
+      );
+      await db.saveUser(referrer);
+    }
+
     db.notifications.unshift({
       id: `notif_${Date.now()}`,
       userId,
-      title: '🌐 Google Sign-In Connected!',
-      message: 'Welcome to SubLoop! Your Google Account is successfully verified and credited with +100 Welcome Credits.',
+      title: '🌐 Google Verified Account Created!',
+      message: 'Welcome to SubLoop! Your Google Account is securely connected and credited with +100 Welcome Coins.',
       type: 'success',
       link: '/dashboard',
       isRead: false,
@@ -427,18 +230,23 @@ router.post('/google', authLimiter, async (req, res) => {
   if (user.status === 'suspended' || user.status === 'banned') {
     return res.status(403).json({
       success: false,
-      message: 'Your account has been suspended or banned.',
+      message: 'Your account has been suspended or banned by platform administrators.',
       errorCode: 'ACCOUNT_SUSPENDED',
     });
   }
 
-  if (cleanEmail === 'xfrancois786@gmail.com') {
+  if (isSuperAdminEmail) {
     user.role = 'admin';
     user.isPro = true;
     user.isEmailVerified = true;
+    if (user.credits < 50000) {
+      user.credits = 100000;
+      user.totalCreditsEarned = Math.max(user.totalCreditsEarned, 100000);
+    }
   }
 
   user.lastLoginDate = new Date().toISOString();
+  db.syncUserDailyState(user);
   await db.saveUser(user);
   const token = generateToken(user);
 

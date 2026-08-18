@@ -105,13 +105,18 @@ export function createExpressApp(): express.Express {
     app.use(`${prefix}/admin`, adminRoutes);
     app.use(`${prefix}/sub4sub`, sub4subRoutes);
 
-    app.get(`${prefix}/health`, (req, res) => {
-      res.json({
-        success: true,
-        status: 'healthy',
-        database: db.isFirestoreReady() ? 'firebase_firestore' : 'synchronized_in_memory',
-        timestamp: new Date().toISOString(),
-      });
+    app.get(`${prefix}/health`, async (req, res) => {
+      try {
+        const report = await db.getSystemHealthDiagnostic();
+        res.json(report);
+      } catch (err: any) {
+        res.status(500).json({
+          success: false,
+          status: 'unhealthy',
+          message: err?.message || 'Failed to retrieve system health diagnostics',
+          timestamp: new Date().toISOString(),
+        });
+      }
     });
   };
 
